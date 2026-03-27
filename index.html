@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>熊猫接笋</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            background: #1a472a;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// ============ 自适应屏幕 ============
+let W, H, scale;
+function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    scale = Math.min(W / 400, H / 700);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ============ 游戏状态 ============
+let state = 'menu'; // menu, playing, gameover
+let score = 0;
+let highScore = parseInt(localStorage.getItem('panda_high') || '0');
+let combo = 0;
+let maxCombo = 0;
+let items = [];
+let particles = [];
+let floatingTexts = [];
+let spawnTimer = 0;
+let spawnInterval = 70;
+let difficulty = 1;
+let gameTime = 0;
+let shakeTime = 0;
+let bambooSwing = 0;
+
+// ============ 熊猫 ============
+const panda = {
+    x: 0, y: 0, w: 70, h: 80,
+    targetX: 0,
+    speed: 8,
+    blinkTimer: 0,
+    mouthOpen: false,
+    mouthTimer: 0,
+    tilt: 0
+};
+
+function resetPanda() {
+    panda.x = W / 2;
+    panda.y = H - 110 * scale;
+    panda.w = 70 * scale;
+    panda.h = 80 * scale;
+    panda.targetX = W / 2;
+    panda.tilt = 0;
+}
+
+// ============ 绘制竹林背景 ============
+function drawBackground() {
+    // 天空渐变
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, '#87CEEB');
+    skyGrad.addColorStop(0.3, '#B0E0E6');
+    skyGrad.addColorStop(0.6, '#90C695');
+    skyGrad.addColorStop(1, '#2E7D32');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 远处山丘
+    ctx.fillStyle = '#4CAF50';
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.35);
+    for (let x = 0; x <= W; x += 50) {
+        ctx.lineTo(x, H * 0.35 + Math.sin(x * 0.008 + 1) * 30 + Math.sin(x * 0.015) * 15);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.fill();
+
+    // 近处山丘
+    ctx.fillStyle = '#388E3C';
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.5);
+    for (let x = 0; x <= W; x += 40) {
+        ctx.lineTo(x, H * 0.5 + Math.sin(x * 0.01 + 3) * 25 + Math.sin(x * 0.02) * 10);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.fill();
+
+    // 地面
+    const groundGrad = ctx.createLinearGradient(0, H * 0.78, 0, H);
+    groundGrad.addColorStop(0, '#2E7D32');
+    groundGrad.addColorStop(0.5, '#1B5E20');
+    groundGrad.addColorStop(1, '#0D3B0D');
+    ctx.fillStyle = groundGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, H * 0.82);
+    for (let x = 0; x <= W; x += 30) {
+        ctx.lineTo(x, H * 0.82 + Math.sin(x * 0.03) * 5);
+    }
+    ctx.lineTo(W, H); ctx.lineTo(0, H);
+    ctx.fill();
+
+    // 竹子
+    drawBamboo(W * 0.08, H * 0.15, H * 0.7, 0.6);
+    drawBamboo(W * 0.25, H * 0.08, H * 0.75, 0.7);
+    drawBamboo(W * 0.72, H * 0.12, H * 0.72, 0.65);
+    drawBamboo(W * 0.88, H * 0.18, H * 0.65, 0.55);
+    drawBamboo(W * 0.5, H * 0.05, H * 0.78, 0.8);
+    drawBamboo(W * 0.38, H * 0.2, H * 0.6, 0.5);
+    drawBamboo(W * 0.62, H * 0.1, H * 0.68, 0.6);
+
+    // 小云朵
+    drawCloud(W * 0.15, H * 0.08, 1);
+    drawCloud(W * 0.55, H * 0.05, 0.7);
+    drawCloud(W * 0.85, H * 0.12, 0.85);
+
+    // 飘落的竹叶
+    for (let i = 0; i < 5; i++) {
+        const lx = ((gameTime * 0.3 + i * 137) % (W + 40)) - 20;
+        const ly = ((gameTime * 0.5 + i * 89) % (H + 40)) - 20;
+        const lr = 6 * scale;
+        ctx.save();
+        ctx.translate(lx, ly);
+        ctx.rotate(gameTime * 0.02 + i);
+        ctx.fillStyle = i % 2 === 0 ? '#66BB6A' : '#81C784';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, lr, lr * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function drawBamboo(x, startY, height, thickness) {
+    const segH = 40 * scale;
+    const segments = Math.floor(height / segH);
+    const sw = Math.sin(bambooSwing + x * 0.01) * 3 * scale;
+
+    ctx.save();
+    ctx.translate(sw, 0);
+
+    for (let i = 0; i < segments; i++) {
+        const sy = startY + i * segH;
+        const w = thickness * 18 * scale;
+
+        // 竹杆
+        const bamGrad = ctx.createLinearGradient(x - w / 2, sy, x + w / 2, sy);
+        bamGrad.addColorStop(0, '#2E7D32');
+        bamGrad.addColorStop(0.3, '#4CAF50');
+        bamGrad.addColorStop(0.7, '#388E3C');
+        bamGrad.addColorStop(1, '#1B5E20');
+        ctx.fillStyle = bamGrad;
+        ctx.fillRect(x - w / 2, sy, w, segH);
+
+        // 竹节
+        ctx.fillStyle = '#1B5E20';
+        ctx.fillRect(x - w / 2 - 2 * scale, sy, w + 4 * scale, 4 * scale);
+
+        // 竹叶
+        if (i % 2 === 0 && i > 0) {
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            const side = i % 4 === 0 ? 1 : -1;
+            ctx.moveTo(x + side * w / 2, sy);
+            ctx.quadraticCurveTo(x + side * (w / 2 + 25 * scale), sy - 8 * scale, x + side * (w / 2 + 35 * scale), sy - 3 * scale);
+            ctx.quadraticCurveTo(x + side * (w / 2 + 25 * scale), sy + 5 * scale, x + side * w / 2, sy + 2 * scale);
+            ctx.fill();
+
+            ctx.fillStyle = '#66BB6A';
+            ctx.beginPath();
+            ctx.moveTo(x + side * w / 2, sy + 5 * scale);
+            ctx.quadraticCurveTo(x + side * (w / 2 + 20 * scale), sy - 2 * scale, x + side * (w / 2 + 28 * scale), sy + 2 * scale);
+            ctx.quadraticCurveTo(x + side * (w / 2 + 18 * scale), sy + 10 * scale, x + side * w / 2, sy + 7 * scale);
+            ctx.fill();
+        }
+    }
+    ctx.restore();
+}
+
+function drawCloud(x, y, s) {
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(x, y, 20 * scale * s, 0, Math.PI * 2);
+    ctx.arc(x + 25 * scale * s, y - 5 * scale * s, 25 * scale * s, 0, Math.PI * 2);
+    ctx.arc(x + 55 * scale * s, y, 20 * scale * s, 0, Math.PI * 2);
+    ctx.arc(x + 25 * scale * s, y + 5 * scale * s, 18 * scale * s, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// ============ 绘制熊猫 ============
+function drawPanda() {
+    const px = panda.x;
+    const py = panda.y;
+    const s = scale;
+    const pw = panda.w;
+    const ph = panda.h;
+
+    ctx.save();
+    ctx.translate(px, py);
+
+    // 熊猫倾斜效果
+    ctx.rotate(panda.tilt * 0.05);
+
+    // 影子
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.ellipse(0, ph * 0.42, pw * 0.5, 8 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 身体
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.ellipse(0, ph * 0.2, pw * 0.35, ph * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#E0E0E0';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 肚皮
+    ctx.fillStyle = '#F5F5F5';
+    ctx.beginPath();
+    ctx.ellipse(0, ph * 0.25, pw * 0.25, ph * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 脚
+    ctx.fillStyle = '#1A1A1A';
+    ctx.beginPath();
+    ctx.ellipse(-pw * 0.18, ph * 0.38, pw * 0.15, ph * 0.07, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(pw * 0.18, ph * 0.38, pw * 0.15, ph * 0.07, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 手臂
+    const armSwing = Math.sin(gameTime * 0.08) * 0.1;
+    ctx.fillStyle = '#1A1A1A';
+    // 左手
+    ctx.beginPath();
+    ctx.ellipse(-pw * 0.32, ph * 0.15, pw * 0.12, ph * 0.18, -0.3 + armSwing, 0, Math.PI * 2);
+    ctx.fill();
+    // 右手
+    ctx.beginPath();
+    ctx.ellipse(pw * 0.32, ph * 0.15, pw * 0.12, ph * 0.18, 0.3 - armSwing, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 头
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(0, -ph * 0.15, pw * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#E0E0E0';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 耳朵
+    ctx.fillStyle = '#1A1A1A';
+    ctx.beginPath();
+    ctx.arc(-pw * 0.22, -ph * 0.38, pw * 0.13, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(pw * 0.22, -ph * 0.38, pw * 0.13, 0, Math.PI * 2);
+    ctx.fill();
+    // 耳内
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(-pw * 0.22, -ph * 0.38, pw * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(pw * 0.22, -ph * 0.38, pw * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 眼圈
+    ctx.fillStyle = '#1A1A1A';
+    ctx.beginPath();
+    ctx.ellipse(-pw * 0.13, -ph * 0.16, pw * 0.13, ph * 0.1, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(pw * 0.13, -ph * 0.16, pw * 0.13, ph * 0.1, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 眼白+瞳孔
+    const blinkH = panda.blinkTimer > 0 ? 0.02 : 0.06;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.ellipse(-pw * 0.11, -ph * 0.16, pw * 0.07, ph * blinkH, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(pw * 0.15, -ph * 0.16, pw * 0.07, ph * blinkH, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (panda.blinkTimer <= 0) {
+        ctx.fillStyle = '#1A1A1A';
+        ctx.beginPath();
+        ctx.arc(-pw * 0.1, -ph * 0.16, pw * 0.035, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(pw * 0.16, -ph * 0.16, pw * 0.035, 0, Math.PI * 2);
+        ctx.fill();
+        // 高光
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(-pw * 0.085, -ph * 0.175, pw * 0.015, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(pw * 0.175, -ph * 0.175, pw * 0.015, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 鼻子
+    ctx.fillStyle = '#1A1A1A';
+    ctx.beginPath();
+    ctx.ellipse(0, -ph * 0.06, pw * 0.055, ph * 0.025, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 嘴巴
+    if (panda.mouthOpen) {
+        ctx.fillStyle = '#E57373';
+        ctx.beginPath();
+        ctx.arc(0, -ph * 0.02, pw * 0.05, 0, Math.PI);
+        ctx.fill();
+    } else {
+        ctx.strokeStyle = '#1A1A1A';
+        ctx.lineWidth = 1.5 * s;
+        ctx.beginPath();
+        ctx.arc(-pw * 0.02, -ph * 0.035, pw * 0.04, 0.1, Math.PI * 0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(pw * 0.02, -ph * 0.035, pw * 0.04, Math.PI * 0.2, Math.PI * 0.9);
+        ctx.stroke();
+    }
+
+    // 腮红
+    ctx.fillStyle = 'rgba(255,150,150,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(-pw * 0.22, -ph * 0.08, pw * 0.06, ph * 0.04, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(pw * 0.22, -ph * 0.08, pw * 0.06, ph * 0.04, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// ============ 绘制竹笋 ============
+function drawBambooShoot(x, y, size, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    const s = size * scale;
+
+    // 竹笋主体
+    const grad = ctx.createLinearGradient(-s * 0.3, 0, s * 0.3, 0);
+    grad.addColorStop(0, '#A5D6A7');
+    grad.addColorStop(0.3, '#C8E6C9');
+    grad.addColorStop(0.6, '#81C784');
+    grad.addColorStop(1, '#66BB6A');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.6);
+    ctx.quadraticCurveTo(s * 0.35, -s * 0.2, s * 0.25, s * 0.4);
+    ctx.lineTo(-s * 0.25, s * 0.4);
+    ctx.quadraticCurveTo(-s * 0.35, -s * 0.2, 0, -s * 0.6);
+    ctx.fill();
+
+    // 笋尖
+    ctx.fillStyle = '#FDD835';
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.6);
+    ctx.quadraticCurveTo(s * 0.08, -s * 0.45, 0, -s * 0.35);
+    ctx.quadraticCurveTo(-s * 0.08, -s * 0.45, 0, -s * 0.6);
+    ctx.fill();
+
+    // 笋壳纹理
+    ctx.strokeStyle = 'rgba(46,125,50,0.3)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+        const ty = -s * 0.2 + i * s * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.2, ty);
+        ctx.quadraticCurveTo(0, ty - s * 0.08, s * 0.2, ty);
+        ctx.stroke();
+    }
+
+    // 高光
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-s * 0.08, -s * 0.15, s * 0.04, s * 0.2, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// ============ 绘制辣椒 ============
+function drawChili(x, y, size, rotation) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    const s = size * scale;
+
+    // 辣椒主体
+    const grad = ctx.createLinearGradient(-s * 0.15, 0, s * 0.15, 0);
+    grad.addColorStop(0, '#C62828');
+    grad.addColorStop(0.4, '#EF5350');
+    grad.addColorStop(0.6, '#E53935');
+    grad.addColorStop(1, '#B71C1C');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(s * 0.05, -s * 0.5);
+    ctx.quadraticCurveTo(s * 0.2, -s * 0.2, s * 0.18, s * 0.1);
+    ctx.quadraticCurveTo(s * 0.15, s * 0.4, s * 0.05, s * 0.5);
+    ctx.quadraticCurveTo(-s * 0.1, s * 0.35, -s * 0.08, s * 0.1);
+    ctx.quadraticCurveTo(-s * 0.05, -s * 0.2, s * 0.05, -s * 0.5);
+    ctx.fill();
+
+    // 辣椒蒂
+    ctx.fillStyle = '#2E7D32';
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.02, -s * 0.5);
+    ctx.lineTo(s * 0.02, -s * 0.5);
+    ctx.lineTo(s * 0.01, -s * 0.65);
+    ctx.lineTo(-s * 0.01, -s * 0.65);
+    ctx.fill();
+    // 蒂的小叶子
+    ctx.beginPath();
+    ctx.ellipse(s * 0.08, -s * 0.58, s * 0.06, s * 0.025, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 高光
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(s * 0.05, -s * 0.1, s * 0.03, s * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 辣椒的"火"
+    ctx.fillStyle = 'rgba(255,200,0,0.6)';
+    ctx.beginPath();
+    ctx.arc(s * 0.05, s * 0.45, s * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,100,0,0.4)';
+    ctx.beginPath();
+    ctx.arc(s * 0.08, s * 0.4, s * 0.03, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// ============ 掉落物 ============
+function spawnItem() {
+    const isChili = Math.random() < 0.3 + difficulty * 0.02;
+    const baseSize = isChili ? 25 : 28;
+    items.push({
+        x: Math.random() * (W - 60 * scale) + 30 * scale,
+        y: -30,
+        size: baseSize + Math.random() * 8,
+        speed: (2 + Math.random() * 1.5 + difficulty * 0.3) * scale,
+        rotation: 0,
+        rotSpeed: (Math.random() - 0.5) * 0.06,
+        type: isChili ? 'chili' : 'bamboo',
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.02 + Math.random() * 0.02,
+        wobbleAmp: 0.5 + Math.random() * 1
+    });
+}
+
+// ============ 粒子效果 ============
+function spawnParticles(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 6 * scale,
+            vy: -Math.random() * 5 * scale - 2 * scale,
+            size: (3 + Math.random() * 4) * scale,
+            color,
+            life: 1,
+            decay: 0.015 + Math.random() * 0.02,
+            type: Math.random() > 0.5 ? 'circle' : 'star'
+        });
+    }
+}
+
+function spawnFloatingText(x, y, text, color) {
+    floatingTexts.push({
+        x, y, text, color,
+        life: 1,
+        vy: -2 * scale
+    });
+}
+
+// ============ 碰撞检测 ============
+function checkCollision(item) {
+    const ix = item.x;
+    const iy = item.y;
+    const ir = item.size * scale * 0.35;
+
+    const px = panda.x;
+    const py = panda.y;
+    const pr = panda.w * 0.45;
+
+    const dx = ix - px;
+    const dy = iy - (py - panda.h * 0.1);
+    return Math.sqrt(dx * dx + dy * dy) < (ir + pr);
+}
+
+// ============ UI 绘制 ============
+function drawScoreBoard() {
+    const s = scale;
+    const boardW = 160 * s;
+    const boardH = 70 * s;
+    const boardX = W / 2 - boardW / 2;
+    const boardY = 15 * s;
+
+    // 分数板背景
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    roundRect(ctx, boardX, boardY, boardW, boardH, 15 * s);
+    ctx.fill();
+
+    // 分数板边框
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 2 * s;
+    ctx.beginPath();
+    roundRect(ctx, boardX, boardY, boardW, boardH, 15 * s);
+    ctx.stroke();
+
+    // 分数文字
+    ctx.fillStyle = '#FFD54F';
+    ctx.font = `bold ${22 * s}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`🎋 ${score}`, W / 2, boardY + boardH / 2);
+
+    // 连击
+    if (combo > 1) {
+        ctx.fillStyle = '#FF8A65';
+        ctx.font = `bold ${14 * s}px Arial`;
+        ctx.fillText(`${combo}连击!`, W / 2, boardY + boardH + 16 * s);
+    }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+}
+
+function drawMenu() {
+    // 半透明遮罩
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, 0, W, H);
+
+    const s = scale;
+    const cy = H * 0.38;
+
+    // 标题背景
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    roundRect(ctx, W * 0.1, cy - 80 * s, W * 0.8, 200 * s, 20 * s);
+    ctx.fill();
+
+    // 标题
+    ctx.fillStyle = '#FFF';
+    ctx.font = `bold ${38 * s}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 10 * s;
+    ctx.fillText('🐼 熊猫接笋 🎋', W / 2, cy - 30 * s);
+    ctx.shadowBlur = 0;
+
+    // 说明
+    ctx.fillStyle = '#E0E0E0';
+    ctx.font = `${16 * s}px Arial`;
+    ctx.fillText('接竹笋 +10分 | 碰辣椒 -20分', W / 2, cy + 20 * s);
+    ctx.fillText('分数低于0游戏结束', W / 2, cy + 48 * s);
+
+    if (highScore > 0) {
+        ctx.fillStyle = '#FFD54F';
+        ctx.font = `bold ${16 * s}px Arial`;
+        ctx.fillText(`🏆 最高分: ${highScore}`, W / 2, cy + 80 * s);
+    }
+
+    // 开始按钮
+    const btnW = 180 * s;
+    const btnH = 52 * s;
+    const btnX = W / 2 - btnW / 2;
+    const btnY = cy + 110 * s;
+
+    const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
+    btnGrad.addColorStop(0, '#66BB6A');
+    btnGrad.addColorStop(1, '#43A047');
+    ctx.fillStyle = btnGrad;
+    ctx.beginPath();
+    roundRect(ctx, btnX, btnY, btnW, btnH, 26 * s);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2 * s;
+    ctx.beginPath();
+    roundRect(ctx, btnX, btnY, btnW, btnH, 26 * s);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFF';
+    ctx.font = `bold ${22 * s}px Arial`;
+    ctx.fillText('开始游戏', W / 2, btnY + btnH / 2);
+}
+
+function drawGameOver() {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, W, H);
+
+    const s = scale;
+    const cy = H * 0.35;
+
+    // 结果面板
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath();
+    roundRect(ctx, W * 0.1, cy - 50 * s, W * 0.8, 240 * s, 20 * s);
+    ctx.fill();
+
+    ctx.fillStyle = '#EF5350';
+    ctx.font = `bold ${34 * s}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 8 * s;
+    ctx.fillText('游戏结束', W / 2, cy);
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#FFD54F';
+    ctx.font = `bold ${26 * s}px Arial`;
+    ctx.fillText(`得分: ${score}`, W / 2, cy + 50 * s);
+
+    if (maxCombo > 1) {
+        ctx.fillStyle = '#FF8A65';
+        ctx.font = `${18 * s}px Arial`;
+        ctx.fillText(`最大连击: ${maxCombo}`, W / 2, cy + 85 * s);
+    }
+
+    if (score >= highScore && score > 0) {
+        ctx.fillStyle = '#FFD54F';
+        ctx.font = `bold ${18 * s}px Arial`;
+        ctx.fillText('🎉 新纪录！', W / 2, cy + 115 * s);
+    }
+
+    // 重新开始按钮
+    const btnW = 180 * s;
+    const btnH = 52 * s;
+    const btnX = W / 2 - btnW / 2;
+    const btnY = cy + 145 * s;
+
+    const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX, btnY + btnH);
+    btnGrad.addColorStop(0, '#66BB6A');
+    btnGrad.addColorStop(1, '#43A047');
+    ctx.fillStyle = btnGrad;
+    ctx.beginPath();
+    roundRect(ctx, btnX, btnY, btnW, btnH, 26 * s);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2 * s;
+    ctx.beginPath();
+    roundRect(ctx, btnX, btnY, btnW, btnH, 26 * s);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFF';
+    ctx.font = `bold ${20 * s}px Arial`;
+    ctx.fillText('再来一局', W / 2, btnY + btnH / 2);
+}
+
+// ============ 游戏逻辑 ============
+function startGame() {
+    state = 'playing';
+    score = 0;
+    combo = 0;
+    maxCombo = 0;
+    items = [];
+    particles = [];
+    floatingTexts = [];
+    spawnTimer = 0;
+    spawnInterval = 70;
+    difficulty = 1;
+    gameTime = 0;
+    resetPanda();
+}
+
+function updateGame() {
+    gameTime++;
+    bambooSwing = Math.sin(gameTime * 0.015) * 2;
+
+    // 难度递增
+    difficulty = 1 + Math.floor(gameTime / 600) * 0.5;
+    spawnInterval = Math.max(30, 70 - difficulty * 5);
+
+    // 熊猫移动
+    const dx = panda.targetX - panda.x;
+    panda.x += dx * 0.15;
+    panda.tilt = Math.max(-1, Math.min(1, dx * 0.01));
+    panda.x = Math.max(panda.w / 2, Math.min(W - panda.w / 2, panda.x));
+
+    // 眨眼
+    panda.blinkTimer--;
+    if (panda.blinkTimer < -150 - Math.random() * 100) {
+        panda.blinkTimer = 6;
+    }
+
+    // 张嘴
+    if (panda.mouthTimer > 0) panda.mouthTimer--;
+
+    // 生成掉落物
+    spawnTimer++;
+    if (spawnTimer >= spawnInterval) {
+        spawnItem();
+        spawnTimer = 0;
+    }
+
+    // 更新掉落物
+    for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.y += item.speed;
+        item.rotation += item.rotSpeed;
+        item.wobble += item.wobbleSpeed;
+        item.x += Math.sin(item.wobble) * item.wobbleAmp;
+
+        // 碰撞检测
+        if (checkCollision(item)) {
+            if (item.type === 'bamboo') {
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                const bonus = combo > 3 ? 5 * (combo - 3) : 0;
+                score += 10 + bonus;
+                panda.mouthTimer = 15;
+                spawnParticles(item.x, item.y, '#66BB6A', 12);
+                spawnFloatingText(item.x, item.y - 20, `+${10 + bonus}`, '#66BB6A');
+            } else {
+                combo = 0;
+                score -= 20;
+                shakeTime = 12;
+                spawnParticles(item.x, item.y, '#EF5350', 15);
+                spawnFloatingText(item.x, item.y - 20, '-20', '#EF5350');
+            }
+            items.splice(i, 1);
+            continue;
+        }
+
+        // 掉出屏幕
+        if (item.y > H + 30) {
+            if (item.type === 'bamboo') {
+                combo = 0; // 漏掉竹笋重置连击
+            }
+            items.splice(i, 1);
+        }
+    }
+
+    // 检查游戏结束
+    if (score < 0) {
+        state = 'gameover';
+        if (score > highScore || score === highScore) {
+            // score is negative so we don't update high score
+        }
+        // Only update high score if it was positive at some point
+    }
+
+    // 更新粒子
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15 * scale;
+        p.life -= p.decay;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // 更新浮动文字
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.life -= 0.02;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+    }
+
+    // 屏幕震动
+    if (shakeTime > 0) shakeTime--;
+}
+
+function draw() {
+    ctx.save();
+
+    // 屏幕震动
+    if (shakeTime > 0) {
+        const sx = (Math.random() - 0.5) * 8 * scale;
+        const sy = (Math.random() - 0.5) * 8 * scale;
+        ctx.translate(sx, sy);
+    }
+
+    drawBackground();
+
+    // 绘制掉落物
+    items.forEach(item => {
+        if (item.type === 'bamboo') {
+            drawBambooShoot(item.x, item.y, item.size, item.rotation);
+        } else {
+            drawChili(item.x, item.y, item.size, item.rotation);
+        }
+    });
+
+    // 绘制粒子
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        if (p.type === 'star') {
+            drawStar(ctx, p.x, p.y, 5, p.size, p.size * 0.5);
+        } else {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    });
+
+    // 浮动文字
+    floatingTexts.forEach(ft => {
+        ctx.globalAlpha = ft.life;
+        ctx.fillStyle = ft.color;
+        ctx.font = `bold ${20 * scale}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+    });
+
+    // 熊猫
+    if (state === 'playing' || state === 'gameover') {
+        drawPanda();
+    }
+
+    ctx.restore();
+
+    // UI
+    if (state === 'playing') {
+        drawScoreBoard();
+    } else if (state === 'menu') {
+        drawPanda();
+        drawScoreBoard();
+        drawMenu();
+    } else if (state === 'gameover') {
+        drawScoreBoard();
+        drawGameOver();
+    }
+}
+
+function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+    let rot = Math.PI / 2 * 3;
+    let step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerR);
+    for (let i = 0; i < spikes; i++) {
+        ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+        rot += step;
+        ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+        rot += step;
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
+// ============ 主循环 ============
+function gameLoop() {
+    if (state === 'playing') {
+        updateGame();
+    } else if (state === 'menu') {
+        gameTime++;
+        bambooSwing = Math.sin(gameTime * 0.015) * 2;
+        resetPanda();
+        panda.blinkTimer--;
+        if (panda.blinkTimer < -150 - Math.random() * 100) panda.blinkTimer = 6;
+    }
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// ============ 触屏 & 鼠标控制 ============
+function handleInput(x) {
+    if (state === 'playing') {
+        panda.targetX = x;
+    }
+}
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+
+    if (state === 'menu') {
+        startGame();
+        handleInput(x);
+        return;
+    }
+    if (state === 'gameover') {
+        if (score > highScore && score > 0) {
+            highScore = score;
+            localStorage.setItem('panda_high', String(highScore));
+        }
+        startGame();
+        handleInput(x);
+        return;
+    }
+    handleInput(x);
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (state === 'playing') {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        handleInput(touch.clientX - rect.left);
+    }
+}, { passive: false });
+
+// 鼠标支持（PC调试用）
+let mouseDown = false;
+canvas.addEventListener('mousedown', (e) => {
+    mouseDown = true;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (state === 'menu') { startGame(); handleInput(x); return; }
+    if (state === 'gameover') {
+        if (score > highScore && score > 0) {
+            highScore = score;
+            localStorage.setItem('panda_high', String(highScore));
+        }
+        startGame(); handleInput(x); return;
+    }
+    handleInput(x);
+});
+canvas.addEventListener('mousemove', (e) => {
+    if (mouseDown && state === 'playing') {
+        const rect = canvas.getBoundingClientRect();
+        handleInput(e.clientX - rect.left);
+    }
+});
+canvas.addEventListener('mouseup', () => mouseDown = false);
+
+// ============ 启动 ============
+resetPanda();
+gameLoop();
+</script>
+</body>
+</html>
