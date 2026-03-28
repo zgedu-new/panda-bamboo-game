@@ -38,7 +38,11 @@ sleep(3000);
 
 // 点击微信顶部搜索按钮
 toastLog("正在打开搜索...");
-var searchTab = desc("搜索").findOne(5000);
+var searchTab = desc("Search").findOne(5000);
+if (!searchTab) {
+    // 备用：尝试中文
+    searchTab = desc("搜索").findOne(3000);
+}
 if (!searchTab) {
     // 尝试其他方式找到搜索
     searchTab = id("com.tencent.mm:id/icon_search").findOne(3000);
@@ -50,32 +54,25 @@ if (!searchTab) {
 searchTab.click();
 sleep(2000);
 
-// ===== 第二步：搜索公众号 =====
-toastLog("正在搜索公众号: " + accountName);
-var searchInput = className("EditText").findOne(5000);
-if (!searchInput) {
-    toastLog("未找到搜索输入框");
-    exit();
-}
-searchInput.setText(accountName);
-sleep(2000);
-
-// 点击搜索结果中的「公众号」分类
-var accountTab = text("公众号").findOne(3000);
-if (accountTab) {
-    accountTab.click();
-    sleep(2000);
-}
-
-// 点击公众号名称进入主页
-toastLog("正在进入公众号主页...");
+// ===== 第二步：在最近搜索中找到公众号 =====
+toastLog("正在最近搜索中查找: " + accountName);
+// 直接在最近搜索/最常用里找公众号名称，不手动输入
 var accountEntry = text(accountName).findOne(5000);
 if (!accountEntry) {
-    toastLog("未找到公众号: " + accountName);
+    toastLog("最近搜索中未找到: " + accountName);
     exit();
 }
 accountEntry.click();
 sleep(3000);
+
+// ===== 2.5步：进入「最近访问的公众号」列表后再点一次 =====
+// 最近搜索点到公众号后，会进入最近访问列表，需要再点一次公众号名称
+toastLog("正在进入公众号主页...");
+var accountEntry2 = text(accountName).findOne(5000);
+if (accountEntry2) {
+    accountEntry2.click();
+    sleep(3000);
+}
 
 // ===== 第三步：点开最新一篇文章 =====
 toastLog("正在打开最新文章...");
@@ -97,9 +94,16 @@ sleep(5000); // 等待文章页面加载
 
 // ===== 第四步：点击右上角分享 =====
 toastLog("正在打开分享...");
-var shareBtn = desc("更多").findOne(5000);
+var shareBtn = desc("More").findOne(5000);
 if (!shareBtn) {
-    // 备用查找方式
+    // 备用：尝试中文
+    shareBtn = desc("更多").findOne(3000);
+}
+if (!shareBtn) {
+    // 尝试descContains
+    shareBtn = descContains("More").findOne(3000);
+}
+if (!shareBtn) {
     shareBtn = descContains("更多").findOne(3000);
 }
 if (!shareBtn) {
@@ -115,7 +119,11 @@ sleep(2000);
 
 // ===== 第五步：点击「转发」 =====
 toastLog("正在进入转发...");
-var forwardBtn = text("转发").findOne(5000);
+var forwardBtn = text("Forward").findOne(5000);
+if (!forwardBtn) {
+    // 备用：尝试中文
+    forwardBtn = text("转发").findOne(3000);
+}
 if (!forwardBtn) {
     toastLog("未找到转发按钮");
     exit();
@@ -156,7 +164,11 @@ for (var i = 0; i < groups.length; i++) {
 
 // ===== 第七步：点击发送 =====
 toastLog("全部选择完毕，正在发送...");
-var sendBtn = text("发送").findOne(5000);
+var sendBtn = text("Send").findOne(5000);
+if (!sendBtn) {
+    // 备用：尝试中文
+    sendBtn = text("发送").findOne(3000);
+}
 if (!sendBtn) {
     toastLog("未找到发送按钮");
     exit();
