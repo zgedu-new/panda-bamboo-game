@@ -31,9 +31,9 @@ auto.waitFor();
 toast("开始执行，请勿操作手机...");
 sleep(1000);
 
-// ===== 第一步：打开微信搜索 =====
+// 打开主微信（用包名直接启动，跳过小米双开选择框）
 toastLog("正在打开微信...");
-launchApp("微信");
+app.launchPackage("com.tencent.mm");
 sleep(3000);
 
 // 点击微信顶部搜索按钮
