@@ -42,6 +42,240 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
+// ============ 音效系统 (Web Audio API) ============
+let audioCtx = null;
+let bgmNodes = [];
+let bgmPlaying = false;
+let soundEnabled = true;
+
+function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// 接竹笋音效 - 清脆欢快的"叮"
+function playCatchSound() {
+    if (!audioCtx || !soundEnabled) return;
+    const now = audioCtx.currentTime;
+    
+    // 主音 - 高音叮
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(880, now);
+    osc1.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+    osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+    gain1.gain.setValueAtTime(0.25, now);
+    gain1.gain.exponentialRampToValueAtTime(0.15, now + 0.1);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc1.connect(gain1).connect(audioCtx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.3);
+
+    // 和声 - 叮咚
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1320, now + 0.05);
+    osc2.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+    gain2.gain.setValueAtTime(0, now);
+    gain2.gain.linearRampToValueAtTime(0.15, now + 0.05);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc2.connect(gain2).connect(audioCtx.destination);
+    osc2.start(now + 0.05);
+    osc2.stop(now + 0.35);
+
+    // 连击额外音效
+    if (combo > 3) {
+        const osc3 = audioCtx.createOscillator();
+        const gain3 = audioCtx.createGain();
+        osc3.type = 'triangle';
+        osc3.frequency.setValueAtTime(1760, now + 0.1);
+        osc3.frequency.exponentialRampToValueAtTime(2640, now + 0.2);
+        gain3.gain.setValueAtTime(0, now);
+        gain3.gain.linearRampToValueAtTime(0.1, now + 0.1);
+        gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc3.connect(gain3).connect(audioCtx.destination);
+        osc3.start(now + 0.1);
+        osc3.stop(now + 0.4);
+    }
+}
+
+// 碰辣椒音效 - 刺耳的"滋"
+function playChiliSound() {
+    if (!audioCtx || !soundEnabled) return;
+    const now = audioCtx.currentTime;
+
+    // 噪声
+    const bufferSize = audioCtx.sampleRate * 0.3;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.2, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(3000, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(500, now + 0.3);
+    noiseFilter.Q.value = 2;
+
+    noise.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
+    noise.start(now);
+    noise.stop(now + 0.3);
+
+    // 下降音调
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.4);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+}
+
+// 游戏结束音效 - 悲伤下降
+function playGameOverSound() {
+    if (!audioCtx || !soundEnabled) return;
+    const now = audioCtx.currentTime;
+
+    const notes = [523, 494, 440, 392, 349, 330, 262];
+    const durations = [0.2, 0.2, 0.3, 0.2, 0.2, 0.3, 0.6];
+    let t = 0;
+
+    notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = i < 4 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, now + t);
+        gain.gain.setValueAtTime(0.2, now + t);
+        gain.gain.setValueAtTime(0.15, now + t + durations[i] * 0.7);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + t + durations[i]);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + t);
+        osc.stop(now + t + durations[i]);
+        t += durations[i] * 0.95;
+    });
+
+    // 最后的低沉音
+    const bassOsc = audioCtx.createOscillator();
+    const bassGain = audioCtx.createGain();
+    bassOsc.type = 'sine';
+    bassOsc.frequency.setValueAtTime(130, now + t);
+    bassOsc.frequency.exponentialRampToValueAtTime(65, now + t + 0.8);
+    bassGain.gain.setValueAtTime(0.15, now + t);
+    bassGain.gain.exponentialRampToValueAtTime(0.001, now + t + 0.8);
+    bassOsc.connect(bassGain).connect(audioCtx.destination);
+    bassOsc.start(now + t);
+    bassOsc.stop(now + t + 0.8);
+}
+
+// 开始游戏音效 - 上升欢快
+function playStartSound() {
+    if (!audioCtx || !soundEnabled) return;
+    const now = audioCtx.currentTime;
+
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.1);
+        gain.gain.setValueAtTime(0.2, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.2);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.2);
+    });
+}
+
+// 背景音乐 - 简单的循环旋律
+let bgmInterval = null;
+function startBGM() {
+    if (!audioCtx || !soundEnabled || bgmPlaying) return;
+    bgmPlaying = true;
+
+    // 中国风五声音阶旋律 C D E G A
+    const melody = [
+        523, 587, 659, 784, 880, 784, 659, 587,
+        523, 659, 784, 880, 1047, 880, 784, 659,
+        587, 659, 784, 659, 587, 523, 440, 523,
+        587, 523, 440, 523, 587, 659, 523, 0
+    ];
+
+    let noteIndex = 0;
+    const bpm = 160;
+    const noteDuration = 60 / bpm;
+
+    function playMelodyNote() {
+        if (!bgmPlaying || !audioCtx || !soundEnabled) return;
+        const now = audioCtx.currentTime;
+        const freq = melody[noteIndex % melody.length];
+
+        if (freq > 0) {
+            // 主旋律
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.setValueAtTime(0.04, now + noteDuration * 0.6);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + noteDuration * 0.9);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + noteDuration);
+
+            // 柔和的伴奏（低一个八度）
+            if (noteIndex % 2 === 0) {
+                const bass = audioCtx.createOscillator();
+                const bassGain = audioCtx.createGain();
+                bass.type = 'triangle';
+                bass.frequency.setValueAtTime(freq / 2, now);
+                bassGain.gain.setValueAtTime(0.03, now);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + noteDuration * 1.5);
+                bass.connect(bassGain).connect(audioCtx.destination);
+                bass.start(now);
+                bass.stop(now + noteDuration * 1.5);
+            }
+
+            // 每4拍加个轻敲装饰音
+            if (noteIndex % 4 === 0) {
+                const tick = audioCtx.createOscillator();
+                const tickGain = audioCtx.createGain();
+                tick.type = 'sine';
+                tick.frequency.setValueAtTime(freq * 2, now);
+                tickGain.gain.setValueAtTime(0.02, now);
+                tickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                tick.connect(tickGain).connect(audioCtx.destination);
+                tick.start(now);
+                tick.stop(now + 0.05);
+            }
+        }
+
+        noteIndex++;
+    }
+
+    bgmInterval = setInterval(playMelodyNote, noteDuration * 1000);
+    playMelodyNote();
+}
+
+function stopBGM() {
+    bgmPlaying = false;
+    if (bgmInterval) {
+        clearInterval(bgmInterval);
+        bgmInterval = null;
+    }
+}
+
 // ============ 游戏状态 ============
 let state = 'menu'; // menu, playing, gameover
 let score = 0;
@@ -559,6 +793,18 @@ function drawScoreBoard() {
         ctx.font = `bold ${14 * s}px Arial`;
         ctx.fillText(`${combo}连击!`, W / 2, boardY + boardH + 16 * s);
     }
+
+    // 静音按钮
+    const muteX = W - 40 * s;
+    const muteY = 25 * s;
+    const muteR = 18 * s;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.arc(muteX, muteY, muteR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = `${18 * s}px Arial`;
+    ctx.fillText(soundEnabled ? '🔊' : '🔇', muteX, muteY);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -571,6 +817,158 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.arcTo(x, y + h, x, y + h - r, r);
     ctx.lineTo(x, y + r);
     ctx.arcTo(x, y, x + r, y, r);
+}
+
+let showRules = false;
+let scrollY = 0;
+
+function drawRulesPanel() {
+    // 全屏遮罩
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, W, H);
+
+    const s = scale;
+    const panelW = W * 0.88;
+    const panelH = H * 0.78;
+    const panelX = (W - panelW) / 2;
+    const panelY = (H - panelH) / 2;
+
+    // 面板背景
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.beginPath();
+    roundRect(ctx, panelX, panelY, panelW, panelH, 18 * s);
+    ctx.fill();
+
+    // 面板标题栏
+    const titleH = 50 * s;
+    const titleGrad = ctx.createLinearGradient(panelX, panelY, panelX, panelY + titleH);
+    titleGrad.addColorStop(0, '#43A047');
+    titleGrad.addColorStop(1, '#2E7D32');
+    ctx.fillStyle = titleGrad;
+    ctx.beginPath();
+    roundRect(ctx, panelX, panelY, panelW, titleH, 18 * s);
+    // 底部直角
+    ctx.fillRect(panelX, panelY + titleH - 18 * s, panelW, 18 * s);
+    ctx.fill();
+
+    // 标题文字
+    ctx.fillStyle = '#FFF';
+    ctx.font = `bold ${22 * s}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('📜 游戏规则', W / 2, panelY + titleH / 2);
+
+    // 关闭按钮
+    const closeX = panelX + panelW - 30 * s;
+    const closeY = panelY + titleH / 2;
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.arc(closeX, closeY, 16 * s, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.font = `bold ${18 * s}px Arial`;
+    ctx.fillText('✕', closeX, closeY);
+
+    // 规则内容区域（裁剪）
+    const contentY = panelY + titleH + 10 * s;
+    const contentH = panelH - titleH - 60 * s;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(panelX + 5 * s, contentY, panelW - 10 * s, contentH);
+    ctx.clip();
+    ctx.translate(0, -scrollY);
+
+    let ly = contentY + 15 * s;
+    const lineH = 28 * s;
+    const cx = panelX + 22 * s;
+
+    // 标题样式函数
+    function drawRuleTitle(text, y) {
+        ctx.fillStyle = '#2E7D32';
+        ctx.font = `bold ${17 * s}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.fillText(text, cx, y);
+    }
+
+    // 正文样式函数
+    function drawRuleText(text, y, indent) {
+        ctx.fillStyle = '#333';
+        ctx.font = `${14 * s}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.fillText(text, cx + (indent || 0), y);
+    }
+
+    // 图标+文字
+    function drawRuleItem(icon, text, y) {
+        ctx.font = `${14 * s}px Arial`;
+        ctx.textAlign = 'left';
+        // icon
+        ctx.fillStyle = '#FFF';
+        ctx.beginPath();
+        ctx.arc(cx + 8 * s, y, 10 * s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.font = `${13 * s}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(icon, cx + 8 * s, y + 1);
+        // text
+        ctx.fillStyle = '#333';
+        ctx.font = `${14 * s}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.fillText(text, cx + 26 * s, y + 1);
+    }
+
+    // === 基本玩法 ===
+    drawRuleTitle('🎮 基本玩法', ly);
+    ly += lineH;
+    drawRuleItem('👆', '滑动屏幕控制熊猫左右移动', ly); ly += lineH;
+    drawRuleItem('🎋', '接住掉落的竹笋获得分数', ly); ly += lineH;
+    drawRuleItem('🌶️', '躲避辣椒，碰到会扣分', ly); ly += lineH;
+    ly += 8 * s;
+
+    // === 计分规则 ===
+    drawRuleTitle('💰 计分规则', ly);
+    ly += lineH;
+    drawRuleItem('🎋', '接住竹笋：+10 分', ly); ly += lineH;
+    drawRuleItem('🔥', '连续接3次以上：每次额外 +5×连击数', ly); ly += lineH;
+    drawRuleItem('🌶️', '碰到辣椒：-20 分', ly); ly += lineH;
+    drawRuleItem('💔', '漏掉竹笋：连击清零', ly); ly += lineH;
+    drawRuleItem('💀', '分数低于0：游戏结束', ly); ly += lineH;
+    ly += 8 * s;
+
+    // === 难度递增 ===
+    drawRuleTitle('📈 难度递增', ly);
+    ly += lineH;
+    drawRuleText('• 每隔一段时间难度自动提升', ly, 6 * s); ly += lineH;
+    drawRuleText('• 掉落速度会越来越快', ly, 6 * s); ly += lineH;
+    drawRuleText('• 辣椒出现概率逐渐增加', ly, 6 * s); ly += lineH;
+    drawRuleText('• 掉落间隔越来越短', ly, 6 * s); ly += lineH;
+    ly += 8 * s;
+
+    // === 操作技巧 ===
+    drawRuleTitle('💡 操作技巧', ly);
+    ly += lineH;
+    drawRuleText('• 竹笋会左右摇摆，注意预判落点', ly, 6 * s); ly += lineH;
+    drawRuleText('• 不要为了接竹笋而碰到辣椒', ly, 6 * s); ly += lineH;
+    drawRuleText('• 连击加成很可观，尽量保持连击', ly, 6 * s); ly += lineH;
+    drawRuleText('• 难度高时辣椒增多，宁可不接也别冒险', ly, 6 * s); ly += lineH;
+    ly += 8 * s;
+
+    // === 音效控制 ===
+    drawRuleTitle('🔊 音效控制', ly);
+    ly += lineH;
+    drawRuleText('• 游戏自带背景音乐和音效', ly, 6 * s); ly += lineH;
+    drawRuleText('• 右上角 🔊 按钮可开关音效', ly, 6 * s); ly += lineH;
+
+    ly += 20 * s;
+
+    ctx.restore();
+
+    // 底部提示
+    ctx.fillStyle = '#999';
+    ctx.font = `${12 * s}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('↕ 上下滑动查看更多', W / 2, panelY + panelH - 22 * s);
 }
 
 function drawMenu() {
@@ -632,6 +1030,21 @@ function drawMenu() {
     ctx.fillStyle = '#FFF';
     ctx.font = `bold ${22 * s}px Arial`;
     ctx.fillText('开始游戏', W / 2, btnY + btnH / 2);
+
+    // 游戏规则按钮
+    const rulesY = btnY + btnH + 18 * s;
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath();
+    roundRect(ctx, btnX, rulesY, btnW, 42 * s, 21 * s);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5 * s;
+    ctx.beginPath();
+    roundRect(ctx, btnX, rulesY, btnW, 42 * s, 21 * s);
+    ctx.stroke();
+    ctx.fillStyle = '#E0E0E0';
+    ctx.font = `${16 * s}px Arial`;
+    ctx.fillText('📜 游戏规则', W / 2, rulesY + 21 * s);
 }
 
 function drawGameOver() {
@@ -699,6 +1112,7 @@ function drawGameOver() {
 
 // ============ 游戏逻辑 ============
 function startGame() {
+    initAudio();
     state = 'playing';
     score = 0;
     combo = 0;
@@ -711,6 +1125,8 @@ function startGame() {
     difficulty = 1;
     gameTime = 0;
     resetPanda();
+    playStartSound();
+    startBGM();
 }
 
 function updateGame() {
@@ -761,12 +1177,14 @@ function updateGame() {
                 panda.mouthTimer = 15;
                 spawnParticles(item.x, item.y, '#66BB6A', 12);
                 spawnFloatingText(item.x, item.y - 20, `+${10 + bonus}`, '#66BB6A');
+                playCatchSound();
             } else {
                 combo = 0;
                 score -= 20;
                 shakeTime = 12;
                 spawnParticles(item.x, item.y, '#EF5350', 15);
                 spawnFloatingText(item.x, item.y - 20, '-20', '#EF5350');
+                playChiliSound();
             }
             items.splice(i, 1);
             continue;
@@ -784,6 +1202,8 @@ function updateGame() {
     // 检查游戏结束
     if (score < 0) {
         state = 'gameover';
+        stopBGM();
+        playGameOverSound();
         if (score > highScore || score === highScore) {
             // score is negative so we don't update high score
         }
@@ -879,6 +1299,8 @@ function draw() {
         drawScoreBoard();
         drawGameOver();
     }
+    // 规则面板（覆盖在最上层）
+    if (showRules) drawRulesPanel();
 }
 
 function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
@@ -923,8 +1345,53 @@ canvas.addEventListener('touchstart', (e) => {
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    // 规则面板交互
+    if (showRules) {
+        const s = scale;
+        const panelW = W * 0.88;
+        const panelH = H * 0.78;
+        const panelX = (W - panelW) / 2;
+        const panelY = (H - panelH) / 2;
+        // 关闭按钮
+        const closeX = panelX + panelW - 30 * s;
+        const closeY = panelY + 25 * s;
+        if (Math.sqrt((x - closeX) ** 2 + (y - closeY) ** 2) < 22 * s) {
+            showRules = false;
+            scrollY = 0;
+            return;
+        }
+        return;
+    }
+
+    // 静音按钮检测
+    const muteX = W - 40 * scale;
+    const muteY = 25 * scale;
+    const muteR = 18 * scale;
+    if (Math.sqrt((x - muteX) ** 2 + (y - muteY) ** 2) < muteR) {
+        initAudio();
+        soundEnabled = !soundEnabled;
+        if (!soundEnabled) stopBGM();
+        else if (state === 'playing') startBGM();
+        return;
+    }
 
     if (state === 'menu') {
+        const s = scale;
+        const btnW = 180 * s;
+        const btnH = 52 * s;
+        const btnX = W / 2 - btnW / 2;
+        const cy = H * 0.38;
+        const btnY = cy + 110 * s;
+        const rulesY = btnY + btnH + 18 * s;
+
+        // 游戏规则按钮
+        if (x > btnX && x < btnX + btnW && y > rulesY && y < rulesY + 42 * s) {
+            showRules = true;
+            scrollY = 0;
+            return;
+        }
         startGame();
         handleInput(x);
         return;
@@ -941,8 +1408,20 @@ canvas.addEventListener('touchstart', (e) => {
     handleInput(x);
 }, { passive: false });
 
+// 规则面板滚动
+let lastTouchY = 0;
+canvas.addEventListener('touchstart', (e) => {
+    lastTouchY = e.touches[0].clientY;
+}, { passive: true });
+
 canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
+    if (showRules) {
+        const dy = lastTouchY - e.touches[0].clientY;
+        lastTouchY = e.touches[0].clientY;
+        scrollY = Math.max(0, Math.min(300 * scale, scrollY + dy));
+        return;
+    }
     if (state === 'playing') {
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
@@ -956,7 +1435,53 @@ canvas.addEventListener('mousedown', (e) => {
     mouseDown = true;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    if (state === 'menu') { startGame(); handleInput(x); return; }
+    const y = e.clientY - rect.top;
+
+    // 规则面板交互
+    if (showRules) {
+        const s = scale;
+        const panelW = W * 0.88;
+        const panelH = H * 0.78;
+        const panelX = (W - panelW) / 2;
+        const panelY = (H - panelH) / 2;
+        const closeX = panelX + panelW - 30 * s;
+        const closeY = panelY + 25 * s;
+        if (Math.sqrt((x - closeX) ** 2 + (y - closeY) ** 2) < 22 * s) {
+            showRules = false;
+            scrollY = 0;
+        }
+        return;
+    }
+
+    // 静音按钮检测
+    const muteX = W - 40 * scale;
+    const muteY = 25 * scale;
+    const muteR = 18 * scale;
+    if (Math.sqrt((x - muteX) ** 2 + (y - muteY) ** 2) < muteR) {
+        initAudio();
+        soundEnabled = !soundEnabled;
+        if (!soundEnabled) stopBGM();
+        else if (state === 'playing') startBGM();
+        return;
+    }
+
+    if (state === 'menu') {
+        const s = scale;
+        const btnW = 180 * s;
+        const btnH = 52 * s;
+        const btnX = W / 2 - btnW / 2;
+        const cy = H * 0.38;
+        const btnY = cy + 110 * s;
+        const rulesY = btnY + btnH + 18 * s;
+
+        // 游戏规则按钮
+        if (x > btnX && x < btnX + btnW && y > rulesY && y < rulesY + 42 * s) {
+            showRules = true;
+            scrollY = 0;
+            return;
+        }
+        startGame(); handleInput(x); return;
+    }
     if (state === 'gameover') {
         if (score > highScore && score > 0) {
             highScore = score;
@@ -967,12 +1492,21 @@ canvas.addEventListener('mousedown', (e) => {
     handleInput(x);
 });
 canvas.addEventListener('mousemove', (e) => {
+    if (showRules) return;
     if (mouseDown && state === 'playing') {
         const rect = canvas.getBoundingClientRect();
         handleInput(e.clientX - rect.left);
     }
 });
 canvas.addEventListener('mouseup', () => mouseDown = false);
+
+// 鼠标滚轮滚动规则面板
+canvas.addEventListener('wheel', (e) => {
+    if (showRules) {
+        e.preventDefault();
+        scrollY = Math.max(0, Math.min(300 * scale, scrollY + e.deltaY * 0.5));
+    }
+}, { passive: false });
 
 // ============ 启动 ============
 resetPanda();
