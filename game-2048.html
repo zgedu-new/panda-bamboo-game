@@ -93,8 +93,8 @@
             position: absolute;
             top: 8px;
             left: 8px;
-            width: calc(100% - 16px);
-            height: calc(100% - 16px);
+            right: 8px;
+            bottom: 8px;
         }
 
         .tile {
@@ -206,6 +206,12 @@
             pointer-events: auto;
         }
 
+        .game-over h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
         .game-over.win h2 {
             color: #edc22e;
         }
@@ -233,9 +239,9 @@
         </div>
 
         <div class="controls">
-            <button class="btn" id="sound-btn" onclick="toggleSound()">
-                <span id="sound-icon">🔊</span>
-                <span id="sound-text">音乐</span>
+            <button class="btn muted" id="sound-btn" onclick="toggleSound()">
+                <span id="sound-icon">🔇</span>
+                <span id="sound-text">静音</span>
             </button>
             <button class="btn" onclick="game.restart()">新游戏</button>
         </div>
@@ -260,7 +266,7 @@
         let bgMusicInterval = null;
         let bgMusicOscillators = [];
 
-        // 切换声音
+        // 切换声音开关
         function toggleSound() {
             if (!audioCtx) {
                 audioCtx = new AudioContext();
@@ -272,8 +278,8 @@
             const text = document.getElementById('sound-text');
             
             if (soundEnabled) {
-                btn.classList.add('active');
                 btn.classList.remove('muted');
+                btn.classList.add('active');
                 icon.textContent = '🔊';
                 text.textContent = '音乐';
                 startBgMusic();
@@ -286,7 +292,7 @@
             }
         }
 
-        // 背景音乐 - 简单的旋律循环
+        // 背景音乐 - 简单的旋律
         const melody = [
             392.00, 440.00, 493.88, 523.25,  // G A B C
             587.33, 523.25, 493.88, 440.00,  // D C B A
@@ -294,25 +300,21 @@
             261.63, 293.66, 329.63, 392.00,  // C D E G
         ];
         let melodyIndex = 0;
-        let bassOscillator = null;
-        let melodyOscillator = null;
 
         function playBgNote() {
             if (!soundEnabled || !audioCtx) return;
             
-            // 停止之前的音符
             bgMusicOscillators.forEach(osc => {
                 try { osc.stop(); } catch(e) {}
             });
             bgMusicOscillators = [];
             
-            // 旋律音符
             const melodyFreq = melody[melodyIndex];
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'triangle';
             osc1.frequency.setValueAtTime(melodyFreq, audioCtx.currentTime);
-            gain1.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain1.gain.setValueAtTime(0.06, audioCtx.currentTime);
             gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
             osc1.connect(gain1);
             gain1.connect(audioCtx.destination);
@@ -320,14 +322,13 @@
             osc1.stop(audioCtx.currentTime + 0.4);
             bgMusicOscillators.push(osc1);
             
-            // 低音伴奏 (每4拍)
             if (melodyIndex % 4 === 0) {
                 const bassFreq = melody[melodyIndex] / 2;
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = 'sine';
                 osc2.frequency.setValueAtTime(bassFreq, audioCtx.currentTime);
-                gain2.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain2.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
                 osc2.connect(gain2);
                 gain2.connect(audioCtx.destination);
@@ -343,9 +344,8 @@
             if (bgMusicPlaying) return;
             bgMusicPlaying = true;
             melodyIndex = 0;
-            // 每 300ms 播放一个音符
-            bgMusicInterval = setInterval(playBgNote, 300);
-            playBgNote(); // 立即播放第一个
+            bgMusicInterval = setInterval(playBgNote, 320);
+            playBgNote();
         }
 
         function stopBgMusic() {
@@ -360,7 +360,13 @@
             bgMusicOscillators = [];
         }
 
-        // 音效
+        // 初始化音频
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
         function playMergeSound(value) {
             if (!soundEnabled || !audioCtx) return;
             
@@ -375,7 +381,7 @@
             oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
             
             oscillator.start(audioCtx.currentTime);
@@ -394,7 +400,7 @@
             oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
             
             oscillator.start(audioCtx.currentTime);
@@ -417,34 +423,11 @@
                 oscillator.type = 'sine';
                 
                 gainNode.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.1);
-                gainNode.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + i * 0.1 + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + i * 0.1 + 0.05);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.3);
                 
                 oscillator.start(audioCtx.currentTime + i * 0.1);
                 oscillator.stop(audioCtx.currentTime + i * 0.1 + 0.3);
-            });
-        }
-
-        function playGameOverSound() {
-            if (!soundEnabled || !audioCtx) return;
-            
-            const notes = [392, 349.23, 293.66, 261.63]; // G F E D 下降
-            
-            notes.forEach((freq, i) => {
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.15);
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.15);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.15 + 0.3);
-                
-                oscillator.start(audioCtx.currentTime + i * 0.15);
-                oscillator.stop(audioCtx.currentTime + i * 0.15 + 0.3);
             });
         }
 
@@ -501,7 +484,7 @@
                 const gridEl = document.getElementById('grid');
                 const width = gridEl.offsetWidth;
                 const gap = 8;
-                return (width - 16 - gap * 3) / 4;
+                return (width - gap * 3) / 4;
             }
 
             getCellPosition(row, col) {
@@ -558,11 +541,16 @@
             }
 
             setupControls() {
+                // 初始化音频（需要在用户交互后才能播放）
+                document.addEventListener('click', initAudio, { once: true });
+                document.addEventListener('touchstart', initAudio, { once: true });
+
                 // 键盘控制
                 document.addEventListener('keydown', (e) => {
                     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                         e.preventDefault();
                         if (!this.gameOver) {
+                            initAudio();
                             this.move(e.key.replace('Arrow', '').toLowerCase());
                         }
                     }
@@ -576,25 +564,29 @@
                 }, { passive: true });
 
                 document.addEventListener('touchend', (e) => {
-                    if (this.gameOver) return;
-                    const touchEndX = e.changedTouches[0].clientX;
-                    const touchEndY = e.changedTouches[0].clientY;
-                    const dx = touchEndX - touchStartX;
-                    const dy = touchEndY - touchStartY;
+                    if (!touchStartX || !touchStartY) return;
+
+                    initAudio();
+                    const diffX = e.changedTouches[0].clientX - touchStartX;
+                    const diffY = e.changedTouches[0].clientY - touchStartY;
                     const minSwipe = 30;
 
-                    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipe) {
-                        this.move(dx > 0 ? 'right' : 'left');
-                    } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > minSwipe) {
-                        this.move(dy > 0 ? 'down' : 'up');
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        if (Math.abs(diffX) > minSwipe) {
+                            this.move(diffX > 0 ? 'right' : 'left');
+                        }
+                    } else {
+                        if (Math.abs(diffY) > minSwipe) {
+                            this.move(diffY > 0 ? 'down' : 'up');
+                        }
                     }
+
+                    touchStartX = null;
+                    touchStartY = null;
                 }, { passive: true });
             }
 
             move(direction) {
-                let moved = false;
-                const mergedPositions = [];
-
                 const vectors = {
                     up: { r: -1, c: 0 },
                     down: { r: 1, c: 0 },
@@ -602,142 +594,142 @@
                     right: { r: 0, c: 1 }
                 };
 
-                const v = vectors[direction];
-                const traversals = this.buildTraversals(v);
+                const vector = vectors[direction];
+                let moved = false;
+                const mergedPositions = new Set();
+                const mergedThisTurn = [];
 
-                // 清除合并标记
-                const merged = Array(this.size).fill(null).map(() => Array(this.size).fill(false));
+                const traversals = this.buildTraversals(vector);
 
-                traversals.rows.forEach(r => {
-                    traversals.cols.forEach(c => {
-                        const value = this.grid[r][c];
-                        if (value === 0) return;
+                traversals.r.forEach(r => {
+                    traversals.c.forEach(c => {
+                        if (this.grid[r][c] !== 0) {
+                            const { farthest, next } = this.findFarthestPosition(r, c, vector);
 
-                        let { newR, newC, merge } = this.findFarthestPosition(r, c, v, merged);
+                            if (next && this.grid[next.r][next.c] === this.grid[r][c] && !mergedPositions.has(`${next.r},${next.c}`)) {
+                                const value = this.grid[r][c] * 2;
+                                this.grid[r][c] = 0;
+                                this.grid[next.r][next.c] = value;
+                                this.score += value;
+                                mergedPositions.add(`${next.r},${next.c}`);
+                                mergedThisTurn.push({ r: next.r, c: next.c, value });
+                                moved = true;
 
-                        if (newR !== r || newC !== c) {
-                            moved = true;
-                            this.grid[r][c] = 0;
-
-                            if (merge) {
-                                const newValue = value * 2;
-                                this.grid[newR][newC] = newValue;
-                                merged[newR][newC] = true;
-                                this.score += newValue;
-                                this.updateScore();
-                                mergedPositions.push({ r: newR, c: newC });
-                                playMergeSound(newValue);
-
-                                if (newValue === 2048 && !this.won) {
+                                if (value === 2048) {
                                     this.won = true;
-                                    setTimeout(() => {
-                                        document.getElementById('game-over-text').textContent = '🎉 恭喜通关！';
-                                        document.getElementById('game-over').classList.add('show', 'win');
-                                        playWinSound();
-                                    }, 200);
                                 }
-                            } else {
-                                this.grid[newR][newC] = value;
-                                playMoveSound();
-                            }
-
-                            // 移动 tile 元素
-                            const tileData = this.tiles.get(`${r},${c}`);
-                            if (tileData) {
-                                this.tiles.delete(`${r},${c}`);
-                                const pos = this.getCellPosition(newR, newC);
-                                const tile = tileData.element;
-                                tile.style.left = pos.left + 'px';
-                                tile.style.top = pos.top + 'px';
-                                this.tiles.set(`${newR},${newC}`, { id: tileData.id, value: merge ? newValue : value, element: tile });
+                            } else if (farthest.r !== r || farthest.c !== c) {
+                                this.grid[farthest.r][farthest.c] = this.grid[r][c];
+                                this.grid[r][c] = 0;
+                                moved = true;
                             }
                         }
                     });
                 });
 
                 if (moved) {
-                    // 动画结束后添加合并效果
-                    setTimeout(() => {
-                        mergedPositions.forEach(pos => {
-                            const key = `${pos.r},${pos.c}`;
-                            const tileData = this.tiles.get(key);
-                            if (tileData) {
-                                tileData.element.classList.add('tile-merged');
-                                setTimeout(() => tileData.element.classList.remove('tile-merged'), 150);
+                    this.updateScore();
+                    this.animateMove(mergedThisTurn);
+                    this.addRandomTile();
+                    this.render();
+
+                    if (this.won) {
+                        playWinSound();
+                        document.getElementById('game-over-text').textContent = '🎉 你赢了！';
+                        document.getElementById('game-over').classList.add('show', 'win');
+                    } else if (!this.canMove()) {
+                        document.getElementById('game-over-text').textContent = '游戏结束';
+                        document.getElementById('game-over').classList.add('show');
+                    }
+                }
+            }
+
+            animateMove(mergedPositions) {
+                const container = document.getElementById('tiles-container');
+                container.innerHTML = '';
+
+                // 播放合并音效
+                mergedPositions.forEach(pos => {
+                    playMergeSound(pos.value);
+                });
+
+                if (mergedPositions.length === 0) {
+                    playMoveSound();
+                }
+
+                // 重新渲染所有 tile
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c] !== 0) {
+                            const value = this.grid[r][c];
+                            const isMerged = mergedPositions.some(p => p.r === r && p.c === c);
+                            const tile = this.createTileElement(r, c, value, false);
+                            if (isMerged) {
+                                tile.classList.add('tile-merged');
                             }
-                        });
-                    }, 120);
-
-                    setTimeout(() => {
-                        this.addRandomTile();
-                        if (this.isGameOver()) {
-                            this.gameOver = true;
-                            setTimeout(() => {
-                                document.getElementById('game-over-text').textContent = '游戏结束';
-                                document.getElementById('game-over').classList.add('show');
-                                playGameOverSound();
-                            }, 200);
+                            container.appendChild(tile);
                         }
-                    }, 130);
+                    }
                 }
             }
 
-            buildTraversals(v) {
-                const rows = [];
-                const cols = [];
+            render() {
+                // render 只在动画完成后更新位置
+                const container = document.getElementById('tiles-container');
+                const existingTiles = container.querySelectorAll('.tile');
+
+                existingTiles.forEach(tile => {
+                    const r = parseInt(tile.dataset.r);
+                    const c = parseInt(tile.dataset.c);
+                    const pos = this.getCellPosition(r, c);
+                    tile.style.left = pos.left + 'px';
+                    tile.style.top = pos.top + 'px';
+                });
+            }
+
+            buildTraversals(vector) {
+                const traversals = { r: [], c: [] };
                 for (let i = 0; i < this.size; i++) {
-                    rows.push(i);
-                    cols.push(i);
+                    traversals.r.push(i);
+                    traversals.c.push(i);
                 }
-                if (v.r === 1) rows.reverse();
-                if (v.c === 1) cols.reverse();
-                return { rows, cols };
+                if (vector.r === 1) traversals.r.reverse();
+                if (vector.c === 1) traversals.c.reverse();
+                return traversals;
             }
 
-            findFarthestPosition(row, col, v, merged) {
-                let newR = row;
-                let newC = col;
-                let prevR = row;
-                let prevC = col;
-
+            findFarthestPosition(r, c, vector) {
+                let previous;
                 do {
-                    prevR = newR;
-                    prevC = newC;
-                    newR += v.r;
-                    newC += v.c;
-                } while (this.withinBounds(newR, newC) && this.grid[newR][newC] === 0);
+                    previous = { r, c };
+                    r += vector.r;
+                    c += vector.c;
+                } while (this.withinBounds(r, c) && this.grid[r][c] === 0);
 
-                if (this.withinBounds(newR, newC) && 
-                    this.grid[newR][newC] === this.grid[row][col] && 
-                    !merged[newR][newC]) {
-                    return { newR, newC, merge: true };
-                }
-
-                return { newR: prevR, newC: prevC, merge: false };
+                const next = this.withinBounds(r, c) ? { r, c } : null;
+                return { farthest: previous, next };
             }
 
             withinBounds(r, c) {
                 return r >= 0 && r < this.size && c >= 0 && c < this.size;
             }
 
-            isGameOver() {
-                // 检查是否有空格
+            canMove() {
                 for (let r = 0; r < this.size; r++) {
                     for (let c = 0; c < this.size; c++) {
-                        if (this.grid[r][c] === 0) return false;
+                        if (this.grid[r][c] === 0) return true;
                     }
                 }
-
-                // 检查是否还能合并
                 for (let r = 0; r < this.size; r++) {
                     for (let c = 0; c < this.size; c++) {
                         const value = this.grid[r][c];
-                        if (c < this.size - 1 && this.grid[r][c + 1] === value) return false;
-                        if (r < this.size - 1 && this.grid[r + 1][c] === value) return false;
+                        if ((r < this.size - 1 && this.grid[r + 1][c] === value) ||
+                            (c < this.size - 1 && this.grid[r][c + 1] === value)) {
+                            return true;
+                        }
                     }
                 }
-
-                return true;
+                return false;
             }
 
             updateScore() {
@@ -754,11 +746,7 @@
             }
         }
 
-        // 初始化游戏
         const game = new Game2048();
-
-        // 初始化按钮状态
-        document.getElementById('sound-btn').classList.add('muted');
     </script>
 </body>
 </html>
