@@ -91,10 +91,10 @@
 
         .tiles-container {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .tile {
@@ -368,7 +368,9 @@
                 const gridEl = document.getElementById('grid');
                 const width = gridEl.offsetWidth;
                 const gap = 8;
-                return (width - gap * 3) / 4;
+                // grid 有 padding: 8px，所以实际格子区域是 width - 2*padding = width - 16
+                // 每个格子 = (width - 16 - gap * 3) / 4
+                return (width - 16 - gap * 3) / 4;
             }
 
             getCellPosition(row, col) {
