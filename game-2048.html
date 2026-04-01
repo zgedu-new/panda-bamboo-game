@@ -484,7 +484,10 @@
                 const gridEl = document.getElementById('grid');
                 const width = gridEl.offsetWidth;
                 const gap = 8;
-                return (width - gap * 3) / 4;
+                const padding = 8;
+                // grid 有 padding: 8px，所以实际格子区域是 width - 2*padding
+                // 每个格子 = (width - 2*padding - gap * 3) / 4
+                return (width - padding * 2 - gap * 3) / 4;
             }
 
             getCellPosition(row, col) {
