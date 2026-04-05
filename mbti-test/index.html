@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MBTI 人格测试 - 探索真实的自己</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
@@ -128,6 +129,12 @@
   .share-text:hover{border-color:var(--primary)}
   .share-text.copied::after{content:'✓ 已复制';position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--primary);color:#fff;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600}
 
+  /* 结果图片弹窗（微信长按保存） */
+  .save-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;animation:fadeIn .3s ease}
+  .save-overlay img{max-width:100%;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .save-overlay .save-tip{color:var(--text2);font-size:.9rem;margin-top:16px;text-align:center}
+  .save-overlay .save-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
   /* 隐藏状态 */
   .hidden{display:none!important}
 
@@ -194,7 +201,7 @@
       <div class="dimension-badge" id="q-dimension">EI 维度</div>
       <div class="question-text" id="q-text">加载中...</div>
       <div class="slider-container">
-        <div style="text-align:center"><span class="slider-hint">👇 上下滑动圆点，选择更符合你的描述</span></div>
+        <div style="text-align:center"><span class="slider-hint">👈👉 左右滑动圆点，选择更符合你的描述</span></div>
         <div class="slider-labels">
           <span id="q-left" class="active">左侧特质</span>
           <span id="q-right">右侧特质</span>
@@ -510,7 +517,7 @@ async function saveAsImage() {
     });
     
     // 二维码直接使用内嵌的 base64（无需 fetch，彻底避免跨域问题）
-
+    
     // 创建公众号引导区域
     const footer = document.createElement('div');
     footer.style.cssText = 'text-align:center;margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);';
@@ -545,12 +552,33 @@ async function saveAsImage() {
     // 移除临时元素
     document.body.removeChild(captureDiv);
     
-    const link = document.createElement('a');
-    link.download = 'MBTI-' + document.querySelector('.result-type').textContent + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    const dataURL = canvas.toDataURL('image/png');
     
-    btn.innerHTML = '✅ 已保存';
+    // 检测是否在微信内置浏览器中
+    const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+    
+    if (isWechat) {
+      // 微信环境：弹出图片，用户长按保存
+      const overlay = document.createElement('div');
+      overlay.className = 'save-overlay';
+      overlay.innerHTML = `
+        <button class="save-close" onclick="this.parentElement.remove()">✕</button>
+        <img src="${dataURL}">
+        <div class="save-tip">👆 长按图片即可保存到相册</div>
+      `;
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+      document.body.appendChild(overlay);
+    } else {
+      // 普通浏览器：直接下载
+      const link = document.createElement('a');
+      link.download = 'MBTI-' + document.querySelector('.result-type').textContent + '.png';
+      link.href = dataURL;
+      link.click();
+    }
+    
+    btn.innerHTML = isWechat ? '✅ 图片已生成' : '✅ 已保存';
     setTimeout(() => { btn.innerHTML = origText; }, 2000);
   } catch (err) {
     btn.innerHTML = origText;
@@ -566,5 +594,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateSliderVisual(3);
 });
 </script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "dd926aac36e24df8b80eebc1769901e2"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
