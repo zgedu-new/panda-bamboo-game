@@ -1228,8 +1228,8 @@ async function saveAsImage() {
 function drawResultCard(r) {
   return new Promise((resolve, reject) => {
     const W = 800;
-    // 动态计算高度：头部60 + 头像140 + 类型20 + 名称50 + 座右铭40 + 次级36 + 匹配度120 + 维度标题30 + 维度(15*35) + 尾部40 + padding
-    const H = 950;
+    // 动态计算高度：头部60 + 头像140 + 类型20 + 名称50 + 座右铭40 + 次级36 + 匹配度120 + 维度标题30 + 维度(15*35) + 尾部40 + 二维码区170 + padding
+    const H = 1120;
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
     const ctx = c.getContext('2d');
@@ -1259,12 +1259,10 @@ function drawResultCard(r) {
     const svgUrl = URL.createObjectURL(svgBlob);
 
     const avatarImg = new Image();
-    avatarImg.onload = () => {
-      ctx.save();
-      ctx.beginPath(); ctx.arc(W/2, y + 55, 48, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(avatarImg, W/2 - 48, y + 7, 96, 96);
-      ctx.restore();
-      URL.revokeObjectURL(svgUrl);
+    const qrImg = new Image();
+    let avatarReady = false, qrReady = false;
+    const checkAllDone = () => {
+      if (!avatarReady || !qrReady) return;
 
       y += 120;
 
@@ -1330,14 +1328,46 @@ function drawResultCard(r) {
         y += Math.ceil(r.dims.length / 2) * 42 + 20;
       }
 
-      // === 底部提示 ===
-      ctx.fillStyle = '#333'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, H - 16);
+      // === 分隔线 ===
+      ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W - 60, y); ctx.stroke();
+      y += 18;
+
+      // === 二维码引流区域 ===
+      // 二维码白底圆角背景
+      const qrSize = 130;
+      const qrX = W/2 - qrSize/2;
+      roundRect(ctx, qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12); 
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+
+      // 绘制二维码
+      ctx.drawImage(qrImg, qrX, y, qrSize, qrSize);
+      y += qrSize + 12;
+
+      // 引流文字
+      ctx.fillStyle = '#667eea'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('👆 扫码测测你的人格类型', W/2, y);
+      ctx.fillStyle = '#555'; ctx.font = '10px sans-serif';
+      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, y + 18);
 
       resolve(c.toDataURL('image/png'));
     };
+
+    avatarImg.onload = () => {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W/2, y + 55, 48, 0, Math.PI*2); ctx.clip();
+      ctx.drawImage(avatarImg, W/2 - 48, y + 7, 96, 96);
+      ctx.restore();
+      URL.revokeObjectURL(svgUrl);
+      avatarReady = true;
+      checkAllDone();
+    };
     avatarImg.onerror = () => reject(new Error('头像加载失败'));
     avatarImg.src = svgUrl;
+
+    qrImg.onload = () => { qrReady = true; checkAllDone(); };
+    qrImg.onerror = () => { qrReady = true; checkAllDone(); }; // 二维码加载失败不阻断
+    qrImg.src = 'qrcode.jpg';
   });
 }
 
