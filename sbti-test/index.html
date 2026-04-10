@@ -308,6 +308,30 @@
     }
     .close-save-btn:hover { border-color: #666; color: #aaa; }
 
+    /* 二维码区域（截图时显示）*/
+    .result-qrcode {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background: #13132a;
+      border: 1px solid #1e1e3f;
+      border-radius: 16px;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: left;
+    }
+    .result-qrcode img {
+      width: 80px; height: 80px;
+      border-radius: 8px; flex-shrink: 0;
+    }
+    .result-qrcode .qr-title {
+      font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;
+    }
+    .result-qrcode .qr-sub {
+      font-size: 12px; color: #667eea; line-height: 1.6;
+    }
+
     .retest-link {
       display: inline-block; margin-top: 8px;
       color: #333; font-size: 12px; cursor: pointer;
@@ -316,8 +340,8 @@
     .retest-link:hover { color: #555; }
 
     .footer {
-      text-align: center; font-size: 11px; color: #2a2a3a;
-      margin-top: 24px; padding: 0 20px;
+      text-align: center; font-size: 12px; color: #777;
+      margin-top: 24px; padding: 0 20px; letter-spacing: 1px;
     }
 
     .fade-in { animation: fadeIn 0.5s ease; }
@@ -377,27 +401,31 @@
     <div class="result-desc" id="rDesc"></div>
     <div class="dimensions-title">十五维度评分</div>
     <div class="dimensions-grid" id="dimensionsGrid"></div>
-    <div class="share-btns">
-      <button class="share-btn primary" onclick="copyResult()">📋 复制结果</button>
-      <button class="share-btn save-img" onclick="saveAsImage()">📸 保存图片</button>
-      <button class="share-btn secondary" onclick="retest()">🔄 再测一次</button>
+    <!-- 二维码区（截图时显示）-->
+    <div class="result-qrcode" id="resultQrcode">
+      <img src="qrcode.jpg" alt="微信二维码" crossorigin="anonymous" />
+      <div>
+        <div class="qr-title">扫码关注公众号,回复SBTI</div>
+        <div class="qr-sub">测测你的朋友是什么人格？<br>转发给TA，看看结果吧 👀</div>
+      </div>
     </div>
-    <div class="retest-link" onclick="retest()">重新测试</div>
-    <div class="footer">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
+    <!-- 按钮区（截图时隐藏）-->
+    <div id="shareBtnsWrap">
+      <div class="share-btns">
+        <button class="share-btn save-img" onclick="saveAsImage()">📸 保存图片</button>
+        <button class="share-btn secondary" onclick="retest()">🔄 再测一次</button>
+      </div>
+    </div>
+    <div class="footer" id="resultFooter">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
   </div>
 
   <!-- 保存图片弹层 -->
-  <div class="save-overlay" id="saveOverlay">
-    <div class="save-card" id="saveCard">
-      <div class="save-card-header">SBTI 人格测试结果</div>
-      <div class="save-card-body" id="saveCardBody"></div>
-      <div class="save-card-footer">长按图片保存 · 分享到朋友圈</div>
-    </div>
-    <div class="save-tip" id="saveTip">📸 长按上方卡片保存图片<br>或点击下方按钮下载</div>
+  <div class="save-overlay" id="saveOverlay"> <div class="save-card" id="saveCard"> <div class="save-card-header">SBTI 人格测试结果</div> <div class="save-card-body" id="saveCardBody"></div> <div class="save-card-footer">长按图片保存 · 分享到朋友圈</div> </div> <div class="save-tip" id="saveTip">📸 长按上方卡片保存图片<br>或点击下方按钮下载</div>
     <button class="close-save-btn" onclick="closeSaveOverlay()">关闭</button>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 // ========================================================
 // SVG 头像数据 (27种人格)
@@ -1025,7 +1053,12 @@ function showQuestion() {
 
   const optsEl = document.getElementById('options');
   const letters = ['A', 'B', 'C', 'D'];
-  const shuffledOptions = shuffle(q.options.map((o, i) => ({ ...o, letter: letters[i] })));
+  const shuffledOptions = shuffle(q.options.slice()); // Copy and shuffle
+
+  // Assign letters A, B, C, D AFTER shuffling, so the first displayed option is always A
+  shuffledOptions.forEach((opt, idx) => {
+    opt.letter = letters[idx];
+  });
 
   optsEl.innerHTML = '';
   shuffledOptions.forEach(opt => {
@@ -1149,11 +1182,12 @@ function showResult() {
     typeLabel: topId,
     name: topType.name + ' ' + topType.icon,
     motto: topType.motto,
+    desc: topType.desc,
     matchPct: matchPct,
     dims: dimsArray,
     subTypes: [
-      { name: secondType.name },
-      { name: thirdType.name }
+      { label: '次级：', name: secondType.name, icon: AVATARS[secondId] },
+      { label: '潜在：', name: thirdType.name, icon: AVATARS[thirdId] }
     ]
   };
 }
@@ -1204,22 +1238,119 @@ function isWeChat() {
 }
 
 async function saveAsImage() {
-  if (!currentResultData) return;
   const btn = document.querySelector('.share-btn.save-img');
-  btn.textContent = '\u23F3 \u751F\u6210\u4E2D...';
+  btn.textContent = '⏳ 生成中...';
   btn.style.pointerEvents = 'none';
+
+  if (!currentResultData) {
+    btn.textContent = '📸 保存图片';
+    btn.style.pointerEvents = '';
+    return;
+  }
+
+  const r = currentResultData;
+  // 取所有15个维度
+  const dims = r.dims || [];
+
+  // ====== 在屏幕外创建专用导出卡片 ======
+  const card = document.createElement('div');
+  card.style.cssText = [
+    'position:fixed', 'left:-9999px', 'top:0',
+    'width:375px',
+    'background:linear-gradient(160deg,#10102a 0%,#1a0a30 50%,#0a0f20 100%)',
+    'padding:28px 22px 24px',
+    'font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',
+    'color:#fff', 'text-align:center', 'box-sizing:border-box'
+  ].join(';');
+
+  const dimsHtml = dims.map(d => `
+    <div style="margin-bottom:2px;">
+      <div style="font-size:11px;color:#aaa;display:flex;justify-content:space-between;margin-bottom:3px;">
+        <span>${d.name}</span>
+        <span style="color:#a78bfa;font-weight:700;">${d.val}%</span>
+      </div>
+      <div style="height:4px;background:#1e1a3a;border-radius:2px;overflow:hidden;">
+        <div style="height:100%;width:${d.val}%;background:linear-gradient(90deg,#667eea,#a78bfa);border-radius:2px;"></div>
+      </div>
+    </div>`).join('');
+
+  const plainDesc = (r.desc || '').replace(/<[^>]+>/g, '');
+  const subNames = (r.subTypes || []).map(s => s.name).join(' · ');
+
+  card.innerHTML = `
+    <div style="font-size:11px;color:#a78bfa;letter-spacing:3px;margin-bottom:18px;">SBTI 人格测试结果</div>
+
+    <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;margin:0 auto 14px;border:2px solid #667eea;background:#13132a;display:flex;align-items:center;justify-content:center;">
+      ${r.avatar || `<span style="font-size:36px;">${(r.name||'').slice(-1)}</span>`}
+    </div>
+
+
+
+    <div style="font-size:12px;color:#888;letter-spacing:3px;margin-bottom:4px;">${r.typeLabel || ''}</div>
+    <div style="font-size:30px;font-weight:900;color:#fff;margin:4px 0 8px;">${r.name || ''}</div>
+    <div style="font-size:13px;color:#888;font-style:italic;margin-bottom:${subNames ? '10px' : '16px'};">"${r.motto || ''}"</div>
+
+    ${subNames ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+      ${(r.subTypes||[]).map(s=>`<div style="display:flex;align-items:center;gap:4px;background:#1e1a3a;border:1px solid #2a2a5a;border-radius:20px;padding:4px 12px;font-size:12px;color:#aaa;">
+        <div style="width:16px;height:16px;display:flex;align-items:center;justify-content:center;">${(s.icon||'').replace('viewBox', 'style="width:100%;height:100%;" viewBox')}</div>
+        <span>${s.label||''}${s.name||''}</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div style="background:#13132a;border:1px solid #2a2a5a;border-radius:14px;padding:16px;font-size:13px;color:#ccc;line-height:1.9;text-align:left;margin-bottom:16px;">
+      ${plainDesc}
+    </div>
+
+    ${dims.length > 0 ? `
+    <div style="font-size:12px;color:#667eea;font-weight:700;letter-spacing:2px;text-align:left;margin-bottom:10px;">十五维度评分</div>
+    <div style="background:#13132a;border:1px solid #2a2a5a;border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;text-align:left;margin-bottom:16px;">
+      ${dimsHtml}
+    </div>` : ''}
+
+    <div style="border-top:1px solid #2a2a5a;padding-top:16px;display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;">
+      <img src="${QR_DATA_URL}" style="width:72px;height:72px;border-radius:8px;flex-shrink:0;background:#fff;" />
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">扫码关注公众号，回复SBTI</div>
+        <div style="font-size:12px;color:#a78bfa;line-height:1.6;">测测你的朋友是什么人格？<br>转发给TA，看看结果吧 👀</div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(card);
+
   try {
-    const imgData = await drawResultCard(currentResultData);
-    if (isWeChat()) { showWeChatSave(imgData); }
-    else { downloadImage(imgData); btn.textContent = '\u2705 \u5DF2\u4FDD\u5B58!'; setTimeout(() => { btn.textContent = '\uD83D\DCF7 \u4FDD\u5B58\u56FE\u7247'; }, 2500); }
-  } catch(e) { console.error('\u751F\u6210\u5931\u8D25:', e); btn.textContent = '\u274C \u5931\u8D25'; setTimeout(() => { btn.textContent = '\uD83D\DCF7 \u4FDD\u5B58\u56FE\u7247'; }, 2000); }
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#10102a',
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+
+    document.body.removeChild(card);
+
+    const imgData = canvas.toDataURL('image/png');
+
+    if (isWeChat()) {
+      showSaveOverlay(imgData, 'wechat');
+    } else {
+      showSaveOverlay(imgData, 'browser');
+    }
+  } catch(e) {
+    console.error('生成失败:', e);
+    if (document.body.contains(card)) document.body.removeChild(card);
+    btn.textContent = '❌ 失败,请截图';
+    setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2500);
+  }
   btn.style.pointerEvents = '';
 }
 
 function drawResultCard(r) {
   return new Promise((resolve, reject) => {
     const SCALE = 2;
-    const CW = 600 * SCALE;
+    const CW = 640 * SCALE;  // 增加宽度以容纳两列布局
     const PAD = 20 * SCALE;
     const INNER = CW - 2*PAD;
     const c = document.createElement('canvas');
@@ -1232,7 +1363,10 @@ function drawResultCard(r) {
 
     // Load avatar SVG only
     const tmpDiv = document.createElement('div');
-    tmpDiv.innerHTML = '<svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' + (r.avatar || '') + '</svg>';
+    // 修复：如果 r.avatar 已经包含 <svg>，直接使用；否则包一层
+    const svgContent = (r.avatar || '').trim();
+    const isWrapped = svgContent.startsWith('<svg');
+    tmpDiv.innerHTML = isWrapped ? svgContent : '<svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' + svgContent + '</svg>';
     const svgEl = tmpDiv.querySelector('svg');
     const svgBlob = new Blob([new XMLSerializer().serializeToString(svgEl)], {type:'image/svg+xml'});
     const svgUrl = URL.createObjectURL(svgBlob);
@@ -1294,17 +1428,42 @@ function drawResultCard(r) {
         y+=48;
       }
 
+      // === 8.5. Description Box (人格解读) ===
+      if(r.desc){
+        const descX=PAD/SCALE+16, descW=CWcss-2*PADcss-32;
+        const descPadding=20;
+        // 解析 desc 中的 HTML，提取文字和 strong 标签位置
+        const plainText = r.desc.replace(/<[^>]+>/g, '');
+        ctx.font='13px sans-serif';
+        ctx.fillStyle='#888';
+        ctx.textAlign='left';
+        // 简单处理：先绘制普通文字，strong 标签用特殊颜色
+        const lineH=26, maxW=descW-2*descPadding;
+        const lines=wrapText(ctx,plainText,maxW);
+        const descH=lines.length*lineH+2*descPadding;
+        // 背景
+        roundRect(ctx,descX,y,descW,descH,16);ctx.fillStyle='#13132a';ctx.fill();
+        ctx.strokeStyle='#1e1e3f';ctx.lineWidth=1;ctx.stroke();
+        // 绘制文字
+        let ly=y+descPadding+13;
+        lines.forEach(line=>{ctx.fillText(line,descX+descPadding,ly);ly+=lineH;});
+        y+=descH+20;
+      }
+
       // === 9. Dimensions ===
       y += 20;
       ctx.fillStyle='#667eea'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
-      ctx.fillText('卍五维度评分',PAD+16,y+15); y += 35;
+      ctx.fillText('卍五维度评分',PAD/SCALE+16,y+15); y += 35;
       if(r.dims&&r.dims.length>0){
         console.log('[DEBUG] r.dims.length =', r.dims.length);
-        const colW=(INNER-32-20)/2,gap=20,rowH=42,rows=Math.ceil(r.dims.length/2);
-        console.log('[DEBUG] rows =', rows);
+        // 使用 CSS 像素计算列宽（在 ctx.scale 后会被放大）
+        const CWcss = CW/SCALE, PADcss = PAD/SCALE;
+        const colWcss = (CWcss - 2*PADcss - 20) / 2; // 20 = gap, 使用 CSS 像素
+        const gap=20,rowH=42,rows=Math.ceil(r.dims.length/2);
+        console.log('[DEBUG] rows =', rows, 'colWcss =', colWcss);
         r.dims.forEach((d,i)=>{
           const col=i%2,row=Math.floor(i/2),isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
-          const dx=isOddLast?CW/SCALE/2-colW/2:PAD+16+col*(colW+gap),dcw=colW,dy=y+row*rowH;
+          const dx=isOddLast?CWcss/2-colWcss/2:PADcss+16+col*(colWcss+gap),dcw=colWcss,dy=y+row*rowH;
           ctx.fillStyle='#777';ctx.font='12px sans-serif';ctx.textAlign='left';
           ctx.fillText(d.name,dx,dy+10);
           ctx.textAlign='right';ctx.fillStyle='#667eea';ctx.font='bold 12px sans-serif';
@@ -1321,7 +1480,7 @@ function drawResultCard(r) {
 
       // === 10. Divider ===
       ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(PAD+40,y);ctx.lineTo(CW/SCALE-PAD-40,y);ctx.stroke(); y += 32;
+      ctx.beginPath();ctx.moveTo(PAD/SCALE+40,y);ctx.lineTo(CW/SCALE-PAD/SCALE-40,y);ctx.stroke(); y += 32;
 
       // === 11. QR Code (preloaded global image) ===
       const qS=140, qX=CW/SCALE/2-qS/2;
@@ -1367,30 +1526,67 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
-function showWeChatSave(imgData) {
+// 文字换行辅助函数
+function wrapText(ctx, text, maxWidth) {
+  const lines = [];
+  const paragraphs = text.split('\n');
+  paragraphs.forEach(para => {
+    if (para.trim() === '') {
+      lines.push('');
+      return;
+    }
+    const words = para.split('');
+    let currentLine = '';
+    for (let char of words) {
+      const testLine = currentLine + char;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine !== '') {
+        lines.push(currentLine);
+        currentLine = char;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+  });
+  return lines;
+}
+
+// mode: 'wechat' | 'browser'
+function showSaveOverlay(imgData, mode) {
   const overlay = document.getElementById('saveOverlay');
   overlay.classList.add('show');
-
   document.getElementById('saveCard').style.display = 'none';
-  
+
   const tip = document.getElementById('saveTip');
+
+  const tipText = mode === 'wechat'
+    ? '👆 长按上方图片<br>保存后分享到朋友圈'
+    : '👆 长按图片保存 · 或点击下方按钮下载';
+
+  const downloadBtn = mode === 'browser'
+    ? `<button onclick="downloadImage('${imgData.replace(/'/g, "&#39;")}'.slice());this.textContent='✅已下载';this.disabled=true;"
+         style="margin-top:14px;padding:10px 28px;border-radius:24px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">⬇️ 点击下载图片</button>`
+    : '';
+
   tip.innerHTML = `
     <img src="${imgData}" id="saveResultImg"
-         style="max-width:100%;max-height:55vh;border-radius:16px;border:2px solid #3a3a5a;box-shadow:0 8px 32px rgba(0,0,0,0.5);" />
-    <div style="margin-top:18px;color:#f093fb;font-size:15px;line-height:1.8;">
-      👆 长按上方图片<br>保存后分享到朋友圈
-    </div>
+         style="max-width:94vw;max-height:75vh;border-radius:16px;border:2px solid #3a3a5a;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:block;margin:0 auto;" />
+    <div style="margin-top:16px;color:#f093fb;font-size:15px;line-height:1.8;">${tipText}</div>
+    ${downloadBtn}
   `;
 
   const closeBtn = overlay.querySelector('.close-save-btn');
   closeBtn.style.display = 'inline-block';
-
   closeBtn.onclick = () => {
     closeSaveOverlay();
     const btn = document.querySelector('.share-btn.save-img');
     btn.textContent = '📸 保存图片';
   };
 }
+
+// 保留旧函数名兼容
+function showWeChatSave(imgData) { showSaveOverlay(imgData, 'wechat'); }
 
 function downloadImage(imgData) {
   const link = document.createElement('a');
