@@ -1186,136 +1186,180 @@ function retest() {
   document.getElementById('rMatchBar').style.width = '0%';
 }
 
-// ===== 保存图片功能（截图结果页真实样式）=====
+// ===== 保存图片功能（原生Canvas绘制）=====
 let currentResultData = null;
 
-// 检测是否微信浏览器
 function isWeChat() {
-  const ua = navigator.userAgent.toLowerCase();
-  return ua.indexOf('micromessenger') !== -1;
+  return navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
 }
 
 async function saveAsImage() {
   if (!currentResultData) return;
-
   const btn = document.querySelector('.share-btn.save-img');
   btn.textContent = '⏳ 生成中...';
   btn.style.pointerEvents = 'none';
-
   try {
-    // 动态加载 html2canvas（仅首次）
-    if (typeof html2canvas === 'undefined') {
-      await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
-    }
-
-    const imgData = await captureResultPage();
-
-    if (isWeChat()) {
-      showWeChatSave(imgData);
-    } else {
-      downloadImage(imgData);
-      btn.textContent = '✅ 已保存！';
-      setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2500);
-    }
-  } catch(e) {
-    console.error('生成图片失败:', e);
-    btn.textContent = '❌ 失败';
-    setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2000);
-  }
-
+    const imgData = await drawResultCard(currentResultData);
+    if (isWeChat()) { showWeChatSave(imgData); }
+    else { downloadImage(imgData); btn.textContent = '✅ 已保存！'; setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2500); }
+  } catch(e) { console.error('生成图片失败:', e); btn.textContent = '❌ 失败'; setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2000); }
   btn.style.pointerEvents = '';
 }
 
-function loadScript(src) {
+function drawResultCard(r) {
   return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
+    const W = 800;
+    const H = 1200; // 足够高度
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // 背景
+    ctx.fillStyle = '#0a0a0f'; roundRect(ctx, 0, 0, W, H, 20); ctx.fill();
+
+    // 加载头像SVG
+    const tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = `<svg width="160" height="160" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
+    const svgEl = tmpDiv.querySelector('svg');
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svgEl)], {type: 'image/svg+xml'});
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    const avatarImg = new Image();
+    const qrImg = new Image();
+    let done = 0;
+    const check = () => { if (++done >= 2) renderAll(); };
+
+    avatarImg.onload = check;
+    avatarImg.onerror = () => { done++; if(done>=2) renderAll(); };
+    avatarImg.src = svgUrl;
+
+    qrImg.onload = check;
+    qrImg.onerror = () => { done++; if(done>=2) renderAll(); };
+    qrImg.src = 'qrcode.jpg';
+
+    function renderAll() {
+      let y = 30;
+
+      // === 头像 ===
+      const avSize = 140;
+      ctx.beginPath(); ctx.arc(W/2, y + avSize/2, avSize/2 + 4, 0, Math.PI*2);
+      ctx.fillStyle = '#16162a'; ctx.fill();
+      ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W/2, y + avSize/2, avSize/2 - 2, 0, Math.PI*2); ctx.clip();
+      ctx.drawImage(avatarImg, W/2 - avSize/2 + 2, y + 2, avSize - 4, avSize - 4);
+      ctx.restore();
+      URL.revokeObjectURL(svgUrl);
+      y += avSize + 16;
+
+      // === 匹配度文字 ===
+      ctx.fillStyle = '#666'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('系统判定匹配度', W/2, y); y += 6;
+
+      // 匹配度进度条
+      const barW = 260, barH = 8, barX = W/2 - barW/2;
+      roundRect(ctx, barX, y, barW, barH, 4); ctx.fillStyle = '#1a1a35'; ctx.fill();
+      const fillW = barW * (parseInt(r.matchPct)||0) / 100;
+      if(fillW > 0) { roundRect(ctx, barX, y, Math.max(barH, fillW), barH, 4); ctx.fillStyle = '#667eea'; ctx.fill(); }
+      y += barH + 14;
+
+      // 匹配度百分比大字
+      ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 52px sans-serif';
+      ctx.fillText((r.matchPct || '?') + '%', W/2, y + 12);
+      y += 44;
+
+      // === 类型标签 ===
+      ctx.fillStyle = '#555'; ctx.font = '11px sans-serif'; ctx.letterSpacing = '4px';
+      ctx.fillText(r.typeLabel || '', W/2, y); y += 24;
+
+      // === 大名称（带emoji）===
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 36px sans-serif'; ctx.letterSpacing = '0';
+      ctx.fillText(r.name || '', W/2, y); y += 36;
+
+      // === 座右铭 ===
+      ctx.fillStyle = '#777'; ctx.font = 'italic 15px sans-serif';
+      ctx.fillText('「' + (r.motto || '') + '」', W/2, y); y += 32;
+
+      // === 次级匹配 ===
+      if (r.subTypes && r.subTypes.length > 0) {
+        const subText = '次级匹配：' + r.subTypes.map(s=>s.name).join(' · ');
+        ctx.fillStyle = '#1e1e38';
+        const subW = ctx.measureText(subText).width + 28;
+        roundRect(ctx, W/2-subW/2, y-14, subW, 28, 10); ctx.fill();
+        ctx.fillStyle = '#999'; ctx.font = '12px sans-serif';
+        ctx.fillText(subText, W/2, y+5); y += 44;
+      }
+
+      // === 描述文字 ===
+      if (r.desc) {
+        ctx.fillStyle = '#888'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+        // 简单折行处理
+        const maxL = W - 80, words = r.desc.split('');
+        let line = '';
+        for(const ch of words) {
+          const test = line + ch;
+          if(ctx.measureText(test).width > maxL && line) {
+            ctx.fillText(line, W/2, y); y += 22; line = ch;
+          } else { line = test; }
+        }
+        if(line) { ctx.fillText(line, W/2, y); y += 24; }
+      }
+
+      // === 十五维度 ===
+      y += 10;
+      ctx.fillStyle = '#667eea'; ctx.font = 'bold 12px sans-serif'; ctx.letterSpacing='2px'; ctx.textAlign='left';
+      ctx.fillText('十五维度评分', 40, y);
+      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(40,y+8); ctx.lineTo(W-40,y+8); ctx.stroke(); y += 26;
+
+      if (r.dims && r.dims.length > 0) {
+        const colW = (W-90)/2, gap=10, rowH=46, rows=Math.ceil(r.dims.length/2);
+        r.dims.forEach((d,i) => {
+          const col=i%2, row=Math.floor(i/2), isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
+          const dx=isOddLast ? W/2-colW/2 : 45+col*(colW+gap);
+          const dcw = colW, dy=y+row*rowH;
+
+          ctx.fillStyle='#999'; ctx.font='11px sans-serif'; ctx.textAlign='left';
+          ctx.fillText(d.name, dx, dy+10);
+          ctx.textAlign='right'; ctx.fillStyle='#a78bfa'; ctx.font='bold 13px sans-serif';
+          ctx.fillText(d.val+'%', dx+dcw, dy+10);
+
+          const bY=dy+17, bH=6;
+          ctx.fillStyle='#151528'; roundRect(ctx,dx,bY,dcw,bH,3); ctx.fill();
+          const fw=Math.max(bH,dcw*d.val/100);
+          ctx.fillStyle='#667eea'; roundRect(ctx,dx,bY,fw,bH,3); ctx.fill();
+        });
+        y += rows*rowH + 24;
+      }
+
+      // === 分隔线 ===
+      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(60,y); ctx.lineTo(W-60,y); ctx.stroke(); y+=22;
+
+      // === 二维码区域 ===
+      const qS=150, qX=W/2-qS/2;
+      // 白底圆角
+      roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
+      // 二维码
+      ctx.drawImage(qrImg,qX,y,qS,qS); y+=qS+30;
+
+      // 引流文案
+      ctx.fillStyle='#667eea'; ctx.font='bold 15px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('👆 扫码测测你的人格类型',W/2,y); y+=24;
+      ctx.fillStyle='#555'; ctx.font='11px sans-serif';
+      ctx.fillText('长按图片保存 · 分享到朋友圈',W/2,y);
+
+      resolve(c.toDataURL('image/png'));
+    }
   });
 }
 
-async function captureResultPage() {
-  const resultDiv = document.getElementById('result');
-  const particles = document.getElementById('particles');
-
-  // ---- 1. 保存原始状态，临时修改DOM ----
-  // 隐藏不需要的元素
-  const shareBtns = resultDiv.querySelector('.share-btns');
-  const retestLink = resultDiv.querySelector('.retest-link');
-  const footer = resultDiv.querySelector('.footer');
-
-  const savedStyles = [];
-  const toHide = [shareBtns, retestLink, footer].filter(Boolean);
-  toHide.forEach(el => {
-    savedStyles.push({ el, display: el.style.display });
-    el.style.display = 'none';
-  });
-  
-  // 隐藏背景粒子（避免干扰截图）
-  if (particles) particles.style.display = 'none';
-
-  // 创建二维码引流区域并插入到底部
-  const qrSection = document.createElement('div');
-  qrSection.className = 'qr-promo-section';
-  qrSection.innerHTML = `
-    <div class="qr-divider"></div>
-    <div class="qr-box">
-      <img src="qrcode.jpg" class="qr-img" alt="扫码测试" />
-    </div>
-    <div class="qr-text">👆 扫码测测你的人格类型</div>
-    <div class="qr-subtext">长按图片保存 · 分享到朋友圈</div>
-  `;
-  resultDiv.appendChild(qrSection);
-
-  // 添加二维码区域内联样式（确保截图时生效）
-  const qrStyle = document.createElement('style');
-  qrStyle.textContent = `
-    .qr-promo-section { text-align: center; padding: 16px 20px 28px; }
-    .qr-divider { border-top: 1px solid #2a2a4a; margin-bottom: 18px; }
-    .qr-box { display: inline-block; padding: 8px; background: #fff; border-radius: 12px; }
-    .qr-img { width: 140px; height: 140px; display: block; }
-    .qr-text { color: #667eea; font-size: 14px; font-weight: bold; margin-top: 14px; }
-    .qr-subtext { color: #555; font-size: 11px; margin-top: 6px; }
-  `;
-  document.head.appendChild(qrStyle);
-
-  // 等一下让DOM渲染完成
-  await new Promise(r => setTimeout(r, 100));
-
-  // ---- 2. 截图 ----
-  const canvas = await html2canvas(resultDiv, {
-    backgroundColor: '#0a0a0f',
-    scale: 2,
-    useCORS: true,
-    logging: false,
-    allowTaint: true,
-    width: resultDiv.scrollWidth,
-    height: resultDiv.scrollHeight,
-    windowWidth: resultDiv.scrollWidth,
-    windowHeight: resultDiv.scrollHeight,
-  });
-
-  // ---- 3. 恢复DOM ----
-  qrSection.remove();
-  qrStyle.remove();
-  if (particles) particles.style.display = '';
-  toHide.forEach(item => { item.el.style.display = item.display; });
-
-  return canvas.toDataURL('image/png');
-}
-
-function roundRect(ctx, x, y, w, h, r) {
+function roundRect(ctx,x,y,w,h,r){
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
 }
 
