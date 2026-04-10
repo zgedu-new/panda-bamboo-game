@@ -1361,13 +1361,14 @@ function drawResultCard(r) {
 
       // 绘制二维码
       ctx.drawImage(qrImg, qrX, y, qrSize, qrSize);
-      y += qrSize + 12;
+      y += qrSize + 24;   // 二维码底部到文字的间距加大
 
       // 引流文字
       ctx.fillStyle = '#667eea'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('👆 扫码测测你的人格类型', W/2, y);
+      y += 22;           // 两行文字之间的间距
       ctx.fillStyle = '#555'; ctx.font = '10px sans-serif';
-      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, y + 18);
+      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, y);
 
       resolve(c.toDataURL('image/png'));
     };
