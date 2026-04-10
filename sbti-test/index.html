@@ -1305,27 +1305,46 @@ function drawResultCard(r) {
       ctx.textAlign = 'left'; ctx.fillText('十五维度评分', 40, y);
       ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(40, y + 6); ctx.lineTo(W - 40, y + 6); ctx.stroke();
-      y += 18;
+      y += 22;
 
-      if (r.dims) {
-        const colW = (W - 80) / 2;
+      if (r.dims && r.dims.length > 0) {
+        const colW = (W - 90) / 2;   // 两列宽度，留出中间间距
+        const gap = 10;               // 列间距
+        const rowH = 48;             // 每行高度（加大间距）
+        const totalRows = Math.ceil(r.dims.length / 2);
+
         r.dims.forEach((d, i) => {
           const col = i % 2;
           const row = Math.floor(i / 2);
-          const dx = 40 + col * colW;
-          const dy = y + row * 42;
+          // 如果是奇数个且最后一个，居中显示
+          const isLastOdd = (r.dims.length % 2 === 1 && i === r.dims.length - 1);
+          let dx, drawColW;
+          if (isLastOdd) {
+            dx = W / 2 - colW / 2;    // 居中
+            drawColW = colW;
+          } else {
+            dx = 45 + col * (colW + gap);
+            drawColW = colW;
+          }
+          const dy = y + row * rowH;
 
-          // 标签名 + 数值
-          ctx.fillStyle = '#888'; ctx.font = '10px sans-serif';
-          ctx.textAlign = 'left'; ctx.fillText(d.name, dx, dy + 6);
-          ctx.textAlign = 'right'; ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 10px sans-serif';
-          ctx.fillText(d.val + '%', dx + colW, dy + 6);
+          // 标签名（左对齐）
+          ctx.fillStyle = '#999'; ctx.font = '11px sans-serif';
+          ctx.textAlign = 'left'; ctx.fillText(d.name, dx, dy + 12);
+          
+          // 数值（右对齐）
+          ctx.textAlign = 'right'; ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 13px sans-serif';
+          ctx.fillText(d.val + '%', dx + drawColW, dy + 12);
 
-          // 进度条
-          ctx.fillStyle = '#0f0f23'; roundRect(ctx, dx, dy + 12, colW, 5, 2.5); ctx.fill();
-          ctx.fillStyle = '#a78bfa'; roundRect(ctx, dx, dy + 12, colW * d.val / 100, 5, 2.5); ctx.fill();
+          // 进度条背景
+          const barY = dy + 18;
+          const barH = 6;
+          ctx.fillStyle = '#1a1a35'; roundRect(ctx, dx, barY, drawColW, barH, 3); ctx.fill();
+          // 进度条填充
+          const fillW = Math.max(barH, drawColW * d.val / 100);
+          ctx.fillStyle = '#667eea'; roundRect(ctx, dx, barY, fillW, barH, 3); ctx.fill();
         });
-        y += Math.ceil(r.dims.length / 2) * 42 + 20;
+        y += totalRows * rowH + 24;
       }
 
       // === 分隔线 ===
