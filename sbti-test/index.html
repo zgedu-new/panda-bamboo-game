@@ -1186,7 +1186,7 @@ function retest() {
   document.getElementById('rMatchBar').style.width = '0%';
 }
 
-// ===== 保存图片功能 =====
+// ===== 保存图片功能（截图结果页真实样式）=====
 let currentResultData = null;
 
 // 检测是否微信浏览器
@@ -1203,10 +1203,12 @@ async function saveAsImage() {
   btn.style.pointerEvents = 'none';
 
   try {
-    const r = currentResultData;
+    // 动态加载 html2canvas（仅首次）
+    if (typeof html2canvas === 'undefined') {
+      await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+    }
 
-    // 用原生Canvas绘制图片（不依赖html2canvas）
-    const imgData = await drawResultCard(r);
+    const imgData = await captureResultPage();
 
     if (isWeChat()) {
       showWeChatSave(imgData);
@@ -1224,174 +1226,85 @@ async function saveAsImage() {
   btn.style.pointerEvents = '';
 }
 
-// ===== 原生Canvas绘制结果卡片 =====
-function drawResultCard(r) {
+function loadScript(src) {
   return new Promise((resolve, reject) => {
-    const W = 800;
-    // 动态计算高度：头部60 + 头像140 + 类型20 + 名称50 + 座右铭40 + 次级36 + 匹配度120 + 维度标题30 + 维度(15*35) + 尾部40 + 二维码区200 + padding
-    const H = 1150;
-    const c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    const ctx = c.getContext('2d');
-
-    // 背景
-    ctx.fillStyle = '#12121e'; roundRect(ctx, 0, 0, W, H, 24); ctx.fill();
-
-    // 头部标题栏
-    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, 56);
-    ctx.fillStyle = '#667eea'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('SBTI 人格测试结果', W/2, 36);
-
-    let y = 76;
-
-    // === 头像区域 ===
-    // 头像圆形背景
-    ctx.beginPath(); ctx.arc(W/2, y + 55, 52, 0, Math.PI*2); 
-    ctx.fillStyle = '#1e1e3f'; ctx.fill();
-    ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.stroke();
-    
-    // 绘制SVG头像（用临时容器）
-    const tmpDiv = document.createElement('div');
-    tmpDiv.innerHTML = `<svg width="104" height="104" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
-    const svgEl = tmpDiv.querySelector('svg');
-    const svgStr = new XMLSerializer().serializeToString(svgEl);
-    const svgBlob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
-    const svgUrl = URL.createObjectURL(svgBlob);
-
-    const avatarImg = new Image();
-    const qrImg = new Image();
-    let avatarReady = false, qrReady = false;
-    const checkAllDone = () => {
-      if (!avatarReady || !qrReady) return;
-
-      y += 120;
-
-      // === 类型标签 ===
-      ctx.fillStyle = '#555'; ctx.font = '12px sans-serif'; ctx.letterSpacing = '3px';
-      ctx.fillText(r.typeLabel || '', W/2, y); y += 22;
-
-      // === 大名称 ===
-      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 34px sans-serif';
-      ctx.fillText(r.name || '', W/2, y); y += 38;
-
-      // === 座右铭 ===
-      ctx.fillStyle = '#777'; ctx.font = 'italic 14px sans-serif';
-      ctx.fillText('「' + (r.motto || '') + '」', W/2, y); y += 32;
-
-      // === 次级匹配 ===
-      if (r.subTypes && r.subTypes.length > 0) {
-        const subText = '次级匹配：' + r.subTypes.map(s => s.name).join(' · ');
-        ctx.fillStyle = '#1f1f38'; 
-        const subW = ctx.measureText(subText).width + 28;
-        roundRect(ctx, W/2 - subW/2, y - 14, subW, 26, 8); ctx.fill();
-        ctx.fillStyle = '#888'; ctx.font = '12px sans-serif';
-        ctx.fillText(subText, W/2, y + 4);
-        y += 44;
-      }
-
-      // === 匹配度区块 ===
-      ctx.fillStyle = '#1f1f38';
-      roundRect(ctx, W/2 - 160, y, 320, 100, 12); ctx.fill();
-      
-      ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.letterSpacing = '2px';
-      ctx.fillText('MATCH RATE', W/2, y + 22);
-      
-      ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 46px sans-serif';
-      ctx.fillText((r.matchPct || '?') + '%', W/2, y + 72);
-      y += 116;
-
-      // === 十五维度 ===
-      ctx.fillStyle = '#667eea'; ctx.font = 'bold 11px sans-serif'; ctx.letterSpacing = '2px';
-      ctx.textAlign = 'left'; ctx.fillText('十五维度评分', 40, y);
-      ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(40, y + 6); ctx.lineTo(W - 40, y + 6); ctx.stroke();
-      y += 22;
-
-      if (r.dims && r.dims.length > 0) {
-        const colW = (W - 90) / 2;   // 两列宽度，留出中间间距
-        const gap = 10;               // 列间距
-        const rowH = 48;             // 每行高度（加大间距）
-        const totalRows = Math.ceil(r.dims.length / 2);
-
-        r.dims.forEach((d, i) => {
-          const col = i % 2;
-          const row = Math.floor(i / 2);
-          // 如果是奇数个且最后一个，居中显示
-          const isLastOdd = (r.dims.length % 2 === 1 && i === r.dims.length - 1);
-          let dx, drawColW;
-          if (isLastOdd) {
-            dx = W / 2 - colW / 2;    // 居中
-            drawColW = colW;
-          } else {
-            dx = 45 + col * (colW + gap);
-            drawColW = colW;
-          }
-          const dy = y + row * rowH;
-
-          // 标签名（左对齐）
-          ctx.fillStyle = '#999'; ctx.font = '11px sans-serif';
-          ctx.textAlign = 'left'; ctx.fillText(d.name, dx, dy + 12);
-          
-          // 数值（右对齐）
-          ctx.textAlign = 'right'; ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 13px sans-serif';
-          ctx.fillText(d.val + '%', dx + drawColW, dy + 12);
-
-          // 进度条背景
-          const barY = dy + 18;
-          const barH = 6;
-          ctx.fillStyle = '#1a1a35'; roundRect(ctx, dx, barY, drawColW, barH, 3); ctx.fill();
-          // 进度条填充
-          const fillW = Math.max(barH, drawColW * d.val / 100);
-          ctx.fillStyle = '#667eea'; roundRect(ctx, dx, barY, fillW, barH, 3); ctx.fill();
-        });
-        y += totalRows * rowH + 24;
-      }
-
-      // === 分隔线 ===
-      ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W - 60, y); ctx.stroke();
-      y += 18;
-
-      // === 二维码引流区域 ===
-      // 二维码白底圆角背景
-      const qrSize = 140;
-      const qrX = W/2 - qrSize/2;
-      roundRect(ctx, qrX - 8, y - 8, qrSize + 16, qrSize + 16, 12); 
-      ctx.fillStyle = '#ffffff'; ctx.fill();
-
-      // 绘制二维码
-      ctx.drawImage(qrImg, qrX, y, qrSize, qrSize);
-      y += qrSize + 34;   // 二维码底部到文字的间距
-
-      // 引流文字
-      ctx.fillStyle = '#667eea'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('👆 扫码测测你的人格类型', W/2, y);
-      y += 26;           // 两行文字之间的间距
-      ctx.fillStyle = '#555'; ctx.font = '11px sans-serif';
-      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, y);
-
-      resolve(c.toDataURL('image/png'));
-    };
-
-    avatarImg.onload = () => {
-      ctx.save();
-      ctx.beginPath(); ctx.arc(W/2, y + 55, 48, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(avatarImg, W/2 - 48, y + 7, 96, 96);
-      ctx.restore();
-      URL.revokeObjectURL(svgUrl);
-      avatarReady = true;
-      checkAllDone();
-    };
-    avatarImg.onerror = () => reject(new Error('头像加载失败'));
-    avatarImg.src = svgUrl;
-
-    qrImg.onload = () => { qrReady = true; checkAllDone(); };
-    qrImg.onerror = () => { qrReady = true; checkAllDone(); }; // 二维码加载失败不阻断
-    qrImg.src = 'qrcode.jpg';
+    const s = document.createElement('script');
+    s.src = s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
   });
 }
 
-// 圆角矩形辅助函数
+async function captureResultPage() {
+  const resultDiv = document.getElementById('result');
+  const particles = document.getElementById('particles');
+
+  // ---- 1. 保存原始状态，临时修改DOM ----
+  // 隐藏不需要的元素
+  const shareBtns = resultDiv.querySelector('.share-btns');
+  const retestLink = resultDiv.querySelector('.retest-link');
+  const footer = resultDiv.querySelector('.footer');
+
+  const savedStyles = [];
+  const toHide = [shareBtns, retestLink, footer].filter(Boolean);
+  toHide.forEach(el => {
+    savedStyles.push({ el, display: el.style.display });
+    el.style.display = 'none';
+  });
+  
+  // 隐藏背景粒子（避免干扰截图）
+  if (particles) particles.style.display = 'none';
+
+  // 创建二维码引流区域并插入到底部
+  const qrSection = document.createElement('div');
+  qrSection.className = 'qr-promo-section';
+  qrSection.innerHTML = `
+    <div class="qr-divider"></div>
+    <div class="qr-box">
+      <img src="qrcode.jpg" class="qr-img" alt="扫码测试" />
+    </div>
+    <div class="qr-text">👆 扫码测测你的人格类型</div>
+    <div class="qr-subtext">长按图片保存 · 分享到朋友圈</div>
+  `;
+  resultDiv.appendChild(qrSection);
+
+  // 添加二维码区域内联样式（确保截图时生效）
+  const qrStyle = document.createElement('style');
+  qrStyle.textContent = `
+    .qr-promo-section { text-align: center; padding: 16px 20px 28px; }
+    .qr-divider { border-top: 1px solid #2a2a4a; margin-bottom: 18px; }
+    .qr-box { display: inline-block; padding: 8px; background: #fff; border-radius: 12px; }
+    .qr-img { width: 140px; height: 140px; display: block; }
+    .qr-text { color: #667eea; font-size: 14px; font-weight: bold; margin-top: 14px; }
+    .qr-subtext { color: #555; font-size: 11px; margin-top: 6px; }
+  `;
+  document.head.appendChild(qrStyle);
+
+  // 等一下让DOM渲染完成
+  await new Promise(r => setTimeout(r, 100));
+
+  // ---- 2. 截图 ----
+  const canvas = await html2canvas(resultDiv, {
+    backgroundColor: '#0a0a0f',
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    allowTaint: true,
+    width: resultDiv.scrollWidth,
+    height: resultDiv.scrollHeight,
+    windowWidth: resultDiv.scrollWidth,
+    windowHeight: resultDiv.scrollHeight,
+  });
+
+  // ---- 3. 恢复DOM ----
+  qrSection.remove();
+  qrStyle.remove();
+  if (particles) particles.style.display = '';
+  toHide.forEach(item => { item.el.style.display = item.display; });
+
+  return canvas.toDataURL('image/png');
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
