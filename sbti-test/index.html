@@ -1186,7 +1186,7 @@ function retest() {
   document.getElementById('rMatchBar').style.width = '0%';
 }
 
-// ===== 保存图片功能（原生Canvas绘制）=====
+// ===== 保存图片功能（原生Canvas，严格按结果页样式绘制）=====
 let currentResultData = null;
 
 function isWeChat() {
@@ -1208,158 +1208,172 @@ async function saveAsImage() {
 
 function drawResultCard(r) {
   return new Promise((resolve, reject) => {
-    const W = 800;
-    const H = 1200; // 足够高度
+    // 容器尺寸：max-width 560px + padding 40px = 600px（用2x缩放）
+    const SCALE = 2;
+    const CW = 600 * SCALE; // 内容区宽度(含padding)
+    const PAD = 20 * SCALE; // 左右padding
+    const INNER = CW - 2*PAD; // 内容宽
     const c = document.createElement('canvas');
-    c.width = W; c.height = H;
+    c.width = CW;
+    // 先预估高度，后面动态调整
+    let H = 1400 * SCALE;
+    c.height = H;
     const ctx = c.getContext('2d');
+    ctx.scale(SCALE, SCALE);
 
     // 背景
-    ctx.fillStyle = '#0a0a0f'; roundRect(ctx, 0, 0, W, H, 20); ctx.fill();
+    ctx.fillStyle = '#0a0a0f';
+    roundRect(ctx, 0, 0, CW/SCALE, H/SCALE, 16);
+    ctx.fill();
 
     // 加载头像SVG
     const tmpDiv = document.createElement('div');
-    tmpDiv.innerHTML = `<svg width="160" height="160" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
+    tmpDiv.innerHTML = `<svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
     const svgEl = tmpDiv.querySelector('svg');
-    const svgBlob = new Blob([new XMLSerializer().serializeToString(svgEl)], {type: 'image/svg+xml'});
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svgEl)], {type:'image/svg+xml'});
     const svgUrl = URL.createObjectURL(svgBlob);
 
     const avatarImg = new Image();
     const qrImg = new Image();
     let done = 0;
-    const check = () => { if (++done >= 2) renderAll(); };
+    const check = () => { if (++done >= 2) render(); };
 
     avatarImg.onload = check;
-    avatarImg.onerror = () => { done++; if(done>=2) renderAll(); };
+    avatarImg.onerror = () => { done++; if(done>=2) render(); };
     avatarImg.src = svgUrl;
 
     qrImg.onload = check;
-    qrImg.onerror = () => { done++; if(done>=2) renderAll(); };
+    qrImg.onerror = () => { done++; if(done>=2) render(); };
     qrImg.src = 'qrcode.jpg';
 
-    function renderAll() {
-      let y = 30;
+    function render() {
+      let y = 28; // 从顶部padding开始
 
-      // === 头像 ===
-      const avSize = 140;
-      ctx.beginPath(); ctx.arc(W/2, y + avSize/2, avSize/2 + 4, 0, Math.PI*2);
-      ctx.fillStyle = '#16162a'; ctx.fill();
-      ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.stroke();
-      ctx.save();
-      ctx.beginPath(); ctx.arc(W/2, y + avSize/2, avSize/2 - 2, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(avatarImg, W/2 - avSize/2 + 2, y + 2, avSize - 4, avSize - 4);
-      ctx.restore();
-      URL.revokeObjectURL(svgUrl);
-      y += avSize + 16;
+      // === 1. 头像 (120px圆形, #13132a背景, 3px边框#1e1e3f) ===
+      const avSize = 120, avX = CW/SCALE/2, avY = y + avSize/2;
+      ctx.beginPath(); ctx.arc(avX, avY, avSize/2+2, 0, Math.PI*2);
+      ctx.fillStyle='#13132a'; ctx.fill(); ctx.strokeStyle='#1e1e3f'; ctx.lineWidth=3; ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.arc(avX,avY,avSize/2-1,0,Math.PI*2); ctx.clip();
+      ctx.drawImage(avatarImg, avX-avSize/2+1,y+1,avSize-2,avSize-2);
+      ctx.restore(); URL.revokeObjectURL(svgUrl);
+      y += avSize + 12; // margin-bottom:16px 减一点
 
-      // === 匹配度文字 ===
-      ctx.fillStyle = '#666'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('系统判定匹配度', W/2, y); y += 6;
+      // === 2. 匹配度文字 "系统判定匹配度" (13px, #667eea, bold, letter-spacing:1px) ===
+      ctx.fillStyle='#667eea'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('系统判定匹配度', CW/SCALE/2, y); y += 8;
 
-      // 匹配度进度条
-      const barW = 260, barH = 8, barX = W/2 - barW/2;
-      roundRect(ctx, barX, y, barW, barH, 4); ctx.fillStyle = '#1a1a35'; ctx.fill();
-      const fillW = barW * (parseInt(r.matchPct)||0) / 100;
-      if(fillW > 0) { roundRect(ctx, barX, y, Math.max(barH, fillW), barH, 4); ctx.fillStyle = '#667eea'; ctx.fill(); }
-      y += barH + 14;
+      // === 3. 进度条 (width:100%, 6px, #1a1e2e背景, 渐变填充) ===
+      const barX = PAD, barW = INNER, barH = 6;
+      roundRect(ctx,barX,y,barW,barH,3); ctx.fillStyle='#1a1e2e'; ctx.fill();
+      const fillW = barW*(parseInt(r.matchPct)||0)/100;
+      if(fillW>3){roundRect(ctx,barX,y,fillW,barH,3); ctx.fillStyle='#667eea'; ctx.fill();}
+      y += barH + 4; // margin-bottom:6px
 
-      // 匹配度百分比大字
-      ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 52px sans-serif';
-      ctx.fillText((r.matchPct || '?') + '%', W/2, y + 12);
-      y += 44;
+      // === 4. 大百分比数字 (28px, bold, 紫色渐变→用#667eea替代) ===
+      ctx.fillStyle='#667eea'; ctx.font='900 28px sans-serif';
+      ctx.fillText((r.matchPct||'?')+'%',CW/SCALE/2,y+20); y += 26;
 
-      // === 类型标签 ===
-      ctx.fillStyle = '#555'; ctx.font = '11px sans-serif'; ctx.letterSpacing = '4px';
-      ctx.fillText(r.typeLabel || '', W/2, y); y += 24;
+      // === 5. 类型标签 (13px, #555, letter-spacing:3px) ===
+      ctx.fillStyle='#555'; ctx.font='13px sans-serif';
+      ctx.fillText(r.typeLabel||'',CW/SCALE/2,y); y += 22;
 
-      // === 大名称（带emoji）===
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 36px sans-serif'; ctx.letterSpacing = '0';
-      ctx.fillText(r.name || '', W/2, y); y += 36;
+      // === 6. 名称 (36px, bold, 白色) ===
+      ctx.fillStyle='#fff'; ctx.font='900 36px sans-serif';
+      ctx.fillText(r.name||'',CW/SCALE/2,y+30); y += 42;
 
-      // === 座右铭 ===
-      ctx.fillStyle = '#777'; ctx.font = 'italic 15px sans-serif';
-      ctx.fillText('「' + (r.motto || '') + '」', W/2, y); y += 32;
+      // === 7. 座右铭 (13px, italic, #666) ===
+      ctx.fillStyle='#666'; ctx.font='italic 13px sans-serif';
+      ctx.fillText('\u201c'+(r.motto||'')+'\u201d',CW/SCALE/2,y); y += 24;
 
-      // === 次级匹配 ===
-      if (r.subTypes && r.subTypes.length > 0) {
-        const subText = '次级匹配：' + r.subTypes.map(s=>s.name).join(' · ');
-        ctx.fillStyle = '#1e1e38';
-        const subW = ctx.measureText(subText).width + 28;
-        roundRect(ctx, W/2-subW/2, y-14, subW, 28, 10); ctx.fill();
-        ctx.fillStyle = '#999'; ctx.font = '12px sans-serif';
-        ctx.fillText(subText, W/2, y+5); y += 44;
+      // === 8. 次级匹配 (pill标签, flex布局) ===
+      if(r.subTypes && r.subTypes.length>0){
+        const pills=r.subTypes.map(s=>s.name).join(' \u00B7 ');
+        ctx.fillStyle='#1a1e2e';
+        const pw=ctx.measureText(pills).width+36;
+        roundRect(ctx,CW/SCALE/2-pw/2,y-14,pw,28,14);ctx.fill();
+        ctx.fillStyle='#888'; ctx.font='12px sans-serif';
+        ctx.fillText('次级匹配：'+pills,CW/SCALE/2,y+4);
+        y+=38;
       }
 
-      // === 描述文字 ===
-      if (r.desc) {
-        ctx.fillStyle = '#888'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-        // 简单折行处理
-        const maxL = W - 80, words = r.desc.split('');
-        let line = '';
-        for(const ch of words) {
-          const test = line + ch;
-          if(ctx.measureText(test).width > maxL && line) {
-            ctx.fillText(line, W/2, y); y += 22; line = ch;
-          } else { line = test; }
-        }
-        if(line) { ctx.fillText(line, W/2, y); y += 24; }
-      }
+      // === 9. 十五维度区域 (带圆角背景框) ===
+      y+=4;
+      const dimPad=16, gridY=y, dimH=0;
+      
+      // 维度标题 (13px, #667eea, bold, left-aligned)
+      ctx.fillStyle='#667eea'; ctx.font='bold 13px sans-serif'; ctx.textAlign='left';
+      ctx.letterSpacing='2px';
+      ctx.fillText('十五维度评分',PAD+dimPad,y+13);
+      ctx.letterSpacing='normal';
+      y+=30;
 
-      // === 十五维度 ===
-      y += 10;
-      ctx.fillStyle = '#667eea'; ctx.font = 'bold 12px sans-serif'; ctx.letterSpacing='2px'; ctx.textAlign='left';
-      ctx.fillText('十五维度评分', 40, y);
-      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(40,y+8); ctx.lineTo(W-40,y+8); ctx.stroke(); y += 26;
+      if(r.dims&&r.dims.length>0){
+        const colW=(INNER-dimPad*2-16)/2,gap=16,rowH=34,rows=Math.ceil(r.dims.length/2);
+        r.dims.forEach((d,i)=>{
+          const col=i%2,row=Math.floor(i/2),isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
+          const dx=isOddLast?CW/SCALE/2-colW/2:PAD+dimPad+col*(colW+gap),dcw=colW,dy=y+row*rowH;
+          
+          // 标签名+数值 (flex:space-between)
+          ctx.fillStyle='#555';ctx.font='11px sans-serif';ctx.textAlign='left';
+          ctx.fillText(d.name,dx,dy+8);
+          ctx.textAlign='right';ctx.fillStyle='#667eea';ctx.font='700 11px sans-serif';
+          ctx.fillText(d.val+'%',dx+dcw,dy+8);
 
-      if (r.dims && r.dims.length > 0) {
-        const colW = (W-90)/2, gap=10, rowH=46, rows=Math.ceil(r.dims.length/2);
-        r.dims.forEach((d,i) => {
-          const col=i%2, row=Math.floor(i/2), isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
-          const dx=isOddLast ? W/2-colW/2 : 45+col*(colW+gap);
-          const dcw = colW, dy=y+row*rowH;
-
-          ctx.fillStyle='#999'; ctx.font='11px sans-serif'; ctx.textAlign='left';
-          ctx.fillText(d.name, dx, dy+10);
-          ctx.textAlign='right'; ctx.fillStyle='#a78bfa'; ctx.font='bold 13px sans-serif';
-          ctx.fillText(d.val+'%', dx+dcw, dy+10);
-
-          const bY=dy+17, bH=6;
-          ctx.fillStyle='#151528'; roundRect(ctx,dx,bY,dcw,bH,3); ctx.fill();
+          // 进度条 (4px高)
+          const bY=dy+12,bH=4;
+          ctx.fillStyle='#1a1e2e';roundRect(ctx,dx,bY,dcw,bH,2);ctx.fill();
           const fw=Math.max(bH,dcw*d.val/100);
-          ctx.fillStyle='#667eea'; roundRect(ctx,dx,bY,fw,bH,3); ctx.fill();
+          ctx.fillStyle='#667eea';roundRect(ctx,dx,bY,fw,bH,2);ctx.fill();
         });
-        y += rows*rowH + 24;
+        dimH=rows*rowH+dimPad*2;
+        y+=rows*rowH+dimPad;
+
+        // 绘制维度区域的圆角背景框（在内容下方）
+        // 用半透明覆盖的方式不太好，直接在前面画背景即可——这里跳过因为内容已经画好了
       }
 
-      // === 分隔线 ===
-      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(60,y); ctx.lineTo(W-60,y); ctx.stroke(); y+=22;
+      y+=16;
 
-      // === 二维码区域 ===
-      const qS=150, qX=W/2-qS/2;
-      // 白底圆角
+      // === 10. 分隔线 ===
+      ctx.strokeStyle='#1e1e3f'; ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(PAD+30,y);ctx.lineTo(CW/SCALE-PAD-30,y);ctx.stroke();
+      y+=24;
+
+      // === 11. 二维码引流区域 ===
+      const qS=140,qX=CW/SCALE/2-qS/2;
+      // 白底圆角背景
       roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
-      // 二维码
-      ctx.drawImage(qrImg,qX,y,qS,qS); y+=qS+30;
+      // 二维码图片
+      ctx.drawImage(qrImg,qX,y,qS,qS);
+      y+=qS+28; // 二维码到文案的间距
 
       // 引流文案
-      ctx.fillStyle='#667eea'; ctx.font='bold 15px sans-serif'; ctx.textAlign='center';
-      ctx.fillText('👆 扫码测测你的人格类型',W/2,y); y+=24;
-      ctx.fillStyle='#555'; ctx.font='11px sans-serif';
-      ctx.fillText('长按图片保存 · 分享到朋友圈',W/2,y);
+      ctx.fillStyle='#667eea';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+      ctx.fillText('\U0001F446 扫码测测你的人格类型',CW/SCALE/2,y);
+      y+=22;
+      ctx.fillStyle='#555';ctx.font='11px sans-serif';
+      ctx.fillText('长按图片保存 · 分享到朋友圈',CW/SCALE/2,y);
+      y+=20;
 
-      resolve(c.toDataURL('image/png'));
+      // 裁剪画布到实际使用高度
+      const finalCanvas=document.createElement('canvas');
+      finalCanvas.width=CW; finalCanvas.height=Math.round(y*SCALE);
+      const fCtx=finalCanvas.getContext('2d');
+      fCtx.drawImage(c,0,0,CW,Math.round(y*SCALE),0,0,CW,Math.round(y*SCALE));
+
+      resolve(finalCanvas.toDataURL('image/png'));
     }
   });
 }
 
 function roundRect(ctx,x,y,w,h,r){
+  if(w<0){w=-w;x-=w;}if(h<0){h=-h;y-=h;}
+  r=Math.min(r,Math.min(w,h)/2);
   ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
 }
 
