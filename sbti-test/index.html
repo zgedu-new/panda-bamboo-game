@@ -1189,6 +1189,9 @@ function retest() {
 // ===== 保存图片功能（原生Canvas，严格按结果页样式绘制）=====
 let currentResultData = null;
 
+// 二维码内嵌base64（避免外部图片加载卡住）
+const QR_BASE64 = 'data:image/jpeg;base64,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';
+
 function isWeChat() {
   return navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
 }
@@ -1215,7 +1218,6 @@ function drawResultCard(r) {
     const INNER = CW - 2*PAD; // 内容宽
     const c = document.createElement('canvas');
     c.width = CW;
-    // 先预估高度，后面动态调整
     let H = 1400 * SCALE;
     c.height = H;
     const ctx = c.getContext('2d');
@@ -1226,7 +1228,7 @@ function drawResultCard(r) {
     roundRect(ctx, 0, 0, CW/SCALE, H/SCALE, 16);
     ctx.fill();
 
-    // 加载头像SVG
+    // 只需加载头像SVG一个图片（二维码已base64内嵌）
     const tmpDiv = document.createElement('div');
     tmpDiv.innerHTML = `<svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
     const svgEl = tmpDiv.querySelector('svg');
@@ -1234,55 +1236,30 @@ function drawResultCard(r) {
     const svgUrl = URL.createObjectURL(svgBlob);
 
     const avatarImg = new Image();
-    const qrImg = new Image();
-    let loaded = 0, total = 2, resolved = false;
 
-    // 超时保护：8秒后无论图片是否加载完都强制渲染
-    const timer = setTimeout(() => {
-      if (!resolved) { resolved = true; console.warn('图片加载超时，强制渲染'); render(); }
-    }, 8000);
-
-    function onResourceDone() {
-      loaded++;
-      if (loaded >= total && !resolved) {
-        resolved = true; clearTimeout(timer); render();
-      }
-    }
-
-    avatarImg.onload = onResourceDone;
-    avatarImg.onerror = (e) => { console.warn('头像加载失败:', e); onResourceDone(); };
+    avatarImg.onload = () => render(avatarImg);
+    avatarImg.onerror = (e) => { console.warn('头像加载失败，使用默认', e); render(null); };
     avatarImg.src = svgUrl;
 
-    // 二维码路径：尝试相对路径和绝对路径
-    const qrPaths = ['qrcode.jpg', location.pathname.replace(/[^/]*$/, '') + 'qrcode.jpg'];
-    let qrIdx = 0;
-    qrImg.onload = onResourceDone;
-    qrImg.onerror = () => {
-      qrIdx++;
-      if (qrIdx < qrPaths.length) {
-        qrImg.src = qrPaths[qrIdx];
-      } else {
-        console.warn('二维码图片加载失败，使用占位');
-        // 创建一个白色占位图，防止绘制报错
-        const pc = document.createElement('canvas'); pc.width=140; pc.height=140;
-        const pt = pc.getContext('2d'); pt.fillStyle='#fff'; pt.fillRect(0,0,140,140);
-        pt.fillStyle='#333'; pt.font='12px sans-serif'; pt.textAlign='center';
-        pt.fillText('QR Code',70,75);
-        qrImg.src = pc.toDataURL();
-      }
-    };
-    qrImg.src = qrPaths[qrIdx];
+    // 超时保护：5秒后强制渲染（即使头像没加载完）
+    const timer = setTimeout(() => { console.warn('头像加载超时，使用空头像渲染'); render(null); }, 5000);
 
-    function render() {
+    function render(avImg) {
+      clearTimeout(timer);
+      try { URL.revokeObjectURL(svgUrl); } catch(e){}
+
+      let y = 28;
       let y = 28; // 从顶部padding开始
 
       // === 1. 头像 (120px圆形, #13132a背景, 3px边框#1e1e3f) ===
       const avSize = 120, avX = CW/SCALE/2, avY = y + avSize/2;
       ctx.beginPath(); ctx.arc(avX, avY, avSize/2+2, 0, Math.PI*2);
       ctx.fillStyle='#13132a'; ctx.fill(); ctx.strokeStyle='#1e1e3f'; ctx.lineWidth=3; ctx.stroke();
-      ctx.save(); ctx.beginPath(); ctx.arc(avX,avY,avSize/2-1,0,Math.PI*2); ctx.clip();
-      ctx.drawImage(avatarImg, avX-avSize/2+1,y+1,avSize-2,avSize-2);
-      ctx.restore(); URL.revokeObjectURL(svgUrl);
+      if (avImg) {
+        ctx.save(); ctx.beginPath(); ctx.arc(avX,avY,avSize/2-1,0,Math.PI*2); ctx.clip();
+        ctx.drawImage(avImg, avX-avSize/2+1,y+1,avSize-2,avSize-2);
+        ctx.restore();
+      }
       y += avSize + 12; // margin-bottom:16px 减一点
 
       // === 2. 匹配度文字 "系统判定匹配度" (13px, #667eea, bold, letter-spacing:1px) ===
@@ -1366,30 +1343,39 @@ function drawResultCard(r) {
       ctx.beginPath();ctx.moveTo(PAD+30,y);ctx.lineTo(CW/SCALE-PAD-30,y);ctx.stroke();
       y+=24;
 
-      // === 11. 二维码引流区域 ===
-      const qS=140,qX=CW/SCALE/2-qS/2;
+      // === 11. 二维码引流区域（使用内嵌base64，不依赖外部文件）===
+      const qS=140, qX=CW/SCALE/2-qS/2;
       // 白底圆角背景
       roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
-      // 二维码图片
-      ctx.drawImage(qrImg,qX,y,qS,qS);
-      y+=qS+28; // 二维码到文案的间距
+      // 绘制二维码（base64图片）
+      const qrImg = new Image();
+      qrImg.onload = () => {
+        ctx.drawImage(qrImg,qX,y,qS,qS);
+        finishCard();
+      };
+      qrImg.onerror = () => { console.warn('base64二维码渲染失败'); finishCard(); };
+      qrImg.src = QR_BASE64;
 
-      // 引流文案
-      ctx.fillStyle='#667eea';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
-      ctx.fillText('\U0001F446 扫码测测你的人格类型',CW/SCALE/2,y);
-      y+=22;
-      ctx.fillStyle='#555';ctx.font='11px sans-serif';
-      ctx.fillText('长按图片保存 · 分享到朋友圈',CW/SCALE/2,y);
-      y+=20;
+      function finishCard() {
+        y += qS + 28; // 二维码到文案的间距
 
-      // 裁剪画布到实际使用高度
-      const finalCanvas=document.createElement('canvas');
-      finalCanvas.width=CW; finalCanvas.height=Math.round(y*SCALE);
-      const fCtx=finalCanvas.getContext('2d');
-      fCtx.drawImage(c,0,0,CW,Math.round(y*SCALE),0,0,CW,Math.round(y*SCALE));
+        // 引流文案
+        ctx.fillStyle='#667eea';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+        ctx.fillText('\U0001F446 扫码测测你的人格类型',CW/SCALE/2,y);
+        y+=22;
+        ctx.fillStyle='#555';ctx.font='11px sans-serif';
+        ctx.fillText('长按图片保存 · 分享到朋友圈',CW/SCALE/2,y);
+        y+=20;
 
-      resolve(finalCanvas.toDataURL('image/png'));
-    }
+        // 裁剪画布到实际使用高度
+        const finalCanvas=document.createElement('canvas');
+        finalCanvas.width=CW; finalCanvas.height=Math.round(y*SCALE);
+        const fCtx=finalCanvas.getContext('2d');
+        fCtx.drawImage(c,0,0,CW,Math.round(y*SCALE),0,0,CW,Math.round(y*SCALE));
+
+        resolve(finalCanvas.toDataURL('image/png'));
+      } // finishCard结束
+    } // render结束
   });
 }
 
