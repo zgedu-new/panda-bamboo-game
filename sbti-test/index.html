@@ -1224,7 +1224,7 @@ function drawResultCard(r) {
     const INNER = CW - 2*PAD;
     const c = document.createElement('canvas');
     c.width = CW;
-    c.height = 1400 * SCALE;
+    c.height = 1600 * SCALE;
     const ctx = c.getContext('2d');
     ctx.scale(SCALE, SCALE);
     ctx.fillStyle = '#0a0a0f';
@@ -1299,7 +1299,9 @@ function drawResultCard(r) {
       ctx.fillStyle='#667eea'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
       ctx.fillText('卍五维度评分',PAD+16,y+15); y += 35;
       if(r.dims&&r.dims.length>0){
+        console.log('[DEBUG] r.dims.length =', r.dims.length);
         const colW=(INNER-32-20)/2,gap=20,rowH=42,rows=Math.ceil(r.dims.length/2);
+        console.log('[DEBUG] rows =', rows);
         r.dims.forEach((d,i)=>{
           const col=i%2,row=Math.floor(i/2),isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
           const dx=isOddLast?CW/SCALE/2-colW/2:PAD+16+col*(colW+gap),dcw=colW,dy=y+row*rowH;
