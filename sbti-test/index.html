@@ -1235,16 +1235,43 @@ function drawResultCard(r) {
 
     const avatarImg = new Image();
     const qrImg = new Image();
-    let done = 0;
-    const check = () => { if (++done >= 2) render(); };
+    let loaded = 0, total = 2, resolved = false;
 
-    avatarImg.onload = check;
-    avatarImg.onerror = () => { done++; if(done>=2) render(); };
+    // 超时保护：8秒后无论图片是否加载完都强制渲染
+    const timer = setTimeout(() => {
+      if (!resolved) { resolved = true; console.warn('图片加载超时，强制渲染'); render(); }
+    }, 8000);
+
+    function onResourceDone() {
+      loaded++;
+      if (loaded >= total && !resolved) {
+        resolved = true; clearTimeout(timer); render();
+      }
+    }
+
+    avatarImg.onload = onResourceDone;
+    avatarImg.onerror = (e) => { console.warn('头像加载失败:', e); onResourceDone(); };
     avatarImg.src = svgUrl;
 
-    qrImg.onload = check;
-    qrImg.onerror = () => { done++; if(done>=2) render(); };
-    qrImg.src = 'qrcode.jpg';
+    // 二维码路径：尝试相对路径和绝对路径
+    const qrPaths = ['qrcode.jpg', location.pathname.replace(/[^/]*$/, '') + 'qrcode.jpg'];
+    let qrIdx = 0;
+    qrImg.onload = onResourceDone;
+    qrImg.onerror = () => {
+      qrIdx++;
+      if (qrIdx < qrPaths.length) {
+        qrImg.src = qrPaths[qrIdx];
+      } else {
+        console.warn('二维码图片加载失败，使用占位');
+        // 创建一个白色占位图，防止绘制报错
+        const pc = document.createElement('canvas'); pc.width=140; pc.height=140;
+        const pt = pc.getContext('2d'); pt.fillStyle='#fff'; pt.fillRect(0,0,140,140);
+        pt.fillStyle='#333'; pt.font='12px sans-serif'; pt.textAlign='center';
+        pt.fillText('QR Code',70,75);
+        qrImg.src = pc.toDataURL();
+      }
+    };
+    qrImg.src = qrPaths[qrIdx];
 
     function render() {
       let y = 28; // 从顶部padding开始
