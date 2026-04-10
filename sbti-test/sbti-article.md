@@ -144,30 +144,39 @@ git remote add origin https://github.com/zgedu-new/panda-bamboo-game.git
 git push -u origin main
 ```
 
-### 第二步：配置GitHub Pages
+### 第二步：配置Cloudflare Pages
 
-在GitHub仓库的Settings → Pages选项中：
+代码推到GitHub之后，接入Cloudflare Pages实现自动化部署：
 
-1. Source 选择 **Deploy from a branch**
-2. Branch 选择 **main**
-3. Folder 选择 **/ (root)** 或 **/sbti-test**（取决于你的目录结构）
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. 进入 **Workers & Pages** → **Create application** → **Pages**
+3. 选择 **Connect to Git**
+4. 授权GitHub仓库，选择对应的仓库和分支
+5. 构建设置：
+   - Build command: `// 无需构建，留空`
+   - Build output directory: `/sbti-test`
+6. 点击 **Save and Deploy**
 
-点击Save，等待1-2分钟，网站就上线了。
+Cloudflare会自动检测代码更新，每次push后自动部署，完全不用手动操作。
 
 ### 第三步：绑定自定义域名（可选）
 
-如果你有自己的域名，可以在Custom domain里填入域名地址，开启HTTPS。
+在Pages项目设置 → Custom domains 中添加你的域名，开启免费HTTPS。
 
 ### 最终效果
 
 部署完成后，用户可以直接访问：
 ```
-https://zgedu-new.github.io/panda-bamboo-game/sbti-test/
+https://your-domain.com/sbti-test/
 ```
 
-完全免费，不需要买服务器。
+**Cloudflare Pages的优势：**
+- 完全免费，流量无限制
+- 全球CDN加速，访问速度快
+- 自动HTTPS
+- 每次push自动部署
 
-【配图3：GitHub Pages部署完成截图，显示网站已上线】
+【配图3：Cloudflare Pages部署完成截图，显示网站已上线】
 
 ## 最终成品包含什么？
 
