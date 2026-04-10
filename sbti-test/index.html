@@ -1243,7 +1243,7 @@ function drawResultCard(r) {
     function doRender(avImg) {
       if (resolved) return; resolved = true;
       try { URL.revokeObjectURL(svgUrl); } catch(e){}
-      let y = 28;
+      let y = 40;
 
       // === 1. Avatar ===
       const avSize=120, avX=CW/SCALE/2, avY=y+avSize/2;
@@ -1254,74 +1254,179 @@ function drawResultCard(r) {
         ctx.drawImage(avImg, avX-avSize/2+1, y+1, avSize-2, avSize-2);
         ctx.restore();
       }
-      y += avSize + 12;
+      y += avSize + 28;
 
       // === 2. Match text ===
       ctx.fillStyle='#667eea'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
-      ctx.fillText('\u7CFB\u7EDF\u5224\u5B9A\u5339\u914D\u5EA6', CW/SCALE/2, y); y += 8;
+      ctx.fillText('系统判定匹配度', CW/SCALE/2, y); y += 18;
 
       // === 3. Progress bar ===
-      const barX=PAD, barW=INNER, barH=6;
-      roundRect(ctx,barX,y,barW,barH,3); ctx.fillStyle='#1a1e2e'; ctx.fill();
+      const barX=PAD, barW=INNER, barH=8;
+      roundRect(ctx,barX,y,barW,barH,4); ctx.fillStyle='#1a1e2e'; ctx.fill();
       const fillW=barW*(parseInt(r.matchPct)||0)/100;
-      if(fillW>3){roundRect(ctx,barX,y,fillW,barH,3); ctx.fillStyle='#667eea'; ctx.fill();}
-      y += barH + 4;
+      if(fillW>4){roundRect(ctx,barX,y,fillW,barH,4); ctx.fillStyle='#667eea'; ctx.fill();}
+      y += barH + 16;
 
       // === 4. Percentage ===
-      ctx.fillStyle='#667eea'; ctx.font='900 28px sans-serif';
-      ctx.fillText((r.matchPct||'?')+'%',CW/SCALE/2,y+20); y += 26;
+      ctx.fillStyle='#667eea'; ctx.font='900 32px sans-serif';
+      ctx.fillText((r.matchPct||'?')+'%',CW/SCALE/2,y+26); y += 36;
 
       // === 5. Type label ===
-      ctx.fillStyle='#555'; ctx.font='13px sans-serif';
-      ctx.fillText(r.typeLabel||'',CW/SCALE/2,y); y += 22;
+      ctx.fillStyle='#555'; ctx.font='14px sans-serif';
+      ctx.fillText(r.typeLabel||'',CW/SCALE/2,y); y += 28;
 
       // === 6. Name ===
-      ctx.fillStyle='#fff'; ctx.font='900 36px sans-serif';
-      ctx.fillText(r.name||'',CW/SCALE/2,y+30); y += 42;
+      ctx.fillStyle='#fff'; ctx.font='900 40px sans-serif';
+      ctx.fillText(r.name||'',CW/SCALE/2,y+34); y += 48;
 
       // === 7. Motto ===
-      ctx.fillStyle='#666'; ctx.font='italic 13px sans-serif';
-      ctx.fillText('\u201C'+(r.motto||'')+'\u201D',CW/SCALE/2,y); y += 24;
+      ctx.fillStyle='#999'; ctx.font='italic 14px sans-serif';
+      ctx.fillText('“'+(r.motto||'')+'”',CW/SCALE/2,y); y += 32;
 
       // === 8. Sub types ===
       if(r.subTypes && r.subTypes.length>0){
-        const pills=r.subTypes.map(s=>s.name).join(' \u00B7 ');
+        const pills=r.subTypes.map(s=>s.name).join(' · ');
         ctx.fillStyle='#1a1e2e';
-        const pw=ctx.measureText(pills).width+36;
-        roundRect(ctx,CW/SCALE/2-pw/2,y-14,pw,28,14);ctx.fill();
-        ctx.fillStyle='#888'; ctx.font='12px sans-serif';
-        ctx.fillText('\u6B21\u7EA7\u5339\u914D\uFF1A'+pills,CW/SCALE/2,y+4);
-        y+=38;
+        const pw=ctx.measureText(pills).width+44;
+        roundRect(ctx,CW/SCALE/2-pw/2,y-16,pw,32,16);ctx.fill();
+        ctx.fillStyle='#aaa'; ctx.font='13px sans-serif';
+        ctx.fillText('次级匹配：'+pills,CW/SCALE/2,y+5);
+        y+=48;
       }
 
       // === 9. Dimensions ===
-      y+=4;
-      ctx.fillStyle='#667eea'; ctx.font='bold 13px sans-serif'; ctx.textAlign='left';
-      ctx.fillText('\u534D\u4E94\u7EF4\u5EA6\u8BC4\u5206',PAD+16,y+13); y+=30;
+      y += 20;
+      ctx.fillStyle='#667eea'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('卍五维度评分',PAD+16,y+15); y += 35;
       if(r.dims&&r.dims.length>0){
-        const colW=(INNER-32-16)/2,gap=16,rowH=34,rows=Math.ceil(r.dims.length/2);
+        const colW=(INNER-32-20)/2,gap=20,rowH=42,rows=Math.ceil(r.dims.length/2);
         r.dims.forEach((d,i)=>{
           const col=i%2,row=Math.floor(i/2),isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
           const dx=isOddLast?CW/SCALE/2-colW/2:PAD+16+col*(colW+gap),dcw=colW,dy=y+row*rowH;
-          ctx.fillStyle='#555';ctx.font='11px sans-serif';ctx.textAlign='left';
-          ctx.fillText(d.name,dx,dy+8);
-          ctx.textAlign='right';ctx.fillStyle='#667eea';ctx.font='700 11px sans-serif';
-          ctx.fillText(d.val+'%',dx+dcw,dy+8);
-          const bY=dy+12,bH=4;
-          ctx.fillStyle='#1a1e2e';roundRect(ctx,dx,bY,dcw,bH,2);ctx.fill();
+          ctx.fillStyle='#777';ctx.font='12px sans-serif';ctx.textAlign='left';
+          ctx.fillText(d.name,dx,dy+10);
+          ctx.textAlign='right';ctx.fillStyle='#667eea';ctx.font='bold 12px sans-serif';
+          ctx.fillText(d.val+'%',dx+dcw,dy+10);
+          const bY=dy+15,bH=5;
+          ctx.fillStyle='#1a1e2e';roundRect(ctx,dx,bY,dcw,bH,3);ctx.fill();
           const fw=Math.max(bH,dcw*d.val/100);
-          ctx.fillStyle='#667eea';roundRect(ctx,dx,bY,fw,bH,2);ctx.fill();
+          ctx.fillStyle='#667eea';roundRect(ctx,dx,bY,fw,bH,3);ctx.fill();
         });
-        y+=rows*rowH+32;
+        y+=rows*rowH+44;
       }
 
-      y+=16;
+      y += 28;
 
       // === 10. Divider ===
-      ctx.strokeStyle='#1e1e3f'; ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(PAD+30,y);ctx.lineTo(CW/SCALE-PAD-30,y);ctx.stroke(); y+=24;
+      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(PAD+40,y);ctx.lineTo(CW/SCALE-PAD-40,y);ctx.stroke(); y += 32;
 
-      // === 11. QR Code (preloaded global image) ===
+      // === 11. QR Code (preloaded global image) ===// === 11. QR Code (preloaded global image) ===
+      const qS=140, qX=CW/SCALE/2-qS/2;
+      roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
+      const qrImg = getQRImage();
+      if (qrImg.complete) {
+        ctx.drawImage(qrImg,qX,y,qS,qS);
+        finishDraw();
+      } else {
+        qrImg.onload = function() { ctx.drawImage(qrImg,qX,y,qS,qS); finishDraw(); };
+        qrImg.onerror = function() { finishDraw(); };
+      }
+
+      function finishDraw() {
+        y += qS + 28;
+        ctx.fillStyle='#667eea';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+        ctx.fillText('\uD83D\DC47 \u626B\u7801\u6D4B\u6D4B\u4F60\u7684\u683C\u7C7B\u578B',CW/SCALE/2,y); y+=22;
+        ctx.fillStyle='#555';ctx.font='11px sans-serif';
+        ctx.fillText('\u957F\u6309\u56FE\u7247\u4FDD\u5B58 \u00B7 \u5206\u4EAB\u5230\u670B\u53CB\u5708',CW/SCALE/2,y); y+=20;
+        const finalCanvas=document.createElement('canvas');
+        finalCanvas.width=CW; finalCanvas.height=Math.round(y*SCALE);
+        const fCtx=finalCanvas.getContext('2d');
+        fCtx.drawImage(c,0,0,CW,Math.round(y*SCALE),0,0,CW,Math.round(y*SCALE));
+        resolve(finalCanvas.toDataURL('image/png'));
+      }
+    }
+
+    avatarImg.onload = () => doRender(avatarImg);
+    avatarImg.onerror = () => doRender(null);
+    setTimeout(() => { if (!resolved) { resolved=true; doRender(null); } }, 3000);
+    avatarImg.src = svgUrl;
+  });
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  if(w<0){w=-w;x-=w;}if(h<0){h=-h;y-=h;}
+  r=Math.min(r,Math.min(w,h)/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function showWeChatSave(imgData) {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.add('show');
+
+  document.getElementById('saveCard').style.display = 'none';
+  
+  const tip = document.getElementById('saveTip');
+  tip.innerHTML = `
+    <img src="${imgData}" id="saveResultImg"
+         style="max-width:100%;max-height:55vh;border-radius:16px;border:2px solid #3a3a5a;box-shadow:0 8px 32px rgba(0,0,0,0.5);" />
+    <div style="margin-top:18px;color:#f093fb;font-size:15px;line-height:1.8;">
+      👆 长按上方图片<br>保存后分享到朋友圈
+    </div>
+  `;
+
+  const closeBtn = overlay.querySelector('.close-save-btn');
+  closeBtn.style.display = 'inline-block';
+
+  closeBtn.onclick = () => {
+    closeSaveOverlay();
+    const btn = document.querySelector('.share-btn.save-img');
+    btn.textContent = '📸 保存图片';
+  };
+}
+
+function downloadImage(imgData) {
+  const link = document.createElement('a');
+  link.href = imgData;
+  link.download = 'SBTI-测试结果.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function closeSaveOverlay() {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.remove('show');
+  document.getElementById('saveCard').style.display = '';
+
+  document.getElementById('saveTip').innerHTML =
+    `📸 长按上方卡片保存图片<br>或点击下方按钮下载`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// 背景粒子
+(function initParticles() {
+  const container = document.getElementById('particles');
+  const colors = ['#667eea', '#764ba2', '#f093fb', '#ff6b81', '#667eea'];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText = `width:${size}px;height:${size}px;background:${color};left:${Math.random()*100}%;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*5}s;`;
+    container.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
+// === 11. QR Code (preloaded global image) ===
       const qS=140, qX=CW/SCALE/2-qS/2;
       roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
       const qrImg = getQRImage();
