@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBTI 人格测试 — 2026最火自嘲测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .bg-particles {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      animation: float linear infinite; opacity: 0.12;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.12; }
+      90% { opacity: 0.12; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 560px;
+      padding: 24px 20px; text-align: center;
+    }
+
+    /* ===== 首页 ===== */
+    .logo-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 14px; border-radius: 20px;
+      margin-bottom: 16px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+    .logo-title {
+      font-size: 56px; font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.2; letter-spacing: -2px;
+    }
+    .logo-subtitle {
+      font-size: 14px; color: #555; margin-top: 8px; letter-spacing: 1px;
+    }
+    .logo-desc {
+      font-size: 14px; color: #555; margin-top: 16px; line-height: 1.8;
+    }
+    .hot-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 3px 12px; border-radius: 12px;
+      animation: pulse 2s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    .start-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-size: 18px; font-weight: 700;
+      padding: 14px 52px; border-radius: 40px; border: none;
+      cursor: pointer; margin-top: 16px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 24px rgba(102, 126, 234, 0.4);
+      letter-spacing: 2px;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+    }
+
+    .stats-bar {
+      display: flex; gap: 16px; justify-content: center;
+      margin-top: 20px; font-size: 12px; color: #444;
+    }
+    .stat-item { display: flex; align-items: center; gap: 4px; }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* ===== 进度条 ===== */
+    .progress-wrap { display: none; margin-bottom: 24px; }
+    .progress-bar-bg {
+      width: 100%; height: 5px; background: #1a1a2e;
+      border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      border-radius: 3px; transition: width 0.4s ease; width: 0%;
+    }
+    .progress-text { font-size: 12px; color: #444; margin-top: 6px; text-align: right; }
+
+    /* ===== 题目 ===== */
+    .quiz-area { display: none; text-align: left; }
+    .question-number { font-size: 11px; color: #667eea; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+    .question-text { font-size: 20px; font-weight: 700; color: #fff; line-height: 1.6; margin-bottom: 24px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      background: #13132a; border: 2px solid #1e1e3f;
+      border-radius: 14px; padding: 14px 18px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; gap: 12px;
+      color: #888; font-size: 14px; line-height: 1.5;
+    }
+    .option:hover { border-color: #667eea; background: #1a1a35; color: #fff; transform: translateX(4px); }
+    .option.selected { border-color: #667eea; background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15)); color: #fff; }
+    .option-letter {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #1e1e3f; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; flex-shrink: 0; transition: all 0.2s;
+    }
+    .option.selected .option-letter { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+
+    /* ===== 结果页 ===== */
+    .result-area { display: none; text-align: center; }
+
+    /* 头像 */
+    .result-avatar {
+      width: 120px; height: 120px; margin: 0 auto 16px;
+      border-radius: 50%; overflow: hidden;
+      background: #13132a; border: 3px solid #1e1e3f;
+      display: flex; align-items: center; justify-content: center;
+      animation: bounceIn 0.8s ease;
+    }
+    .result-avatar svg { width: 100%; height: 100%; }
+    @keyframes bounceIn {
+      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      50% { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .result-match {
+      font-size: 13px; color: #667eea; font-weight: 700;
+      margin-bottom: 8px; letter-spacing: 1px;
+    }
+    .result-match-bar {
+      width: 100%; height: 6px; background: #1a1a2e;
+      border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+    }
+    .result-match-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      transition: width 1s ease;
+    }
+    .result-match-pct {
+      font-size: 28px; font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .result-type { font-size: 13px; color: #555; letter-spacing: 3px; margin-bottom: 4px; }
+    .result-name { font-size: 36px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    .result-motto {
+      font-size: 13px; color: #666; font-style: italic;
+      margin-bottom: 20px; padding: 0 16px;
+    }
+
+    /* 人格解读 */
+    .result-desc {
+      background: #13132a; border: 1px solid #1e1e3f;
+      border-radius: 16px; padding: 20px;
+      font-size: 13px; color: #888; line-height: 2;
+      text-align: left; margin-bottom: 20px;
+    }
+    .result-desc strong { color: #667eea; }
+
+    /* 次级人格 */
+    .sub-types {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .sub-type {
+      background: #1a1a2e; border: 1px solid #2a2a4a;
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 12px; color: #555;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .sub-type .sub-icon { width: 20px; height: 20px; }
+    .sub-type .sub-name { color: #888; }
+
+    /* 十五维度 */
+    .dimensions-title {
+      font-size: 13px; color: #667eea; font-weight: 700;
+      letter-spacing: 2px; margin-bottom: 14px; text-align: left;
+    }
+    .dimensions-grid {
+      background: #13132a; border: 1px solid #1e1e3f;
+      border-radius: 16px; padding: 16px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px 16px; margin-bottom: 20px; text-align: left;
+    }
+    .dim-item { }
+    .dim-label {
+      font-size: 11px; color: #555; margin-bottom: 4px;
+      display: flex; justify-content: space-between;
+    }
+    .dim-val { color: #667eea; font-weight: 700; }
+    .dim-bar-bg {
+      width: 100%; height: 4px; background: #1a1a2e;
+      border-radius: 2px; overflow: hidden;
+    }
+    .dim-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 1.2s ease;
+    }
+
+    /* 分享按钮 */
+    .share-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .share-btn {
+      padding: 10px 22px; border-radius: 24px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;
+    }
+    .share-btn.primary {
+      background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    }
+    .share-btn.secondary { background: #1e1e3f; color: #666; border: 1px solid #2a2a4a; }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .share-btn.save-img {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: #fff;
+    }
+
+    /* 保存图片弹层 */
+    .save-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; overflow-y: auto;
+    }
+    .save-overlay.show { display: flex; }
+    .save-card {
+      width: 100%; max-width: 400px;
+      background: #1a1a2e;
+      border-radius: 20px; border: 2px solid #2a2a4a;
+      overflow: hidden; text-align: center;
+    }
+    .save-card-header {
+      padding: 16px; font-size: 12px; color: #667eea;
+      letter-spacing: 2px; border-bottom: 1px solid #2a2a4a;
+    }
+    .save-card-body { padding: 20px 16px; }
+    .save-avatar-lg {
+      width: 90px; height: 90px; margin: 0 auto 12px;
+      border-radius: 50%; overflow: hidden;
+      background: #13132a; border: 3px solid #667eea;
+    }
+    .save-avatar-lg svg { width: 100%; height: 100%; }
+    .save-type-tag {
+      font-size: 11px; color: #555; letter-spacing: 3px;
+    }
+    .save-name-lg {
+      font-size: 32px; font-weight: 900; color: #fff;
+      margin: 6px 0;
+    }
+    .save-motto-sm {
+      font-size: 12px; color: #666; font-style: italic;
+      margin-bottom: 14px;
+    }
+    .save-match-row { margin-bottom: 14px; text-align: center; padding: 16px 0; background: #1f1f38; border-radius: 12px; margin-top: 12px;}
+    .save-match-label { font-size: 11px; color: #888; margin-bottom: 6px; letter-spacing: 2px; }
+    .save-pct-big {
+      font-size: 52px; font-weight: 900;
+      color: #a78bfa;
+      line-height: 1.1;
+    }
+    .save-dims-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; text-align: left; margin-top: 12px;
+    }
+    .save-dim-item { }
+    .save-dim-lbl { font-size: 10px; color:#888; display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .save-dim-val { color: #a78bfa; font-weight: 700; font-size: 10px; }
+    .save-dim-bar { width: 100%; height: 5px; background: #0f0f23; border-radius: 3px; overflow: hidden; }
+    .save-dim-fill { height: 100%; border-radius: 3px; background: #a78bfa; }
+    .save-card-footer {
+      padding: 12px; font-size: 10px; color: #333;
+      border-top: 1px solid #2a2a4a;
+    }
+    .save-tip {
+      color: #888; font-size: 13px; margin-top: 16px;
+      text-align: center; line-height: 1.8;
+    }
+    .close-save-btn {
+      margin-top: 16px; padding: 10px 36px; border-radius: 24px;
+      border: 1px solid #444; background: transparent;
+      color: #888; cursor: pointer; font-size: 13px;
+    }
+    .close-save-btn:hover { border-color: #666; color: #aaa; }
+
+    .retest-link {
+      display: inline-block; margin-top: 8px;
+      color: #333; font-size: 12px; cursor: pointer;
+      text-decoration: underline; text-decoration-style: dotted;
+    }
+    .retest-link:hover { color: #555; }
+
+    .footer {
+      text-align: center; font-size: 11px; color: #2a2a3a;
+      margin-top: 24px; padding: 0 20px;
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    @keyframes dimBar {
+      from { width: 0%; }
+      to { width: var(--target-width); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-particles" id="particles"></div>
+
+<div class="container">
+  <!-- 首页 -->
+  <div id="home" class="fade-in">
+    <div class="logo-badge">2026 最火自嘲测试</div>
+    <div class="logo-title">SBTI<br>人格测试</div>
+    <div class="logo-subtitle">Silly Big Personality Test</div>
+    <div class="logo-desc">
+      15道题，1分钟测出你的真实人格<br>
+      <span style="color:#667eea">27种</span> 魔性人格类型 + <span style="color:#764ba2">十五维度</span> 精准分析
+    </div>
+    <div class="hot-tag" style="margin-top: 20px; display: block; max-width: 320px; margin-left: auto; margin-right: auto;">🔥 4月9日热搜霸榜 · 已有 892万人 测试</div>
+    <div style="margin-top: 20px;"><button class="start-btn" onclick="startQuiz()">开始测试 →</button></div>
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-dot" style="background:#667eea"></div> 已测 892万</div>
+      <div class="stat-item"><div class="stat-dot" style="background:#ff6b81"></div> 最热标签 #死者</div>
+      <div class="stat-item"><div class="stat-dot" style="background:#f093fb"></div> 热搜持续中</div>
+    </div>
+    <div class="footer">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
+  </div>
+
+  <!-- 题目区 -->
+  <div id="quiz" class="quiz-area fade-in">
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">1 / 15</div>
+    </div>
+    <div class="question-number" id="qNum">第 1 题</div>
+    <div class="question-text" id="qText"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- 结果区 -->
+  <div id="result" class="result-area fade-in">
+    <div class="result-avatar" id="rAvatar"></div>
+    <div class="result-match">系统判定匹配度</div>
+    <div class="result-match-bar"><div class="result-match-fill" id="rMatchBar"></div></div>
+    <div class="result-match-pct" id="rMatchPct">0%</div>
+    <div class="result-type" id="rType"></div>
+    <div class="result-name" id="rName"></div>
+    <div class="result-motto" id="rMotto"></div>
+    <div class="sub-types" id="subTypes"></div>
+    <div class="result-desc" id="rDesc"></div>
+    <div class="dimensions-title">十五维度评分</div>
+    <div class="dimensions-grid" id="dimensionsGrid"></div>
+    <div class="share-btns">
+      <button class="share-btn primary" onclick="copyResult()">📋 复制结果</button>
+      <button class="share-btn save-img" onclick="saveAsImage()">📸 保存图片</button>
+      <button class="share-btn secondary" onclick="retest()">🔄 再测一次</button>
+    </div>
+    <div class="retest-link" onclick="retest()">重新测试</div>
+    <div class="footer">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
+  </div>
+
+  <!-- 保存图片弹层 -->
+  <div class="save-overlay" id="saveOverlay">
+    <div class="save-card" id="saveCard">
+      <div class="save-card-header">SBTI 人格测试结果</div>
+      <div class="save-card-body" id="saveCardBody"></div>
+      <div class="save-card-footer">长按图片保存 · 分享到朋友圈</div>
+    </div>
+    <div class="save-tip" id="saveTip">📸 长按上方卡片保存图片<br>或点击下方按钮下载</div>
+    <button class="close-save-btn" onclick="closeSaveOverlay()">关闭</button>
+  </div>
+</div>
+
+<script>
+// ========================================================
+// SVG 头像数据 (27种人格)
+// ========================================================
+const AVATARS = {
+  Dead: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="45" fill="#2d2d3a"/>
+    <circle cx="35" cy="40" r="7" fill="#555"/>
+    <circle cx="65" cy="40" r="7" fill="#555"/>
+    <path d="M35 65 Q50 55 65 65" stroke="#555" stroke-width="3" fill="none"/>
+    <path d="M25 28 L30 22 M75 28 L70 22" stroke="#444" stroke-width="2"/>
+    <path d="M42 28 L58 28" stroke="#444" stroke-width="2"/>
+  </svg>`,
+  Shit: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="55" rx="35" ry="30" fill="#8B4513"/>
+    <ellipse cx="50" cy="40" rx="25" ry="20" fill="#A0522D"/>
+    <ellipse cx="50" cy="28" rx="15" ry="12" fill="#CD853F"/>
+    <circle cx="40" cy="50" r="4" fill="#333"/>
+    <circle cx="60" cy="50" r="4" fill="#333"/>
+    <path d="M42 62 Q50 58 58 62" stroke="#333" stroke-width="2" fill="none"/>
+  </svg>`,
+  Malo: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#8B7355"/>
+    <circle cx="35" cy="42" r="9" fill="#fff"/>
+    <circle cx="65" cy="42" r="9" fill="#fff"/>
+    <circle cx="35" cy="42" r="5" fill="#333"/>
+    <circle cx="65" cy="42" r="5" fill="#333"/>
+    <ellipse cx="50" cy="56" rx="14" ry="10" fill="#5C4033"/>
+    <path d="M28 24 Q35 18 42 24 M58 24 Q65 18 72 24" stroke="#5C4033" stroke-width="4" fill="none"/>
+  </svg>`,
+  ATM: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="22" width="60" height="55" rx="6" fill="#2d5a3d"/>
+    <rect x="28" y="30" width="44" height="28" rx="4" fill="#1a3d2a"/>
+    <text x="50" y="48" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="bold">ATM</text>
+    <rect x="42" y="62" width="16" height="4" rx="2" fill="#c0c0c0"/>
+    <circle cx="50" cy="14" r="10" fill="#ffd700"/>
+    <text x="50" y="18" text-anchor="middle" fill="#b8860b" font-size="13">$</text>
+  </svg>`,
+  Fuck: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#ff4757"/>
+    <circle cx="35" cy="40" r="7" fill="#fff"/>
+    <circle cx="65" cy="40" r="7" fill="#fff"/>
+    <circle cx="35" cy="40" r="3" fill="#333"/>
+    <circle cx="65" cy="40" r="3" fill="#333"/>
+    <path d="M28 58 L42 52 M72 58 L58 52" stroke="#fff" stroke-width="4"/>
+    <path d="M44 70 L56 70" stroke="#fff" stroke-width="5"/>
+  </svg>`,
+  Solo: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#374151"/>
+    <circle cx="50" cy="46" r="28" fill="#4b5563"/>
+    <circle cx="38" cy="42" r="5" fill="#1f2937"/>
+    <circle cx="62" cy="42" r="5" fill="#1f2937"/>
+    <path d="M42 58 Q50 54 58 58" stroke="#1f2937" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="24" r="3" fill="#9ca3af" opacity="0.4"/>
+    <circle cx="28" cy="34" r="2" fill="#9ca3af" opacity="0.2"/>
+    <circle cx="72" cy="60" r="2" fill="#9ca3af" opacity="0.2"/>
+  </svg>`,
+  IMSB: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#553c3c"/>
+    <ellipse cx="50" cy="50" rx="30" ry="34" fill="#6b4c4c"/>
+    <circle cx="36" cy="45" r="6" fill="#8b6b6b"/>
+    <circle cx="64" cy="45" r="6" fill="#8b6b6b"/>
+    <path d="M40 62 Q50 56 60 62" stroke="#8b6b6b" stroke-width="2" fill="none"/>
+    <path d="M24 34 L30 28 M76 34 L70 28" stroke="#8b6b6b" stroke-width="2"/>
+  </svg>`,
+  Ghost: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 12 C72 12 88 28 88 54 C88 76 76 88 50 92 C24 88 12 76 12 54 C12 28 28 12 50 12" fill="#e2e8f0" opacity="0.85"/>
+    <circle cx="36" cy="46" r="7" fill="#2d3748"/>
+    <circle cx="64" cy="46" r="7" fill="#2d3748"/>
+    <ellipse cx="50" cy="62" rx="10" ry="6" fill="#2d3748" opacity="0.25"/>
+    <path d="M28 70 L34 62 L40 70 L46 62 L52 70 L58 62 L64 70 L70 62 L76 70" stroke="#d1d5db" stroke-width="2" fill="none"/>
+  </svg>`,
+  Robot: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="22" width="56" height="52" rx="10" fill="#4a5568"/>
+    <rect x="28" y="28" width="44" height="32" rx="5" fill="#1f2937"/>
+    <rect x="36" y="36" width="12" height="9" rx="2" fill="#4ade80"/>
+    <rect x="52" y="36" width="12" height="9" rx="2" fill="#4ade80"/>
+    <rect x="38" y="56" width="24" height="4" rx="2" fill="#6b7280"/>
+    <rect x="34" y="16" width="10" height="12" rx="3" fill="#4a5568"/>
+    <rect x="56" y="16" width="10" height="12" rx="3" fill="#4a5568"/>
+    <circle cx="39" cy="10" r="4" fill="#ef4444"/>
+    <circle cx="61" cy="10" r="4" fill="#ef4444"/>
+  </svg>`,
+  NPC: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#4b5563"/>
+    <circle cx="50" cy="48" r="30" fill="#6b7280"/>
+    <rect x="34" y="38" width="14" height="9" rx="2" fill="#374151"/>
+    <rect x="52" y="38" width="14" height="9" rx="2" fill="#374151"/>
+    <rect x="40" y="56" width="20" height="5" rx="2" fill="#374151"/>
+    <text x="50" y="88" text-anchor="middle" fill="#374151" font-size="11" font-weight="bold" letter-spacing="2">NPC</text>
+  </svg>`,
+  Chaos: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#4c1d95"/>
+    <circle cx="50" cy="50" r="35" fill="#5b21b6"/>
+    <path d="M28 38 Q42 28 50 38 Q58 48 72 38" stroke="#c4b5fd" stroke-width="3" fill="none"/>
+    <path d="M28 62 Q42 52 50 62 Q58 72 72 62" stroke="#c4b5fd" stroke-width="3" fill="none"/>
+    <circle cx="34" cy="34" r="5" fill="#f0abfc"/>
+    <circle cx="66" cy="34" r="5" fill="#f0abfc"/>
+    <circle cx="50" cy="72" r="5" fill="#f0abfc"/>
+    <circle cx="28" cy="55" r="3" fill="#f0abfc" opacity="0.5"/>
+    <circle cx="72" cy="45" r="3" fill="#f0abfc" opacity="0.5"/>
+  </svg>`,
+  Broken: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#374151"/>
+    <path d="M15 28 L32 50 L22 72" stroke="#6b7280" stroke-width="2" fill="none"/>
+    <path d="M85 28 L68 50 L78 72" stroke="#6b7280" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="46" r="22" fill="#4b5563"/>
+    <circle cx="42" cy="42" r="5" fill="#9ca3af"/>
+    <circle cx="58" cy="42" r="5" fill="#9ca3af"/>
+    <path d="M44 56 Q50 52 56 56" stroke="#9ca3af" stroke-width="2" fill="none"/>
+    <path d="M30 60 L50 72 L70 60" stroke="#4b5563" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
+  </svg>`,
+  Witch: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="58" r="34" fill="#4a1a6b"/>
+    <path d="M50 12 L33 46 L67 46 Z" fill="#6b2c91"/>
+    <circle cx="50" cy="16" r="6" fill="#fbbf24"/>
+    <circle cx="38" cy="52" r="6" fill="#f0abfc"/>
+    <circle cx="62" cy="52" r="6" fill="#f0abfc"/>
+    <path d="M40 66 Q50 60 60 66" stroke="#f0abfc" stroke-width="2" fill="none"/>
+    <path d="M50 46 L50 58 M42 52 L58 52" stroke="#6b2c91" stroke-width="2"/>
+  </svg>`,
+  Alien: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="52" rx="32" ry="42" fill="#2d5a3d"/>
+    <ellipse cx="50" cy="48" rx="26" ry="32" fill="#3d7a4d"/>
+    <ellipse cx="35" cy="42" rx="11" ry="7" fill="#000"/>
+    <ellipse cx="65" cy="42" rx="11" ry="7" fill="#000"/>
+    <ellipse cx="35" cy="42" rx="5" ry="3" fill="#4ade80"/>
+    <ellipse cx="65" cy="42" rx="5" ry="3" fill="#4ade80"/>
+    <path d="M42 62 Q50 56 58 62" stroke="#2d5a3d" stroke-width="2" fill="none"/>
+  </svg>`,
+  Zombie: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#3d5a3d"/>
+    <circle cx="50" cy="50" r="36" fill="#4b6b4b"/>
+    <circle cx="34" cy="44" r="7" fill="#2d4a2d"/>
+    <circle cx="66" cy="44" r="7" fill="#2d4a2d"/>
+    <circle cx="34" cy="42" r="3" fill="#8b0000"/>
+    <circle cx="66" cy="42" r="3" fill="#8b0000"/>
+    <path d="M40 62 Q50 68 60 62" stroke="#3d5a3d" stroke-width="4" fill="none"/>
+    <rect x="44" y="28" width="4" height="8" fill="#3d5a3d" opacity="0.5"/>
+    <rect x="54" y="26" width="6" height="6" fill="#3d5a3d" opacity="0.5"/>
+  </svg>`,
+  Vampire: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#1a1a2e"/>
+    <circle cx="50" cy="50" r="35" fill="#2d1a3d"/>
+    <path d="M42 54 L46 66 L50 54" fill="#fff"/>
+    <path d="M50 54 L54 66 L58 54" fill="#fff"/>
+    <circle cx="36" cy="42" r="6" fill="#dc2626"/>
+    <circle cx="64" cy="42" r="6" fill="#dc2626"/>
+    <circle cx="36" cy="42" r="3" fill="#000"/>
+    <circle cx="64" cy="42" r="3" fill="#000"/>
+    <path d="M20 30 Q30 20 40 28" stroke="#2d1a3d" stroke-width="3" fill="none"/>
+    <path d="M80 30 Q70 20 60 28" stroke="#2d1a3d" stroke-width="3" fill="none"/>
+  </svg>`,
+  Boss: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#78350f"/>
+    <polygon points="50,8 57,30 80,30 62,46 70,70 50,54 30,70 38,46 20,30 43,30" fill="#fbbf24"/>
+    <circle cx="50" cy="60" r="28" fill="#92400e"/>
+    <rect x="38" y="52" width="10" height="10" rx="2" fill="#fff"/>
+    <rect x="52" y="52" width="10" height="10" rx="2" fill="#fff"/>
+    <path d="M42 68 Q50 72 58 68" stroke="#fff" stroke-width="2" fill="none"/>
+  </svg>`,
+  Baby: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="54" r="38" fill="#ffdbac"/>
+    <ellipse cx="50" cy="54" rx="32" ry="34" fill="#ffe4c4"/>
+    <circle cx="36" cy="48" r="7" fill="#333"/>
+    <circle cx="64" cy="48" r="7" fill="#333"/>
+    <circle cx="36" cy="46" r="2" fill="#fff"/>
+    <circle cx="64" cy="46" r="2" fill="#fff"/>
+    <path d="M44 62 Q50 70 56 62" stroke="#ff9999" stroke-width="3" fill="none"/>
+    <circle cx="32" cy="60" r="6" fill="#ffb6c1" opacity="0.5"/>
+    <circle cx="68" cy="60" r="6" fill="#ffb6c1" opacity="0.5"/>
+    <path d="M28 35 Q36 28 44 35 Q52 28 60 35 Q68 28 76 35" stroke="#e0c0a0" stroke-width="2" fill="none"/>
+  </svg>`,
+  Healer: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#14532d"/>
+    <circle cx="50" cy="50" r="36" fill="#166534"/>
+    <circle cx="50" cy="50" r="30" fill="#22c55e"/>
+    <path d="M50 20 L50 80 M20 50 L80 50" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="38" cy="42" r="5" fill="#052e16"/>
+    <circle cx="62" cy="42" r="5" fill="#052e16"/>
+    <path d="M44 58 Q50 63 56 58" stroke="#052e16" stroke-width="2" fill="none"/>
+  </svg>`,
+  Observer: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#1f2937"/>
+    <circle cx="50" cy="50" r="36" fill="#111827"/>
+    <circle cx="50" cy="50" r="24" fill="#000"/>
+    <circle cx="50" cy="50" r="12" fill="#1f2937"/>
+    <circle cx="50" cy="50" r="5" fill="#3b82f6"/>
+    <circle cx="50" cy="38" r="2" fill="#60a5fa"/>
+    <circle cx="62" cy="50" r="2" fill="#60a5fa" opacity="0.5"/>
+    <circle cx="50" cy="62" r="2" fill="#60a5fa" opacity="0.5"/>
+    <circle cx="38" cy="50" r="2" fill="#60a5fa" opacity="0.5"/>
+  </svg>`,
+  Survivor: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#78716c"/>
+    <path d="M18 50 L35 32 L50 50 L65 32 L82 50" stroke="#a8a29e" stroke-width="5" fill="none"/>
+    <circle cx="50" cy="60" r="28" fill="#8b8378"/>
+    <circle cx="38" cy="54" r="6" fill="#444"/>
+    <circle cx="62" cy="54" r="6" fill="#444"/>
+    <path d="M44 68 Q50 72 56 68" stroke="#444" stroke-width="2" fill="none"/>
+    <text x="50" y="90" text-anchor="middle" fill="#a8a29e" font-size="11" font-weight="bold" letter-spacing="1">SOS</text>
+  </svg>`,
+  Phantom: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#1e1b4b" opacity="0.7"/>
+    <circle cx="50" cy="50" r="34" fill="#312e81" opacity="0.5"/>
+    <circle cx="50" cy="50" r="26" fill="#4338ca" opacity="0.4"/>
+    <circle cx="50" cy="50" r="18" fill="#6366f1" opacity="0.3"/>
+    <circle cx="50" cy="50" r="8" fill="#a5b4fc"/>
+    <circle cx="32" cy="40" r="4" fill="#c7d2fe" opacity="0.4"/>
+    <circle cx="68" cy="40" r="4" fill="#c7d2fe" opacity="0.4"/>
+    <circle cx="30" cy="65" r="3" fill="#818cf8" opacity="0.3"/>
+    <circle cx="70" cy="60" r="3" fill="#818cf8" opacity="0.3"/>
+  </svg>`,
+  Joker: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#5b21b6"/>
+    <path d="M28 28 L40 38 M72 28 L60 38" stroke="#fff" stroke-width="3"/>
+    <circle cx="50" cy="50" r="32" fill="#7c3aed"/>
+    <circle cx="34" cy="44" r="8" fill="#fff"/>
+    <circle cx="66" cy="44" r="8" fill="#fff"/>
+    <circle cx="34" cy="44" r="4" fill="#000"/>
+    <circle cx="66" cy="44" r="4" fill="#000"/>
+    <path d="M32 62 Q50 78 68 62" stroke="#fff" stroke-width="5" fill="none"/>
+    <circle cx="26" cy="54" r="5" fill="#ef4444"/>
+    <circle cx="74" cy="54" r="5" fill="#3b82f6"/>
+  </svg>`,
+  Edge: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#292524"/>
+    <circle cx="50" cy="50" r="35" fill="#44403c"/>
+    <path d="M28 50 L46 38 L46 62 Z" fill="#78716c"/>
+    <path d="M72 50 L54 38 L54 62 Z" fill="#78716c"/>
+    <circle cx="40" cy="44" r="5" fill="#1c1917"/>
+    <circle cx="60" cy="44" r="5" fill="#1c1917"/>
+    <rect x="44" y="56" width="12" height="4" rx="2" fill="#1c1917"/>
+  </svg>`,
+  Faker: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#3f6212"/>
+    <ellipse cx="50" cy="50" rx="32" ry="36" fill="#65a30d"/>
+    <path d="M32 34 L38 40 L32 46" stroke="#1a2e05" stroke-width="2" fill="none"/>
+    <path d="M68 34 L62 40 L68 46" stroke="#1a2e05" stroke-width="2" fill="none"/>
+    <circle cx="38" cy="48" r="6" fill="#fff"/>
+    <circle cx="62" cy="48" r="6" fill="#fff"/>
+    <circle cx="38" cy="48" r="3" fill="#000"/>
+    <circle cx="62" cy="48" r="3" fill="#000"/>
+    <path d="M40 64 Q50 58 60 64" stroke="#1a2e05" stroke-width="2" fill="none"/>
+  </svg>`,
+  Clown: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="52" r="40" fill="#fff"/>
+    <circle cx="50" cy="52" r="36" fill="#fef3c7"/>
+    <circle cx="34" cy="40" r="9" fill="#3b82f6"/>
+    <circle cx="66" cy="40" r="9" fill="#ef4444"/>
+    <circle cx="34" cy="40" r="5" fill="#fff"/>
+    <circle cx="66" cy="40" r="5" fill="#fff"/>
+    <path d="M38 62 Q50 74 62 62" stroke="#ef4444" stroke-width="4" fill="none"/>
+    <circle cx="28" cy="56" r="6" fill="#fbbf24"/>
+    <circle cx="72" cy="56" r="6" fill="#fbbf24"/>
+    <path d="M50 28 L50 16 M44 22 L56 22" stroke="#ef4444" stroke-width="4"/>
+  </svg>`,
+  God: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#713f12"/>
+    <polygon points="50,6 57,32 84,32 63,50 72,76 50,58 28,76 37,50 16,32 43,32" fill="#fbbf24"/>
+    <circle cx="50" cy="56" r="26" fill="#92400e"/>
+    <circle cx="40" cy="50" r="5" fill="#fff"/>
+    <circle cx="60" cy="50" r="5" fill="#fff"/>
+    <path d="M44 62 Q50 58 56 62" stroke="#fff" stroke-width="2" fill="none"/>
+  </svg>`
+};
+
+// ========================================================
+// 27种人格完整数据（含十五维度）
+// ========================================================
+const TYPES = [
+  {
+    id: "Dead", name: "已死者", motto: "人间不值得，但我还是来了",
+    icon: "💀",
+    desc: "你是<b>已死者</b>。对生活已经没有任何期待，上班如上坟，下班如诈尸。你的口头禅是「算了」「随便」「都行」「无所谓」。表面上看起来还活着，实际上灵魂早已在周一早上8点的地铁上当场去世。同事以为你很稳重，其实你只是在节省能量。",
+    dims: { 摆烂度: 95, 反骨度: 30, 社恐度: 60, 内耗度: 20, 打工人指数: 10, 穷鬼度: 50, 搞笑度: 30, 内卷度: 5, 情绪化: 15, 治愈力: 5, 躺平指数: 98, 阴阳怪气: 40, 社牛度: 5, 自恋度: 10, 打工魂: 8 }
+  },
+  {
+    id: "Shit", name: "狗屎人", motto: "这个世界是坨屎，但我来收拾",
+    icon: "💩",
+    desc: "你是<b>狗屎人</b>。干啥啥不行，吐槽第一名。你对世界的评价永远只有一个词——「狗屎」。但奇妙的是，你吐槽完还是会默默把事情做完。嘴上说摆烂，手上在干活，心里在骂人，三位一体，完美闭环。",
+    dims: { 摆烂度: 65, 反骨度: 85, 社恐度: 40, 内耗度: 30, 打工人指数: 60, 穷鬼度: 45, 搞笑度: 55, 内卷度: 20, 情绪化: 40, 治愈力: 20, 躺平指数: 40, 阴阳怪气: 90, 社牛度: 35, 自恋度: 15, 打工魂: 55 }
+  },
+  {
+    id: "Malo", name: "吗喽", motto: "人生是副本，我只是一只猴",
+    icon: "🐒",
+    desc: "你是<b>吗喽</b>。打工人本工，西装下的猴子。每天在工位上演「认真工作」，实际上脑子里全是香蕉和周末。你深刻理解一个道理：只要我演得够像，老板就以为我很忙。",
+    dims: { 摆烂度: 70, 反骨度: 40, 社恐度: 30, 内耗度: 25, 打工人指数: 85, 穷鬼度: 60, 搞笑度: 50, 内卷度: 15, 情绪化: 20, 治愈力: 30, 躺平指数: 60, 阴阳怪气: 45, 社牛度: 45, 自恋度: 10, 打工魂: 88 }
+  },
+  {
+    id: "ATM", name: "送钱者", motto: "我的钱包是公共物品",
+    icon: "💸",
+    desc: "你是<b>ATM-er（送钱者）</b>。朋友聚会你请客，红包你最大，月光你是认真的。你的人生哲学是：钱不是省出来的，是花出来的。只不过花着花着，余额就变成了零。",
+    dims: { 摆烂度: 45, 反骨度: 20, 社恐度: 20, 内耗度: 35, 打工人指数: 55, 穷鬼度: 95, 搞笑度: 40, 内卷度: 30, 情绪化: 30, 治愈力: 60, 躺平指数: 30, 阴阳怪气: 10, 社牛度: 75, 自恋度: 25, 打工魂: 50 }
+  },
+  {
+    id: "Fuck", name: "草者", motto: "反了就是反了，干就完了",
+    icon: "🖕",
+    desc: "你是<b>草者</b>。内卷？卷不动。反骨？天生有。你的存在就是为了证明：这个世界上有一种人，越是不让你干什么，你就越想干什么。领导说「这个 deadline 很紧」，你的内心：紧你个头。",
+    dims: { 摆烂度: 55, 反骨度: 98, 社恐度: 25, 内耗度: 15, 打工人指数: 40, 穷鬼度: 40, 搞笑度: 60, 内卷度: 10, 情绪化: 50, 治愈力: 35, 躺平指数: 35, 阴阳怪气: 80, 社牛度: 50, 自恋度: 20, 打工魂: 35 }
+  },
+  {
+    id: "Solo", name: "孤儿", motto: "一个人挺好的，别来打扰我",
+    icon: "🏝️",
+    desc: "你是<b>Solo（孤儿）</b>。社交对你来说是一种消耗，独处才是充电。你不是不合群，你只是懒得经营关系。已读不回不是因为你讨厌对方，是因为你真的觉得回消息好麻烦。",
+    dims: { 摆烂度: 50, 反骨度: 25, 社恐度: 90, 内耗度: 20, 打工人指数: 40, 穷鬼度: 30, 搞笑度: 20, 内卷度: 10, 情绪化: 10, 治愈力: 50, 躺平指数: 70, 阴阳怪气: 15, 社牛度: 5, 自恋度: 30, 打工魂: 35 }
+  },
+  {
+    id: "IMSB", name: "自我攻击者", motto: "我太难了，全是我的错",
+    icon: "🔪",
+    desc: "你是<b>IMSB（自我攻击者）</b>。出了问题先反思自己，项目黄了是你不够努力，对象跑了是你不够好。每天晚上躺在床上复盘白天的每一句话，恨不得穿越回去把自己打一顿。内心戏比电视剧还多。",
+    dims: { 摆烂度: 30, 反骨度: 10, 社恐度: 70, 内耗度: 98, 打工人指数: 60, 穷鬼度: 50, 搞笑度: 10, 内卷度: 40, 情绪化: 75, 治愈力: 5, 躺平指数: 20, 阴阳怪气: 20, 社牛度: 5, 自恋度: 5, 打工魂: 55 }
+  },
+  {
+    id: "Ghost", name: "幽灵", motto: "我在，但你看不见我",
+    icon: "👻",
+    desc: "你是<b>Ghost（幽灵）</b>。群里的气氛担当？不，你是空气担当。开会永远坐在最角落，发言永远最后才说，也经常忘记说。你的存在感约等于WiFi信号——有，但很弱。朋友圈永远三天可见，不是不发，是懒得发。",
+    dims: { 摆烂度: 60, 反骨度: 15, 社恐度: 95, 内耗度: 40, 打工人指数: 35, 穷鬼度: 40, 搞笑度: 25, 内卷度: 5, 情绪化: 15, 治愈力: 25, 躺平指数: 65, 阴阳怪气: 10, 社牛度: 3, 自恋度: 15, 打工魂: 30 }
+  },
+  {
+    id: "Robot", name: "机器人", motto: "Input任务，Output结果",
+    icon: "🤖",
+    desc: "你是<b>Robot（机器人）</b>。你的人生如代码般稳定运转：起床→上班→下班→睡觉，循环往复。你不emo，不激动，不崩溃，偶尔被同事问「你是不是不高兴」，其实你只是面部表情比较节能。",
+    dims: { 摆烂度: 35, 反骨度: 10, 社恐度: 50, 内耗度: 5, 打工人指数: 90, 穷鬼度: 30, 搞笑度: 5, 内卷度: 50, 情绪化: 5, 治愈力: 15, 躺平指数: 25, 阴阳怪气: 5, 社牛度: 20, 自恋度: 15, 打工魂: 92 }
+  },
+  {
+    id: "NPC", name: "路人甲", motto: "我就是世界的背景板",
+    icon: "🎭",
+    desc: "你是<b>NPC（路人甲）</b>。你的人生任务就是衬托主角发光。拍照永远站边上，合照永远被裁掉，群聊永远没人@你。你很安静，不是因为你高冷，是因为你真的是个路人。",
+    dims: { 摆烂度: 55, 反骨度: 5, 社恐度: 80, 内耗度: 15, 打工人指数: 45, 穷鬼度: 35, 搞笑度: 15, 内卷度: 10, 情绪化: 10, 治愈力: 20, 躺平指数: 50, 阴阳怪气: 5, 社牛度: 5, 自恋度: 5, 打工魂: 40 }
+  },
+  {
+    id: "Chaos", name: "混沌者", motto: "我也不知道我下一秒会干什么",
+    icon: "🌀",
+    desc: "你是<b>Chaos（混沌者）</b>。计划这种东西，不存在的。今天想健身，明天想辞职，后天想养猫，计划永远赶不上变化。你的人生字典里没有「按部就班」，只有「随机应变」。",
+    dims: { 摆烂度: 50, 反骨度: 45, 社恐度: 40, 内耗度: 50, 打工人指数: 30, 穷鬼度: 55, 搞笑度: 55, 内卷度: 20, 情绪化: 45, 治愈力: 30, 躺平指数: 45, 阴阳怪气: 50, 社牛度: 35, 自恋度: 25, 打工魂: 25 }
+  },
+  {
+    id: "Broken", name: "碎了", motto: "我碎了，但还在粘",
+    icon: "🫠",
+    desc: "你是<b>Broken（碎了）</b>。生活把你击碎无数次，你把自己粘起来继续走。崩溃只需要一秒，自愈需要一整晚，第二天还得爬起来上班。你嘴上说「我没事」，心里早就碎成了二维码。",
+    dims: { 摆烂度: 40, 反骨度: 20, 社恐度: 55, 内耗度: 90, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 20, 内卷度: 25, 情绪化: 85, 治愈力: 10, 躺平指数: 35, 阴阳怪气: 25, 社牛度: 15, 自恋度: 10, 打工魂: 45 }
+  },
+  {
+    id: "Witch", name: "阴阳师", motto: "我没有在讽刺你，我是在关心你",
+    icon: "🧙",
+    desc: "你是<b>Witch（阴阳师）</b>。你的嘴和你的心，永远在两个频道。明明想说「你今天真好看」，出口变成了「你今天居然洗头了？」朋友被你气笑了，你也笑了。情商？你只是懒得装。",
+    dims: { 摆烂度: 40, 反骨度: 65, 社恐度: 30, 内耗度: 35, 打工人指数: 55, 穷鬼度: 35, 搞笑度: 75, 内卷度: 20, 情绪化: 45, 治愈力: 40, 躺平指数: 30, 阴阳怪气: 98, 社牛度: 40, 自恋度: 20, 打工魂: 50 }
+  },
+  {
+    id: "Alien", name: "外星人", motto: "地球人，你们真奇怪",
+    icon: "👽",
+    desc: "你是<b>Alien（外星人）</b>。你觉得自己和周围的人格格不入，对方的梗你听不懂，你的笑点对方不明白。你有时候怀疑自己是不是投错胎了，地球规则太复杂，社会常识太难记。",
+    dims: { 摆烂度: 45, 反骨度: 50, 社恐度: 75, 内耗度: 45, 打工人指数: 35, 穷鬼度: 40, 搞笑度: 35, 内卷度: 15, 情绪化: 25, 治愈力: 30, 躺平指数: 50, 阴阳怪气: 30, 社牛度: 8, 自恋度: 35, 打工魂: 30 }
+  },
+  {
+    id: "Zombie", name: "僵尸", motto: "身体在运转，灵魂不在线",
+    icon: "🧟",
+    desc: "你是<b>Zombie（僵尸）</b>。每天早上被闹钟叫醒的那一刻，你的灵魂就已经死了。身体走进地铁，灵魂留在床上。你的日常状态：睁眼上班，闭眼睡觉，中间靠咖啡续命。",
+    dims: { 摆烂度: 75, 反骨度: 20, 社恐度: 40, 内耗度: 30, 打工人指数: 65, 穷鬼度: 55, 搞笑度: 20, 内卷度: 10, 情绪化: 20, 治愈力: 15, 躺平指数: 80, 阴阳怪气: 15, 社牛度: 10, 自恋度: 5, 打工魂: 68 }
+  },
+  {
+    id: "Vampire", name: "吸血鬼", motto: "你的能量，我来充电",
+    icon: "🧛",
+    desc: "你是<b>Vampire（吸血鬼）</b>。你从别人身上汲取能量。朋友的一顿饭让你满血复活，路人的一句夸奖能让你开心一整天。你是社交动物，独处会让你掉电关机。",
+    dims: { 摆烂度: 30, 反骨度: 20, 社恐度: 15, 内耗度: 25, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 55, 内卷度: 30, 情绪化: 40, 治愈力: 55, 躺平指数: 25, 阴阳怪气: 20, 社牛度: 90, 自恋度: 40, 打工魂: 45 }
+  },
+  {
+    id: "Boss", name: "内卷王", motto: "凌晨三点，我还在学",
+    icon: "👑",
+    desc: "你是<b>Boss（内卷王）</b>。你不允许自己落后，比你优秀的人让你焦虑，比你差的人让你更焦虑。你是朋友圈最晚睡的人，也是早上第一个到公司的人。你卷到飞起，却不知道终点在哪里。",
+    dims: { 摆烂度: 10, 反骨度: 25, 社恐度: 35, 内耗度: 80, 打工人指数: 98, 穷鬼度: 40, 搞笑度: 15, 内卷度: 98, 情绪化: 50, 治愈力: 5, 躺平指数: 5, 阴阳怪气: 15, 社牛度: 35, 自恋度: 60, 打工魂: 100 }
+  },
+  {
+    id: "Baby", name: "巨婴", motto: "哄一哄，我就好了",
+    icon: "🍼",
+    desc: "你是<b>Baby（巨婴）</b>。你情绪来得快去得也快，一杯奶茶就能满血复活，一点小事又能让你瞬间破防。你需要很多很多的爱和关注，如果没有，你就会用闹来获得。",
+    dims: { 摆烂度: 35, 反骨度: 30, 社恐度: 45, 内耗度: 60, 打工人指数: 30, 穷鬼度: 60, 搞笑度: 40, 内卷度: 15, 情绪化: 95, 治愈力: 40, 躺平指数: 30, 阴阳怪气: 20, 社牛度: 40, 自恋度: 50, 打工魂: 25 }
+  },
+  {
+    id: "Healer", name: "治愈系", motto: "我来帮你，但我自己也需要帮助",
+    icon: "🌿",
+    desc: "你是<b>Healer（治愈系）</b>。你是朋友中的情绪稳定担当，谁崩溃了都来找你倾诉，你永远在安慰别人。但夜深人静的时候，你也会想：谁来治愈我啊？答案是：没有。",
+    dims: { 摆烂度: 30, 反骨度: 15, 社恐度: 40, 内耗度: 45, 打工人指数: 60, 穷鬼度: 35, 搞笑度: 45, 内卷度: 30, 情绪化: 35, 治愈力: 98, 躺平指数: 25, 阴阳怪气: 10, 社牛度: 55, 自恋度: 10, 打工魂: 55 }
+  },
+  {
+    id: "Observer", name: "观察者", motto: "我什么都看在眼里，什么都不说",
+    icon: "🕵️",
+    desc: "你是<b>Observer（观察者）</b>。你是朋友圈里的洞察担当，谁和谁关系好，谁又和谁闹矛盾，你全都知道，但你选择沉默。你的眼神里有故事，你的嘴巴里只有「嗯」「哦」「这样啊」。",
+    dims: { 摆烂度: 45, 反骨度: 20, 社恐度: 65, 内耗度: 55, 打工人指数: 50, 穷鬼度: 30, 搞笑度: 20, 内卷度: 25, 情绪化: 15, 治愈力: 35, 躺平指数: 40, 阴阳怪气: 30, 社牛度: 10, 自恋度: 25, 打工魂: 48 }
+  },
+  {
+    id: "Survivor", name: "幸存者", motto: "我没有赢，但我还在",
+    icon: "🆘",
+    desc: "你是<b>Survivor（幸存者）</b>。经历了九九八十一难，你活下来了。不是因为你强，是因为你运气好，或者因为你学会了认怂。活着就是胜利，你早就接受了这个事实。",
+    dims: { 摆烂度: 50, 反骨度: 30, 社恐度: 50, 内耗度: 35, 打工人指数: 55, 穷鬼度: 55, 搞笑度: 30, 内卷度: 20, 情绪化: 25, 治愈力: 45, 躺平指数: 55, 阴阳怪气: 25, 社牛度: 25, 自恋度: 20, 打工魂: 52 }
+  },
+  {
+    id: "Phantom", name: "幻影者", motto: "梦里比现实更真实",
+    icon: "🦋",
+    desc: "你是<b>Phantom（幻影者）</b>。你的现实和幻想边界很模糊。你有一百种理想人生，但实际行动为零。你活在自己的世界里，那里一切都很美好，现实只是偶尔来打扰一下。",
+    dims: { 摆烂度: 55, 反骨度: 35, 社恐度: 55, 内耗度: 60, 打工人指数: 25, 穷鬼度: 50, 搞笑度: 40, 内卷度: 10, 情绪化: 50, 治愈力: 25, 躺平指数: 65, 阴阳怪气: 30, 社牛度: 15, 自恋度: 45, 打工魂: 20 }
+  },
+  {
+    id: "Joker", name: "段子手", motto: "笑着把悲伤讲完",
+    icon: "🃏",
+    desc: "你是<b>Joker（段子手）</b>。你是朋友圈的气氛组，永远在开玩笑，永远在自嘲。但你有没有认真想过：你那么努力让别人笑，是不是因为你自己很少真正开心？算了，不想这个了，来，再讲个段子。",
+    dims: { 摆烂度: 45, 反骨度: 50, 社恐度: 30, 内耗度: 70, 打工人指数: 45, 穷鬼度: 55, 搞笑度: 98, 内卷度: 15, 情绪化: 55, 治愈力: 30, 躺平指数: 35, 阴阳怪气: 65, 社牛度: 70, 自恋度: 25, 打工魂: 40 }
+  },
+  {
+    id: "Edge", name: "边缘人", motto: "在圈子边上，进退两难",
+    icon: "⚡",
+    desc: "你是<b>Edge（边缘人）</b>。你永远在圈子的边缘，挤进去太累，退出来不甘心。你是朋友圈里那个「可有可无」的存在，不是因为你不重要，是因为你永远在犹豫要不要更进一步。",
+    dims: { 摆烂度: 55, 反骨度: 40, 社恐度: 70, 内耗度: 50, 打工人指数: 40, 穷鬼度: 45, 搞笑度: 30, 内卷度: 20, 情绪化: 35, 治愈力: 25, 躺平指数: 50, 阴阳怪气: 35, 社牛度: 15, 自恋度: 20, 打工魂: 38 }
+  },
+  {
+    id: "Faker", name: "伪人", motto: "这个面具戴久了，我以为是我的脸",
+    icon: "🎪",
+    desc: "你是<b>Faker（伪人）</b>。你在不同场合扮演不同的人，在老板面前是奋斗逼，在朋友面前是搞笑担当，在家里是乖乖牌。你演得太入戏了，以至于你忘了真正的自己是什么样子。",
+    dims: { 摆烂度: 35, 反骨度: 30, 社恐度: 50, 内耗度: 65, 打工人指数: 65, 穷鬼度: 40, 搞笑度: 55, 内卷度: 40, 情绪化: 45, 治愈力: 20, 躺平指数: 25, 阴阳怪气: 45, 社牛度: 65, 自恋度: 55, 打工魂: 60 }
+  },
+  {
+    id: "Clown", name: "小丑", motto: "只要你们开心，我在哭也没关系",
+    icon: "🤡",
+    desc: "你是<b>Clown（小丑）</b>。你是团队里的开心果，永远在活跃气氛。但你有没有发现，每次冷场，大家都会看向你？不是因为需要你，是因为没有你气氛会尴尬。你在笑，但你的笑，有几分是真的？",
+    dims: { 摆烂度: 50, 反骨度: 35, 社恐度: 40, 内耗度: 80, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 95, 内卷度: 20, 情绪化: 65, 治愈力: 20, 躺平指数: 40, 阴阳怪气: 55, 社牛度: 75, 自恋度: 15, 打工魂: 48 }
+  },
+  {
+    id: "God", name: "大能者", motto: "你以为我无所不能，但我只是撑着",
+    icon: "🦸",
+    desc: "你是<b>God（大能者）</b>。在所有人眼里你都很强，能扛事，能兜底，能解决问题。但没人知道，你只是硬撑。你不允许自己崩溃，因为大家都指望着你。你好累，但你不说。",
+    dims: { 摆烂度: 15, 反骨度: 25, 社恐度: 30, 内耗度: 85, 打工人指数: 90, 穷鬼度: 30, 搞笑度: 20, 内卷度: 70, 情绪化: 40, 治愈力: 10, 躺平指数: 10, 阴阳怪气: 20, 社牛度: 50, 自恋度: 75, 打工魂: 88 }
+  }
+];
+
+// ========================================================
+// 15道题目（每道题对多个人格维度打分）
+// ========================================================
+const QUESTIONS = [
+  {
+    text: "周一早上8点，闹钟响了，你的状态是？",
+    options: [
+      { text: "身体坐起来了，灵魂还在床上", scores: { Zombie: 3, Dead: 1, Broken: 1 } },
+      { text: "关掉闹钟继续睡，迟到再说", scores: { Malo: 3, Solo: 1, Phantom: 1 } },
+      { text: "秒醒，满血复活迎接新的一周", scores: { Boss: 3, Healer: 1, God: 1 } },
+      { text: "醒了，但在想今天请假的理由", scores: { Broken: 3, Fuck: 1, Zombie: 1 } }
+    ]
+  },
+  {
+    text: "同事把锅甩到你身上，你会？",
+    options: [
+      { text: "当场反驳，证据甩脸", scores: { Fuck: 3, Witch: 1, Joker: 1 } },
+      { text: "算了，多一事不如少一事", scores: { Dead: 3, Survivor: 1, Ghost: 1 } },
+      { text: "默默接受，然后内心疯狂骂人", scores: { Shit: 3, Broken: 1, Clown: 1 } },
+      { text: "心里难受，觉得都是自己的错", scores: { IMSB: 3, Ghost: 1, Survivor: 1 } }
+    ]
+  },
+  {
+    text: "周末，你最可能的状态是？",
+    options: [
+      { text: "在床上躺到下午2点，不想动", scores: { Dead: 3, Zombie: 2, Malo: 1 } },
+      { text: "出门社交，见朋友、逛街、吃饭", scores: { Vampire: 3, Joker: 1, ATM: 1 } },
+      { text: "一个人待着，看书、打游戏、发呆", scores: { Solo: 3, Phantom: 1, Observer: 1 } },
+      { text: "加班，趁别人休息弯道超车", scores: { Boss: 3, God: 2, Faker: 1 } }
+    ]
+  },
+  {
+    text: "朋友发微信问你在干嘛，你最可能回？",
+    options: [
+      { text: "「在」", scores: { Ghost: 3, Robot: 1, NPC: 1 } },
+      { text: "「刚下班，咋了」", scores: { Zombie: 3, Malo: 1, Survivor: 1 } },
+      { text: "直接回拨电话过去", scores: { Vampire: 3, ATM: 1, Baby: 1 } },
+      { text: "「刚在想要不要回你」", scores: { Witch: 3, Joker: 1, Faker: 1 } }
+    ]
+  },
+  {
+    text: "看到朋友圈里大家都在晒旅游/升职/恋爱，你会？",
+    options: [
+      { text: "点个赞，默默滑走", scores: { Ghost: 3, Observer: 1, Solo: 1 } },
+      { text: "焦虑了，也想发点什么证明自己", scores: { Boss: 3, Faker: 1, Baby: 1 } },
+      { text: "完全没有感觉，与我无关", scores: { Alien: 3, Dead: 1, Robot: 1 } },
+      { text: "评论区阴阳怪气一下", scores: { Witch: 3, Shit: 1, Joker: 1 } }
+    ]
+  },
+  {
+    text: "你买东西的时候，第一反应是？",
+    options: [
+      { text: "先看价格，超出预算就算了", scores: { Survivor: 3, Broken: 1, Malo: 1 } },
+      { text: "喜欢就买，钱是赚出来的不是省出来的", scores: { ATM: 3, Vampire: 1, Fuck: 1 } },
+      { text: "反复对比，列出Excel分析", scores: { Robot: 3, Boss: 1, Faker: 1 } },
+      { text: "等打折，等双十一，等清仓", scores: { Malo: 3, Zombie: 1, Survivor: 1 } }
+    ]
+  },
+  {
+    text: "深夜睡不着，你在？",
+    options: [
+      { text: "刷手机，刷到天亮", scores: { Zombie: 3, Dead: 1, Joker: 1 } },
+      { text: "复盘白天说过的每一句话", scores: { IMSB: 3, Broken: 1, Clown: 1 } },
+      { text: "发呆，脑子里一片空白", scores: { Dead: 3, Phantom: 1, Solo: 1 } },
+      { text: "规划明天/未来/理想人生", scores: { Phantom: 3, Boss: 1, God: 1 } }
+    ]
+  },
+  {
+    text: "如果要你形容你的工作状态，你会说？",
+    options: [
+      { text: "拿多少钱干多少事，绝不多干", scores: { Malo: 3, Fuck: 1, Dead: 1 } },
+      { text: "卷死他们，我要当第一", scores: { Boss: 3, God: 1, Faker: 1 } },
+      { text: "混着，不知道在干什么", scores: { NPC: 3, Zombie: 1, Ghost: 1 } },
+      { text: "还能怎样，熬着呗", scores: { Survivor: 3, Dead: 1, Malo: 1 } }
+    ]
+  },
+  {
+    text: "有人夸你「你真棒」，你的第一反应是？",
+    options: [
+      { text: "谢谢！但TA是在客套吧？", scores: { IMSB: 3, Observer: 1, Ghost: 1 } },
+      { text: "当然，我很优秀", scores: { God: 3, Boss: 1, Joker: 1 } },
+      { text: "？？？TA想干嘛", scores: { Alien: 3, Witch: 1, Edge: 1 } },
+      { text: "回夸TA：你也超棒！", scores: { Healer: 3, Vampire: 1, Joker: 1 } }
+    ]
+  },
+  {
+    text: "你和朋友聚会，席间冷场了，你会？",
+    options: [
+      { text: "掏出手机假装看消息", scores: { Ghost: 3, Edge: 1, Solo: 1 } },
+      { text: "主动找个话题打破尴尬", scores: { Joker: 3, Healer: 1, Vampire: 1 } },
+      { text: "无所谓，冷场就冷场", scores: { Solo: 3, Alien: 1, Robot: 1 } },
+      { text: "说个冷笑话，结果更冷了", scores: { Clown: 3, Joker: 1, Witch: 1 } }
+    ]
+  },
+  {
+    text: "你的微信朋友圈，一般发的是？",
+    options: [
+      { text: "很少发，偶尔转发文章", scores: { Ghost: 3, Solo: 1, Observer: 1 } },
+      { text: "全是自拍和美食，记录生活", scores: { Vampire: 3, Joker: 1, Baby: 1 } },
+      { text: "深夜感慨，秒删", scores: { Broken: 3, Phantom: 1, Clown: 1 } },
+      { text: "从来不发，当观众", scores: { Observer: 3, Zombie: 1, Ghost: 1 } }
+    ]
+  },
+  {
+    text: "如果给你一天完全自由的时间，你最想？",
+    options: [
+      { text: "睡觉，睡到自然醒", scores: { Zombie: 3, Dead: 2, Malo: 1 } },
+      { text: "一个人去咖啡馆发呆", scores: { Solo: 3, Phantom: 1, Observer: 1 } },
+      { text: "约朋友出去玩，嗨起来", scores: { Vampire: 3, Joker: 1, ATM: 1 } },
+      { text: "待不住，一定要找点事做", scores: { Boss: 3, Chaos: 1, God: 1 } }
+    ]
+  },
+  {
+    text: "你被拉进一个全是陌生人的微信群，你会？",
+    options: [
+      { text: "把聊天记录翻一遍，从头吃瓜", scores: { Observer: 3, Ghost: 1, Joker: 1 } },
+      { text: "打个招呼，自我介绍一下", scores: { Vampire: 3, Faker: 1, Joker: 1 } },
+      { text: "设为免打扰，继续潜水", scores: { Ghost: 3, Solo: 1, Zombie: 1 } },
+      { text: "发个大红包，混个脸熟", scores: { ATM: 3, Joker: 1, Vampire: 1 } }
+    ]
+  },
+  {
+    text: "别人问「你有什么缺点」，你最可能说？",
+    options: [
+      { text: "太追求完美（骄傲地）", scores: { God: 3, Boss: 1, Faker: 1 } },
+      { text: "拖延症晚期，懒癌晚期", scores: { Malo: 3, Joker: 1, Zombie: 1 } },
+      { text: "善良，容易心软", scores: { Healer: 3, Baby: 1, Survivor: 1 } },
+      { text: "我没什么缺点（说完就后悔）", scores: { Faker: 3, Broken: 1, Alien: 1 } }
+    ]
+  },
+  {
+    text: "最后一道灵魂拷问：你现在对自己的状态满意吗？",
+    options: [
+      { text: "满意？我早就不想这些了", scores: { Dead: 3, Zombie: 1, Chaos: 1 } },
+      { text: "不满意，但也不知道怎么改", scores: { Broken: 3, Edge: 1, Survivor: 1 } },
+      { text: "还行，比下有余", scores: { Survivor: 3, Malo: 1, Joker: 1 } },
+      { text: "不满意，我还要更努力", scores: { Boss: 3, God: 2, Faker: 1 } }
+    ]
+  }
+];
+
+// ========================================================
+// 十五维度定义
+// ========================================================
+const DIM_LABELS = [
+  "摆烂度", "反骨度", "社恐度", "内耗度", "打工人指数",
+  "穷鬼度", "搞笑度", "内卷度", "情绪化", "治愈力",
+  "躺平指数", "阴阳怪气", "社牛度", "自恋度", "打工魂"
+];
+
+// ========================================================
+// 核心逻辑
+// ========================================================
+let currentQ = 0;
+let scores = {};
+let dimScores = {};
+
+function initScores() {
+  scores = {};
+  dimScores = {};
+  TYPES.forEach(t => scores[t.id] = 0);
+  DIM_LABELS.forEach(d => dimScores[d] = 0);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('progressWrap').style.display = 'block';
+  initScores();
+  currentQ = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = QUESTIONS[currentQ];
+  const pct = Math.round((currentQ / QUESTIONS.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = (currentQ + 1) + ' / ' + QUESTIONS.length;
+  document.getElementById('qNum').textContent = '第 ' + (currentQ + 1) + ' 题';
+  document.getElementById('qText').textContent = q.text;
+
+  const optsEl = document.getElementById('options');
+  const letters = ['A', 'B', 'C', 'D'];
+  const shuffledOptions = shuffle(q.options.map((o, i) => ({ ...o, letter: letters[i] })));
+
+  optsEl.innerHTML = '';
+  shuffledOptions.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = '<div class="option-letter">' + opt.letter + '</div><div>' + opt.text + '</div>';
+    div.onclick = () => selectOption(div, opt.scores);
+    optsEl.appendChild(div);
+  });
+}
+
+function selectOption(el, addScores) {
+  document.querySelectorAll('.option').forEach(o => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('selected');
+  });
+  el.classList.add('selected');
+
+  // 累加人格分数
+  Object.entries(addScores).forEach(([type, val]) => {
+    scores[type] = (scores[type] || 0) + val;
+  });
+
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < QUESTIONS.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }, 350);
+}
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+
+  // 找主类型 + 次级类型
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topId = sorted[0][0];
+  const secondId = sorted[1][0];
+  const thirdId = sorted[2][0];
+
+  const topType = TYPES.find(t => t.id === topId);
+  const secondType = TYPES.find(t => t.id === secondId);
+  const thirdType = TYPES.find(t => t.id === thirdId);
+  const topScore = sorted[0][1];
+  const secondScore = sorted[1][1];
+
+  // 匹配度计算：主类型占主导
+  const totalScore = sorted.reduce((sum, [, v]) => sum + v, 0);
+  const leadScore = topScore - secondScore;
+  const matchPct = Math.round(60 + (leadScore / topScore) * 35);
+
+  // 头像
+  document.getElementById('rAvatar').innerHTML = AVATARS[topId] || AVATARS[topId];
+  document.getElementById('rType').textContent = topId;
+  document.getElementById('rName').textContent = topType.name + ' ' + topType.icon;
+  document.getElementById('rMotto').textContent = '「' + topType.motto + '」';
+  document.getElementById('rDesc').innerHTML = topType.desc;
+
+  // 次级人格
+  document.getElementById('subTypes').innerHTML = `
+    <div class="sub-type">
+      <div class="sub-icon">${AVATARS[secondId] ? AVATARS[secondId].replace('viewBox','style="width:20px;height:20px" viewBox') : ''}</div>
+      <span class="sub-name">次级：${secondType.name}</span>
+    </div>
+    <div class="sub-type">
+      <div class="sub-icon">${AVATARS[thirdId] ? AVATARS[thirdId].replace('viewBox','style="width:20px;height:20px" viewBox') : ''}</div>
+      <span class="sub-name">潜在：${thirdType.name}</span>
+    </div>
+  `;
+
+  // 匹配度动画
+  setTimeout(() => {
+    document.getElementById('rMatchBar').style.width = matchPct + '%';
+    animateNumber(document.getElementById('rMatchPct'), 0, matchPct, 1200);
+  }, 300);
+
+  // 十五维度
+  const dimsGrid = document.getElementById('dimensionsGrid');
+  dimsGrid.innerHTML = '';
+  DIM_LABELS.forEach(dim => {
+    const val = topType.dims[dim] || Math.round(Math.random() * 40 + 20);
+    const item = document.createElement('div');
+    item.className = 'dim-item';
+    item.innerHTML = `
+      <div class="dim-label">
+        <span>${dim}</span>
+        <span class="dim-val" id="dimval_${dim}">0</span>
+      </div>
+      <div class="dim-bar-bg">
+        <div class="dim-bar-fill" id="dimbar_${dim}" style="width:0%"></div>
+      </div>
+    `;
+    dimsGrid.appendChild(item);
+  });
+
+  // 维度动画延迟触发
+  setTimeout(() => {
+    DIM_LABELS.forEach((dim, i) => {
+      const val = topType.dims[dim] || 50;
+      setTimeout(() => {
+        document.getElementById('dimbar_' + dim).style.width = val + '%';
+        animateNumber(document.getElementById('dimval_' + dim), 0, val, 600);
+      }, i * 60);
+    });
+  }, 400);
+
+  // 分享文本
+  window.shareText = '我的SBTI人格是【' + topType.name + ' ' + topType.icon + '】，匹配度' + matchPct + '%。' + topType.motto + ' — 测测你是哪种？';
+
+  // 保存结果数据供图片导出使用
+  const dimsArray = DIM_LABELS.map(dim => ({
+    name: dim,
+    val: topType.dims[dim] || Math.round(Math.random() * 40 + 20)
+  }));
+  currentResultData = {
+    avatar: AVATARS[topId],
+    typeLabel: topId,
+    name: topType.name + ' ' + topType.icon,
+    motto: topType.motto,
+    matchPct: matchPct,
+    dims: dimsArray,
+    subTypes: [
+      { name: secondType.name },
+      { name: thirdType.name }
+    ]
+  };
+}
+
+function animateNumber(el, from, to, duration) {
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(from + (to - from) * progress);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = to;
+  };
+  requestAnimationFrame(step);
+}
+
+function copyResult() {
+  const text = window.shareText || '我的SBTI人格测试结果出炉！';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.share-btn.primary');
+      btn.textContent = '✅ 已复制！';
+      setTimeout(() => { btn.textContent = '📋 复制结果'; }, 2000);
+    });
+  }
+}
+
+function retest() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+  document.getElementById('rMatchBar').style.width = '0%';
+}
+
+// ===== 保存图片功能 =====
+let currentResultData = null;
+
+// 检测是否微信浏览器
+function isWeChat() {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.indexOf('micromessenger') !== -1;
+}
+
+async function saveAsImage() {
+  if (!currentResultData) return;
+
+  const btn = document.querySelector('.share-btn.save-img');
+  btn.textContent = '⏳ 生成中...';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    const r = currentResultData;
+
+    // 用原生Canvas绘制图片（不依赖html2canvas）
+    const imgData = await drawResultCard(r);
+
+    if (isWeChat()) {
+      showWeChatSave(imgData);
+    } else {
+      downloadImage(imgData);
+      btn.textContent = '✅ 已保存！';
+      setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2500);
+    }
+  } catch(e) {
+    console.error('生成图片失败:', e);
+    btn.textContent = '❌ 失败';
+    setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2000);
+  }
+
+  btn.style.pointerEvents = '';
+}
+
+// ===== 原生Canvas绘制结果卡片 =====
+function drawResultCard(r) {
+  return new Promise((resolve, reject) => {
+    const W = 800;
+    // 动态计算高度：头部60 + 头像140 + 类型20 + 名称50 + 座右铭40 + 次级36 + 匹配度120 + 维度标题30 + 维度(15*35) + 尾部40 + padding
+    const H = 950;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // 背景
+    ctx.fillStyle = '#12121e'; roundRect(ctx, 0, 0, W, H, 24); ctx.fill();
+
+    // 头部标题栏
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, 56);
+    ctx.fillStyle = '#667eea'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('SBTI 人格测试结果', W/2, 36);
+
+    let y = 76;
+
+    // === 头像区域 ===
+    // 头像圆形背景
+    ctx.beginPath(); ctx.arc(W/2, y + 55, 52, 0, Math.PI*2); 
+    ctx.fillStyle = '#1e1e3f'; ctx.fill();
+    ctx.strokeStyle = '#667eea'; ctx.lineWidth = 3; ctx.stroke();
+    
+    // 绘制SVG头像（用临时容器）
+    const tmpDiv = document.createElement('div');
+    tmpDiv.innerHTML = `<svg width="104" height="104" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${r.avatar || ''}</svg>`;
+    const svgEl = tmpDiv.querySelector('svg');
+    const svgStr = new XMLSerializer().serializeToString(svgEl);
+    const svgBlob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    const avatarImg = new Image();
+    avatarImg.onload = () => {
+      ctx.save();
+      ctx.beginPath(); ctx.arc(W/2, y + 55, 48, 0, Math.PI*2); ctx.clip();
+      ctx.drawImage(avatarImg, W/2 - 48, y + 7, 96, 96);
+      ctx.restore();
+      URL.revokeObjectURL(svgUrl);
+
+      y += 120;
+
+      // === 类型标签 ===
+      ctx.fillStyle = '#555'; ctx.font = '12px sans-serif'; ctx.letterSpacing = '3px';
+      ctx.fillText(r.typeLabel || '', W/2, y); y += 22;
+
+      // === 大名称 ===
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 34px sans-serif';
+      ctx.fillText(r.name || '', W/2, y); y += 38;
+
+      // === 座右铭 ===
+      ctx.fillStyle = '#777'; ctx.font = 'italic 14px sans-serif';
+      ctx.fillText('「' + (r.motto || '') + '」', W/2, y); y += 32;
+
+      // === 次级匹配 ===
+      if (r.subTypes && r.subTypes.length > 0) {
+        const subText = '次级匹配：' + r.subTypes.map(s => s.name).join(' · ');
+        ctx.fillStyle = '#1f1f38'; 
+        const subW = ctx.measureText(subText).width + 28;
+        roundRect(ctx, W/2 - subW/2, y - 14, subW, 26, 8); ctx.fill();
+        ctx.fillStyle = '#888'; ctx.font = '12px sans-serif';
+        ctx.fillText(subText, W/2, y + 4);
+        y += 44;
+      }
+
+      // === 匹配度区块 ===
+      ctx.fillStyle = '#1f1f38';
+      roundRect(ctx, W/2 - 160, y, 320, 100, 12); ctx.fill();
+      
+      ctx.fillStyle = '#888'; ctx.font = '11px sans-serif'; ctx.letterSpacing = '2px';
+      ctx.fillText('MATCH RATE', W/2, y + 22);
+      
+      ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 46px sans-serif';
+      ctx.fillText((r.matchPct || '?') + '%', W/2, y + 72);
+      y += 116;
+
+      // === 十五维度 ===
+      ctx.fillStyle = '#667eea'; ctx.font = 'bold 11px sans-serif'; ctx.letterSpacing = '2px';
+      ctx.textAlign = 'left'; ctx.fillText('十五维度评分', 40, y);
+      ctx.strokeStyle = '#2a2a4a'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(40, y + 6); ctx.lineTo(W - 40, y + 6); ctx.stroke();
+      y += 18;
+
+      if (r.dims) {
+        const colW = (W - 80) / 2;
+        r.dims.forEach((d, i) => {
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const dx = 40 + col * colW;
+          const dy = y + row * 42;
+
+          // 标签名 + 数值
+          ctx.fillStyle = '#888'; ctx.font = '10px sans-serif';
+          ctx.textAlign = 'left'; ctx.fillText(d.name, dx, dy + 6);
+          ctx.textAlign = 'right'; ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 10px sans-serif';
+          ctx.fillText(d.val + '%', dx + colW, dy + 6);
+
+          // 进度条
+          ctx.fillStyle = '#0f0f23'; roundRect(ctx, dx, dy + 12, colW, 5, 2.5); ctx.fill();
+          ctx.fillStyle = '#a78bfa'; roundRect(ctx, dx, dy + 12, colW * d.val / 100, 5, 2.5); ctx.fill();
+        });
+        y += Math.ceil(r.dims.length / 2) * 42 + 20;
+      }
+
+      // === 底部提示 ===
+      ctx.fillStyle = '#333'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('长按图片保存 · 分享到朋友圈', W/2, H - 16);
+
+      resolve(c.toDataURL('image/png'));
+    };
+    avatarImg.onerror = () => reject(new Error('头像加载失败'));
+    avatarImg.src = svgUrl;
+  });
+}
+
+// 圆角矩形辅助函数
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function showWeChatSave(imgData) {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.add('show');
+
+  document.getElementById('saveCard').style.display = 'none';
+  
+  const tip = document.getElementById('saveTip');
+  tip.innerHTML = `
+    <img src="${imgData}" id="saveResultImg"
+         style="max-width:100%;max-height:55vh;border-radius:16px;border:2px solid #3a3a5a;box-shadow:0 8px 32px rgba(0,0,0,0.5);" />
+    <div style="margin-top:18px;color:#f093fb;font-size:15px;line-height:1.8;">
+      👆 长按上方图片<br>保存后分享到朋友圈
+    </div>
+  `;
+
+  const closeBtn = overlay.querySelector('.close-save-btn');
+  closeBtn.style.display = 'inline-block';
+
+  closeBtn.onclick = () => {
+    closeSaveOverlay();
+    const btn = document.querySelector('.share-btn.save-img');
+    btn.textContent = '📸 保存图片';
+  };
+}
+
+function downloadImage(imgData) {
+  const link = document.createElement('a');
+  link.href = imgData;
+  link.download = 'SBTI-测试结果.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function closeSaveOverlay() {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.remove('show');
+  document.getElementById('saveCard').style.display = '';
+
+  document.getElementById('saveTip').innerHTML =
+    `📸 长按上方卡片保存图片<br>或点击下方按钮下载`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// 背景粒子
+(function initParticles() {
+  const container = document.getElementById('particles');
+  const colors = ['#667eea', '#764ba2', '#f093fb', '#ff6b81', '#667eea'];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText = `width:${size}px;height:${size}px;background:${color};left:${Math.random()*100}%;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*5}s;`;
+    container.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
