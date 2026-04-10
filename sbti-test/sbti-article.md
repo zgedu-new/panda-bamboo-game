@@ -126,6 +126,49 @@ const dx = PADcss + 16 + col * (colWcss + gap);
 
 ![SBTI测试最终保存效果](/Users/zgedu/WorkBuddy/Claw/post-to-wechat/sbti-final-result.png)
 
+## 部署上线
+
+做完之后不能只存在本地，要让别人也能访问。
+
+### 第一步：上传到GitHub
+
+整个项目就是一个HTML文件+几张图片，不需要复杂的后端。我把它上传到GitHub仓库：
+
+```bash
+# 初始化git仓库
+cd sbti-test
+git init
+git add index.html sbti-article.md *.png
+git commit -m "SBTI测试网站完成"
+git remote add origin https://github.com/zgedu-new/panda-bamboo-game.git
+git push -u origin main
+```
+
+### 第二步：配置GitHub Pages
+
+在GitHub仓库的Settings → Pages选项中：
+
+1. Source 选择 **Deploy from a branch**
+2. Branch 选择 **main**
+3. Folder 选择 **/ (root)** 或 **/sbti-test**（取决于你的目录结构）
+
+点击Save，等待1-2分钟，网站就上线了。
+
+### 第三步：绑定自定义域名（可选）
+
+如果你有自己的域名，可以在Custom domain里填入域名地址，开启HTTPS。
+
+### 最终效果
+
+部署完成后，用户可以直接访问：
+```
+https://zgedu-new.github.io/panda-bamboo-game/sbti-test/
+```
+
+完全免费，不需要买服务器。
+
+【配图3：GitHub Pages部署完成截图，显示网站已上线】
+
 ## 最终成品包含什么？
 
 1. 15道扎心场景题——上班摸鱼、周末躺平、深夜emo
