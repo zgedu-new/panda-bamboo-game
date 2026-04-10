@@ -130,53 +130,9 @@ const dx = PADcss + 16 + col * (colWcss + gap);
 
 做完之后不能只存在本地，要让别人也能访问。
 
-### 第一步：上传到GitHub
+把代码推到GitHub，CI自动帮我部署到Cloudflare Pages了，完全不用手动操作。
 
-整个项目就是一个HTML文件+几张图片，不需要复杂的后端。我把它上传到GitHub仓库：
-
-```bash
-# 初始化git仓库
-cd sbti-test
-git init
-git add index.html sbti-article.md *.png
-git commit -m "SBTI测试网站完成"
-git remote add origin https://github.com/zgedu-new/panda-bamboo-game.git
-git push -u origin main
-```
-
-### 第二步：配置Cloudflare Pages
-
-代码推到GitHub之后，接入Cloudflare Pages实现自动化部署：
-
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 进入 **Workers & Pages** → **Create application** → **Pages**
-3. 选择 **Connect to Git**
-4. 授权GitHub仓库，选择对应的仓库和分支
-5. 构建设置：
-   - Build command: `// 无需构建，留空`
-   - Build output directory: `/sbti-test`
-6. 点击 **Save and Deploy**
-
-Cloudflare会自动检测代码更新，每次push后自动部署，完全不用手动操作。
-
-### 第三步：绑定自定义域名（可选）
-
-在Pages项目设置 → Custom domains 中添加你的域名，开启免费HTTPS。
-
-### 最终效果
-
-部署完成后，用户可以直接访问：
-```
-https://your-domain.com/sbti-test/
-```
-
-**Cloudflare Pages的优势：**
-- 完全免费，流量无限制
-- 全球CDN加速，访问速度快
-- 自动HTTPS
-- 每次push自动部署
-
-【配图3：Cloudflare Pages部署完成截图，显示网站已上线】
+GitHub仓库：https://github.com/zgedu-new/panda-bamboo-game
 
 ## 最终成品包含什么？
 
