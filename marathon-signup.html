@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周末约跑 | 跑步爱好者集合</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #FF5733;
+      --primary-dark: #C0392B;
+      --primary-light: #FF8C69;
+      --accent: #F39C12;
+      --dark: #1a1a2e;
+      --dark2: #16213e;
+      --dark3: #0f3460;
+      --text: #2c3e50;
+      --text-light: #7f8c8d;
+      --white: #ffffff;
+      --gray-bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --border: #e9ecef;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+      color: var(--text);
+      background: var(--gray-bg);
+      line-height: 1.6;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 40%, var(--dark3) 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 80px 20px 100px;
+      text-align: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 70% 30%, rgba(255,87,51,0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse at 20% 80%, rgba(243,156,18,0.1) 0%, transparent 50%);
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
+
+    /* 跑道线条装饰 */
+    .hero-tracks {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 6px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--primary) 0px, var(--primary) 60px,
+        transparent 60px, transparent 80px
+      );
+      opacity: 0.6;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,87,51,0.2);
+      border: 1px solid rgba(255,87,51,0.4);
+      color: var(--primary-light);
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 28px;
+    }
+
+    .hero-badge span { font-size: 16px; }
+
+    .hero h1 {
+      color: var(--white);
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      color: rgba(255,255,255,0.75);
+      font-size: 17px;
+      margin-bottom: 40px;
+      line-height: 1.8;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 44px;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 10px 20px;
+      border-radius: 12px;
+      color: var(--white);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-meta-item .icon { font-size: 20px; }
+
+    .hero-meta-item strong { display: block; font-size: 16px; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--white);
+      padding: 16px 44px;
+      border-radius: 50px;
+      font-size: 17px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 32px rgba(255,87,51,0.4);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(255,87,51,0.5);
+    }
+
+    .btn-primary .arrow { font-size: 20px; transition: transform 0.3s; }
+    .btn-primary:hover .arrow { transform: translateX(5px); }
+
+    /* ========== STATS ========== */
+    .stats-bar {
+      background: var(--white);
+      padding: 32px 20px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
+
+    .stats-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .stat-label { font-size: 13px; color: var(--text-light); margin-top: 6px; }
+
+    /* ========== SECTION ========== */
+    section { padding: 80px 20px; }
+
+    .section-inner { max-width: 960px; margin: 0 auto; }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+
+    .section-title p {
+      color: var(--text-light);
+      font-size: 16px;
+    }
+
+    .title-line {
+      width: 50px; height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      margin: 16px auto 0;
+    }
+
+    /* ========== HIGHLIGHTS ========== */
+    .highlights { background: var(--gray-bg); }
+
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .highlight-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .highlight-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .highlight-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+
+    .highlight-card:hover::before { transform: scaleX(1); }
+
+    .card-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, rgba(255,87,51,0.1), rgba(243,156,18,0.1));
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      margin-bottom: 20px;
+    }
+
+    .highlight-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+
+    .highlight-card p { color: var(--text-light); font-size: 14px; line-height: 1.7; }
+
+    /* ========== SCHEDULE ========== */
+    .schedule { background: var(--white); }
+
+    .schedule-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 48px;
+      flex-shrink: 0;
+    }
+
+    .timeline-dot {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(255,87,51,0.3);
+      flex-shrink: 0;
+    }
+
+    .timeline-line {
+      width: 2px;
+      flex: 1;
+      background: linear-gradient(to bottom, var(--primary-light), transparent);
+      margin: 4px 0;
+      min-height: 32px;
+    }
+
+    .timeline-item:last-child .timeline-line { display: none; }
+
+    .timeline-content {
+      padding: 0 0 36px;
+    }
+
+    .timeline-time {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .timeline-content h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+
+    .timeline-content p { color: var(--text-light); font-size: 14px; line-height: 1.6; }
+
+    /* ========== TRUST ========== */
+    .trust { background: var(--gray-bg); }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .trust-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      transition: transform 0.3s;
+    }
+
+    .trust-card:hover { transform: translateY(-4px); }
+
+    .trust-icon { font-size: 36px; margin-bottom: 12px; }
+
+    .trust-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+
+    .trust-card p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+    /* ========== SIGNUP ========== */
+    .signup {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 50%, var(--dark3) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signup::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 80% 20%, rgba(255,87,51,0.12) 0%, transparent 50%);
+    }
+
+    .signup .section-inner { position: relative; z-index: 1; }
+
+    .signup .section-title h2 { color: var(--white); }
+    .signup .section-title p { color: rgba(255,255,255,0.6); }
+    .signup .title-line { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+
+    .signup-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      .signup-layout { grid-template-columns: 1fr; }
+    }
+
+    /* 表单 */
+    .form-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 36px 32px;
+      backdrop-filter: blur(20px);
+    }
+
+    .form-card h3 {
+      color: var(--white);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--white);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-group input::placeholder { color: rgba(255,255,255,0.35); }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--primary);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .form-group select option { background: var(--dark2); color: var(--white); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--white);
+      border: none;
+      border-radius: 50px;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.3s;
+      box-shadow: 0 6px 24px rgba(255,87,51,0.35);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(255,87,51,0.5);
+    }
+
+    /* 扫码 */
+    .qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 48px 32px;
+      backdrop-filter: blur(20px);
+      text-align: center;
+    }
+
+    .qr-card h3 {
+      color: var(--white);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qr-card .qr-sub {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+
+    .qr-box {
+      width: 200px; height: 200px;
+      background: var(--white);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+      padding: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .qr-box img {
+      width: 176px; height: 176px;
+      border-radius: 12px;
+    }
+
+    .qr-hint { color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.6; }
+
+    .qr-hint strong { color: var(--primary-light); }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.3);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* ========== FAQ ========== */
+    .faq { background: var(--white); }
+
+    .faq-list { max-width: 720px; margin: 0 auto; }
+
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .faq-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+
+    .faq-q {
+      padding: 18px 24px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .faq-q::after {
+      content: '＋';
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: 400;
+      flex-shrink: 0;
+    }
+
+    .faq-a {
+      padding: 0 24px 18px;
+      color: var(--text-light);
+      font-size: 14px;
+      line-height: 1.7;
+      display: none;
+    }
+
+    .faq-item.open .faq-q::after { content: '－'; }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ========== FOOTER ========== */
+    footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 13px;
+    }
+
+    footer strong { color: var(--primary-light); }
+
+    /* ========== FLOATING CTA ========== */
+    .float-cta {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--white);
+      border: none;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(255,87,51,0.5);
+      z-index: 999;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .float-cta:hover { box-shadow: 0 12px 40px rgba(255,87,51,0.7); animation: none; transform: scale(1.05); }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 600px) {
+      .hero-meta { gap: 12px; }
+      .hero-meta-item { padding: 8px 14px; font-size: 13px; }
+      .form-row { grid-template-columns: 1fr; }
+      .float-cta { bottom: 20px; right: 16px; padding: 12px 20px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><span>🏃</span> 跑步爱好者专属活动</div>
+    <h1>周末<em>约跑</em><br>一起跑出好状态</h1>
+    <p class="hero-sub">
+      每个周末，相约体育馆，不拘配速，只在乎那份热爱<br>
+      从 5K 轻松跑到 21K 半马训练，总有一个适合你
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="icon">📅</span>
+        <div>
+          <strong>每周六、日</strong>
+          早上 6:30 — 9:00
+        </div>
+      </div>
+      <div class="hero-meta-item">
+        <span class="icon">📍</span>
+        <div>
+          <strong>市体育馆</strong>
+          田径场集合
+        </div>
+      </div>
+      <div class="hero-meta-item">
+        <span class="icon">👥</span>
+        <div>
+          <strong>限额 30 人</strong>
+          每场名额有限
+        </div>
+      </div>
+    </div>
+    <a href="https://docs.qq.com/form/page/DTmJZV21XRVNJSnRW" target="_blank" class="btn-primary">
+      立即报名参加
+      <span class="arrow">→</span>
+    </a>
+  </div>
+  <div class="hero-tracks"></div>
+</section>
+
+<!-- ========== STATS ========== -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">500+</div>
+      <div class="stat-label">累计参与人次</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">48</div>
+      <div class="stat-label">已举办场次</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4.9</div>
+      <div class="stat-label">活动满意度</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0元</div>
+      <div class="stat-label">报名费用</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== HIGHLIGHTS ========== -->
+<section class="highlights">
+  <div class="section-inner">
+    <div class="section-title">
+      <h2>为什么来参加</h2>
+      <p>一个人跑太孤独？来这里，找到同频的跑友</p>
+      <div class="title-line"></div>
+    </div>
+    <div class="highlights-grid">
+      <div class="highlight-card">
+        <div class="card-icon">🎯</div>
+        <h3>分组配速，适合所有人</h3>
+        <p>按配速分为轻松组、进阶组、训练组，不论你是刚开始跑步还是备战全马，都能找到合适的节奏。</p>
+      </div>
+      <div class="highlight-card">
+        <div class="card-icon">👨‍🏫</div>
+        <h3>专业领跑，安全护航</h3>
+        <p>每场都有经验丰富的领跑员带队，全程把控节奏，新手也能放心参加，跑完不会累趴。</p>
+      </div>
+      <div class="highlight-card">
+        <div class="card-icon">🤝</div>
+        <h3>真实跑友圈，不尬聊</h3>
+        <p>跑步是最好的社交。200 米一圈，边跑边聊，认识的朋友都是真跑友，不是卖课的。</p>
+      </div>
+      <div class="highlight-card">
+        <div class="card-icon">📊</div>
+        <h3>数据复盘，看见进步</h3>
+        <p>每次结束后分享跑步数据，定期组织配速测试，让你看见自己每周都在变强。</p>
+      </div>
+      <div class="highlight-card">
+        <div class="card-icon">🌅</div>
+        <h3>早晨空气，神清气爽</h3>
+        <p>体育馆塑胶跑道，减少膝盖损伤。清晨 6 点半的空气是一天中最好的礼物。</p>
+      </div>
+      <div class="highlight-card">
+        <div class="card-icon">🆓</div>
+        <h3>完全免费，无任何套路</h3>
+        <p>报名不收费，不推销课程，不拉微商群。就是一群爱跑步的人约在一起跑步，仅此而已。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SCHEDULE ========== -->
+<section class="schedule">
+  <div class="section-inner">
+    <div class="section-title">
+      <h2>活动流程</h2>
+      <p>每场约 2.5 小时，结构清晰，不拖沓</p>
+      <div class="title-line"></div>
+    </div>
+    <div class="schedule-timeline">
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot">🌅</div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-time">06:30 — 06:45</div>
+          <h3>签到 & 热身</h3>
+          <p>到达体育馆田径场，完成签到，带领全队进行 10–15 分钟动态热身，预防运动损伤。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot">🏃</div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-time">06:45 — 08:30</div>
+          <h3>分组约跑</h3>
+          <p>按配速分为三组出发：轻松组（6:30/km）、进阶组（5:30/km）、训练组（5:00/km 以内），领跑员全程带队。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot">🧘</div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-time">08:30 — 08:50</div>
+          <h3>拉伸放松</h3>
+          <p>统一进行跑后拉伸，保护肌肉恢复，避免次日酸痛。这个环节最多人说"终于学会了"。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot">☕</div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-time">08:50 — 09:00</div>
+          <h3>打卡 & 自由活动</h3>
+          <p>分享本次跑步数据，拍照打卡，有兴趣的跑友可以留下来聊天交流，无硬性要求。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TRUST ========== -->
+<section class="trust">
+  <div class="section-inner">
+    <div class="section-title">
+      <h2>参加放心</h2>
+      <p>我们做了这些，让你毫无顾虑</p>
+      <div class="title-line"></div>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">🛡️</div>
+        <h4>活动保险</h4>
+        <p>每场活动均为参与者购买运动意外险，跑起来更安心</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🚑</div>
+        <h4>急救装备</h4>
+        <p>现场备有急救箱、AED 及有急救经验的领跑员</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🌧️</div>
+        <h4>恶劣天气取消</h4>
+        <p>遇雨天、高温等恶劣天气，提前通知取消，不浪费你的时间</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🔒</div>
+        <h4>信息保密</h4>
+        <p>报名信息严格保密，绝不用于商业推销或转让</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SIGNUP ========== -->
+<section class="signup" id="signup">
+  <div class="section-inner">
+    <div class="section-title">
+      <h2>立即报名</h2>
+      <p>名额有限，报满即止</p>
+      <div class="title-line"></div>
+    </div>
+    <div class="signup-layout">
+      <!-- 扫码报名 -->
+      <div class="qr-card">
+        <h3>📱 扫码报名</h3>
+        <p class="qr-sub">微信扫描下方二维码，填写信息即完成报名</p>
+        <div class="qr-box">
+          <img src="qr-signup.png" alt="扫码报名">
+        </div>
+        <p class="qr-hint">
+          <strong>微信扫码</strong> → 填写信息 → 提交完成<br>
+          数据自动存入腾讯文档，你随时查看报名名单
+        </p>
+        <br>
+        <div class="divider">或直接点击</div>
+        <br>
+        <a href="https://docs.qq.com/form/page/DTmJZV21XRVNJSnRW" target="_blank" class="btn-primary" style="width:100%;justify-content:center;">
+          打开报名表 →
+        </a>
+        <br><br>
+        <p style="color:rgba(255,255,255,0.4);font-size:12px;text-align:center;">
+          有问题可添加微信 RunTogether2025
+        </p>
+      </div>
+
+      <!-- 报名须知 -->
+      <div class="qr-card" style="padding: 36px 28px;">
+        <h3>📋 报名须知</h3>
+        <div style="margin-top: 20px; text-align: left;">
+          <div style="display:flex; gap:12px; align-items: flex-start; margin-bottom: 20px;">
+            <span style="font-size:22px; flex-shrink:0;">🗓️</span>
+            <div><strong style="color:#fff;">每周六 / 周日</strong><br><span style="color:rgba(255,255,255,0.55);font-size:13px;">早上 6:30 — 9:00</span></div>
+          </div>
+          <div style="display:flex; gap:12px; align-items: flex-start; margin-bottom: 20px;">
+            <span style="font-size:22px; flex-shrink:0;">📍</span>
+            <div><strong style="color:#fff;">市体育馆田径场</strong><br><span style="color:rgba(255,255,255,0.55);font-size:13px;">从正门进入，左侧跑道集合</span></div>
+          </div>
+          <div style="display:flex; gap:12px; align-items: flex-start; margin-bottom: 20px;">
+            <span style="font-size:22px; flex-shrink:0;">👥</span>
+            <div><strong style="color:#fff;">每场限额 30 人</strong><br><span style="color:rgba(255,255,255,0.55);font-size:13px;">名额有限，报满即止</span></div>
+          </div>
+          <div style="display:flex; gap:12px; align-items: flex-start; margin-bottom: 20px;">
+            <span style="font-size:22px; flex-shrink:0;">🆓</span>
+            <div><strong style="color:#fff;">完全免费</strong><br><span style="color:rgba(255,255,255,0.55);font-size:13px;">无任何套路，不卖课不拉群</span></div>
+          </div>
+          <div style="display:flex; gap:12px; align-items: flex-start;">
+            <span style="font-size:22px; flex-shrink:0;">🔔</span>
+            <div><strong style="color:#fff;">报名确认</strong><br><span style="color:rgba(255,255,255,0.55);font-size:13px;">活动前一天微信通知，恶劣天气取消</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FAQ ========== -->
+<section class="faq">
+  <div class="section-inner">
+    <div class="section-title">
+      <h2>常见问题</h2>
+      <p>第一次参加？这些你可能想知道</p>
+      <div class="title-line"></div>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">没跑过步，可以参加吗？</div>
+        <div class="faq-a">当然可以！轻松组专为跑步新手设计，配速 7 分钟/公里都没问题，重要的是行动起来。领跑员会全程陪跑，不会把你落下。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">需要提前带什么？</div>
+        <div class="faq-a">跑步鞋、运动服即可，建议带一瓶水。体育馆有存包处，无需带贵重物品。夏季建议准备防晒和帽子。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">下雨天还会跑吗？</div>
+        <div class="faq-a">遇到雨天、雷暴或高温预警（气温超过 35°C），我们会在活动前一天晚上 8 点发短信通知取消，不会临时放鸽子。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">真的免费？没有后续套路？</div>
+        <div class="faq-a">真的免费。这是一个纯公益约跑活动，没有卖课、没有微商、没有拉人头。就是一群爱跑步的人约在一起跑，仅此而已。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">可以带朋友一起来吗？</div>
+        <div class="faq-a">欢迎！只要每人单独报名即可，每场限额 30 人，早报早得。多人报名时请各自填写表单或分别扫码。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <p>周末约跑 · 每周六日早 6:30 · 市体育馆田径场</p>
+  <p style="margin-top:8px;">有疑问？联系我们：<strong>RunTogether2025</strong>（微信）</p>
+  <p style="margin-top:16px;font-size:11px;color:rgba(255,255,255,0.2);">© 2026 周末约跑小组 · 保留所有权利</p>
+</footer>
+
+<!-- 悬浮报名按钮 -->
+<a href="https://docs.qq.com/form/page/DTmJZV21XRVNJSnRW" target="_blank" class="float-cta">
+  🏃 立即报名
+</a>
+
+<script>
+  // FAQ 折叠
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+</script>
+
+</body>
+</html>
