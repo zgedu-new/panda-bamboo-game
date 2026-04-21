@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z.G | Developer & Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0a;
+      --bg-card: #111111;
+      --neon-cyan: #00fff2;
+      --neon-orange: #ff6b35;
+      --text-primary: #ffffff;
+      --text-secondary: #888888;
+      --border-color: #333333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Space Mono', monospace;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--neon-cyan);
+      border-radius: 4px;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: linear-gradient(to bottom, var(--bg-dark), transparent);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 20px rgba(0, 255, 242, 0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--neon-cyan);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--neon-cyan);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 10%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      padding: 8px 16px;
+      border: 1px solid var(--neon-orange);
+      color: var(--neon-orange);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 30px;
+      animation: fadeInUp 0.8s ease forwards;
+      opacity: 0;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      animation: fadeInUp 0.8s ease 0.2s forwards;
+      opacity: 0;
+    }
+
+    .hero h1 .highlight {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 40px rgba(0, 255, 242, 0.4);
+      position: relative;
+    }
+
+    .hero h1 .accent {
+      color: var(--neon-orange);
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.8s ease 0.4s forwards;
+      opacity: 0;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 20px;
+      animation: fadeInUp 0.8s ease 0.6s forwards;
+      opacity: 0;
+    }
+
+    .btn {
+      padding: 16px 32px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-decoration: none;
+      border: 2px solid;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--neon-cyan);
+      color: var(--bg-dark);
+      border-color: var(--neon-cyan);
+    }
+
+    .btn-primary:hover {
+      background: transparent;
+      color: var(--neon-cyan);
+      box-shadow: 0 0 30px rgba(0, 255, 242, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--neon-orange);
+      color: var(--neon-orange);
+    }
+
+    /* Floating elements */
+    .floating-code {
+      position: absolute;
+      right: 10%;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      opacity: 0.3;
+      white-space: nowrap;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-code span {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .floating-code .comment {
+      color: var(--neon-orange);
+    }
+
+    .floating-code .keyword {
+      color: var(--neon-cyan);
+    }
+
+    /* Decorative grid */
+    .grid-decoration {
+      position: absolute;
+      right: 5%;
+      top: 20%;
+      width: 300px;
+      height: 300px;
+      opacity: 0.1;
+      animation: rotate 60s linear infinite;
+    }
+
+    /* Section styles */
+    section {
+      padding: 120px 10%;
+    }
+
+    .section-header {
+      margin-bottom: 60px;
+    }
+
+    .section-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      color: var(--neon-cyan);
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+    }
+
+    /* Works Section */
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+    }
+
+    .work-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 30px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .work-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-orange));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .work-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .work-card:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 255, 242, 0.1);
+    }
+
+    .work-category {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(0, 255, 242, 0.1);
+      color: var(--neon-cyan);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .work-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .work-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .work-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .work-tag {
+      padding: 4px 10px;
+      border: 1px solid var(--border-color);
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    .work-link {
+      color: var(--neon-orange);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: gap 0.3s ease;
+    }
+
+    .work-link:hover {
+      gap: 15px;
+    }
+
+    /* Skills Section */
+    .skills-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+
+    .skill-category {
+      margin-bottom: 50px;
+    }
+
+    .skill-category h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .skill-item {
+      margin-bottom: 25px;
+    }
+
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .skill-name {
+      font-size: 0.95rem;
+    }
+
+    .skill-level {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .skill-bar {
+      height: 4px;
+      background: var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skill-progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-orange));
+      position: relative;
+    }
+
+    .skill-progress::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 10px;
+      height: 100%;
+      background: var(--text-primary);
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* Tech stack visual */
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 40px;
+    }
+
+    .tech-item {
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+
+    .tech-item:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      transform: translateY(-3px);
+    }
+
+    /* Contact Section */
+    .contact {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .contact-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .contact-text h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .contact-text h2 .highlight {
+      color: var(--neon-cyan);
+    }
+
+    .contact-text p {
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .contact-item:hover {
+      color: var(--neon-cyan);
+      transform: translateX(10px);
+    }
+
+    .contact-icon {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .contact-item:hover .contact-icon {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 242, 0.1);
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 15px 20px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 242, 0.2);
+    }
+
+    .form-group textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .form-group label {
+      position: absolute;
+      top: -10px;
+      left: 20px;
+      background: var(--bg-dark);
+      padding: 0 10px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 10%;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .footer-right {
+      display: flex;
+      gap: 20px;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .social-link:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(-50%) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-55%) rotate(2deg);
+      }
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Scroll animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+      .skills-container,
+      .contact-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .floating-code {
+        display: none;
+      }
+
+      nav {
+        padding: 15px 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      section {
+        padding: 80px 5%;
+      }
+    }
+
+    /* Cursor glow effect */
+    .cursor-glow {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(0, 255, 242, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <nav>
+    <div class="logo">Z.G</div>
+    <ul class="nav-links">
+      <li><a href="#works">Works</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-tag">Available for Projects</span>
+      <h1>Developer<br><span class="highlight">&</span> <span class="accent">Creator</span></h1>
+      <p class="hero-description">全栈开发 | AI工具深度用户 | 马拉松爱好者。把技术变成产品，把想法变成现实。</p>
+      <div class="hero-cta">
+        <a href="#works" class="btn btn-primary">View Works</a>
+        <a href="#contact" class="btn btn-secondary">Get in Touch</a>
+      </div>
+    </div>
+
+    <div class="floating-code">
+      <span class="comment">// Build something</span>
+      <span class="comment">// that matters</span>
+      <span><span class="keyword">const</span> future = <span class="keyword">await</span> dream();</span>
+      <span><span class="keyword">while</span>(true) {</span>
+      <span>  create();</span>
+      <span>}</span>
+    </div>
+
+    <svg class="grid-decoration" viewBox="0 0 200 200">
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00fff2" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      <circle cx="100" cy="100" r="80" fill="none" stroke="#ff6b35" stroke-width="0.5"/>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="#00fff2" stroke-width="0.5"/>
+    </svg>
+  </section>
+
+  <section id="works">
+    <div class="section-header reveal">
+      <div class="section-number">01</div>
+      <h2 class="section-title">Selected Works</h2>
+    </div>
+
+    <div class="works-grid">
+      <div class="work-card reveal">
+        <span class="work-category">Game</span>
+        <h3>2048 熊猫版</h3>
+        <p>经典 2048 益智游戏，精美视觉设计，支持触屏和键盘操作，可爱的熊猫主题。</p>
+        <div class="work-tags">
+          <span class="work-tag">HTML5</span>
+          <span class="work-tag">Canvas</span>
+          <span class="work-tag">JavaScript</span>
+          <span class="work-tag">游戏</span>
+        </div>
+        <a href="https://panda.yaniw.com/game-2048.html" class="work-link" target="_blank">Play Now →</a>
+      </div>
+
+      <div class="work-card reveal">
+        <span class="work-category">Personality Test</span>
+        <h3>SBTI 性格测试</h3>
+        <p>基于大五人格理论的免费性格测试，通过120道题目深度分析你的性格特征。</p>
+        <div class="work-tags">
+          <span class="work-tag">React</span>
+          <span class="work-tag">TypeScript</span>
+          <span class="work-tag">心理学</span>
+          <span class="work-tag">人格测试</span>
+        </div>
+        <a href="https://panda.yaniw.com/sbti-test/" class="work-link" target="_blank">Take Test →</a>
+      </div>
+
+      <div class="work-card reveal">
+        <span class="work-category">Personality Test</span>
+        <h3>MBTI 性格测试</h3>
+        <p>经典的 MBTI 十六型人格测试，帮你发现自己的性格类型和职业倾向。</p>
+        <div class="work-tags">
+          <span class="work-tag">JavaScript</span>
+          <span class="work-tag">心理学</span>
+          <span class="work-tag">MBTI</span>
+          <span class="work-tag">人格测试</span>
+        </div>
+        <a href="https://panda.yaniw.com/mbti-test/" class="work-link" target="_blank">Take Test →</a>
+      </div>
+
+      <div class="work-card reveal">
+        <span class="work-category">Landing Page</span>
+        <h3>马拉松报名落地页</h3>
+        <p>高转化率的赛事报名页面，集成腾讯文档收集报名信息，支持二维码扫码报名。</p>
+        <div class="work-tags">
+          <span class="work-tag">HTML/CSS</span>
+          <span class="work-tag">JavaScript</span>
+          <span class="work-tag">Cloudflare Pages</span>
+          <span class="work-tag">响应式</span>
+        </div>
+        <a href="https://panda.yaniw.com/marathon-signup.html" class="work-link" target="_blank">View Project →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="section-header reveal">
+      <div class="section-number">02</div>
+      <h2 class="section-title">Skills & Tools</h2>
+    </div>
+
+    <div class="skills-container">
+      <div class="skills-left reveal">
+        <div class="skill-category">
+          <h3>Development</h3>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">TypeScript / JavaScript</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 95%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Python</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 90%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">HTML / CSS / SCSS</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 92%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Node.js / Bun</span>
+              <span class="skill-level">熟练</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 85%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-category">
+          <h3>AI & Automation</h3>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">AI Prompt Engineering</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 95%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Workflow Automation</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 90%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">API Integration</span>
+              <span class="skill-level">熟练</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 88%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="skills-right reveal">
+        <div class="skill-category">
+          <h3>Tools & Platform</h3>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Git / GitHub</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 92%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Cloudflare / Vercel</span>
+              <span class="skill-level">熟练</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 85%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">Docker</span>
+              <span class="skill-level">熟悉</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="skill-category">
+          <h3>Content & Operations</h3>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">公众号运营</span>
+              <span class="skill-level">精通</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 90%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">内容创作</span>
+              <span class="skill-level">熟练</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 85%;"></div>
+            </div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-info">
+              <span class="skill-name">SEO / 数据分析</span>
+              <span class="skill-level">熟练</span>
+            </div>
+            <div class="skill-bar">
+              <div class="skill-progress" style="width: 78%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-stack">
+          <span class="tech-item">React</span>
+          <span class="tech-item">Vue</span>
+          <span class="tech-item">Next.js</span>
+          <span class="tech-item">Node</span>
+          <span class="tech-item">Bun</span>
+          <span class="tech-item">Python</span>
+          <span class="tech-item">FastAPI</span>
+          <span class="tech-item">MongoDB</span>
+          <span class="tech-item">PostgreSQL</span>
+          <span class="tech-item">Redis</span>
+          <span class="tech-item">Docker</span>
+          <span class="tech-item">Cloudflare</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact">
+    <div class="contact-container">
+      <div class="contact-text reveal">
+        <h2>Let's <span class="highlight">Connect</span></h2>
+        <p>有项目合作、内容共创、或者只是想聊聊？随时联系我。</p>
+        <div class="contact-links">
+          <a href="mailto:your.email@example.com" class="contact-item">
+            <span class="contact-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            your.email@example.com
+          </a>
+          <a href="https://github.com/yourusername" class="contact-item" target="_blank">
+            <span class="contact-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+            </span>
+            GitHub
+          </a>
+          <a href="https://mp.weixin.qq.com/s/xxxxx" class="contact-item" target="_blank">
+            <span class="contact-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </span>
+            微信公众号
+          </a>
+        </div>
+      </div>
+
+      <form class="contact-form reveal" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="Tell me about your project..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-left">
+      <p>&copy; 2024 Z.G. All rights reserved.</p>
+    </div>
+    <div class="footer-right">
+      <a href="#" class="social-link" aria-label="GitHub">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+      </a>
+      <a href="#" class="social-link" aria-label="Twitter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+        </svg>
+      </a>
+      <a href="#" class="social-link" aria-label="LinkedIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+          <rect x="2" y="9" width="4" height="12"/>
+          <circle cx="4" cy="4" r="2"/>
+        </svg>
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    // Cursor glow effect
+    const cursorGlow = document.getElementById('cursorGlow');
+    document.addEventListener('mousemove', (e) => {
+      cursorGlow.style.left = e.clientX + 'px';
+      cursorGlow.style.top = e.clientY + 'px';
+    });
+
+    // Scroll reveal animation
+    const reveals = document.querySelectorAll('.reveal');
+    const revealOnScroll = () => {
+      reveals.forEach(el => {
+        const windowHeight = window.innerHeight;
+        const elementTop = el.getBoundingClientRect().top;
+        const revealPoint = 150;
+        if (elementTop < windowHeight - revealPoint) {
+          el.classList.add('active');
+        }
+      });
+    };
+
+    window.addEventListener('scroll', revealOnScroll);
+    revealOnScroll(); // Initial check
+
+    // Form submission
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      btn.textContent = 'Sending...';
+      setTimeout(() => {
+        btn.textContent = 'Message Sent!';
+        btn.style.background = '#00ff88';
+        e.target.reset();
+        setTimeout(() => {
+          btn.textContent = 'Send Message';
+          btn.style.background = '';
+        }, 3000);
+      }, 1500);
+    }
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
