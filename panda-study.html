@@ -482,11 +482,11 @@
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 1000;
         }
         
         .overlay.show {
-            display: flex;
+            display: flex !important;
         }
         
         .reward-popup {
@@ -496,10 +496,12 @@
             text-align: center;
             display: none;
             animation: popIn 0.3s ease;
+            z-index: 1001;
+            position: relative;
         }
         
         .reward-popup.show {
-            display: block;
+            display: block !important;
         }
         
         @keyframes popIn {
@@ -1006,8 +1008,15 @@
             const q = availableQuestions[randomIndex];
             
             if (state.currentSubject === 'math') {
+                // 修复：根据运算符计算正确答案
+                let correctAnswer;
+                if (q.op === '+') {
+                    correctAnswer = q.a + q.b;
+                } else {
+                    correctAnswer = q.a - q.b;
+                }
                 return {
-                    answer: String(q.a + q.b), // 确保答案是字符串
+                    answer: String(correctAnswer),
                     display: `${q.a} ${q.op} ${q.b} = ?`,
                     hint: q.hint
                 };
