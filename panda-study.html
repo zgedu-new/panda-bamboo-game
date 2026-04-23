@@ -6,7 +6,11 @@
     <title>小熊猫历险记 - 语文数学学习</title>
     <!-- 背景音乐 -->
     <audio id="bgMusic" loop preload="auto">
-        <source src="https://assets.mixkit.co/music/preview/mixkit-kindergarten-surprise-240.mp3" type="audio/mpeg">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+    <!-- 音效 -->
+    <audio id="correctSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQAAAAA=" type="audio/wav">
     </audio>
     <style>
         * {
@@ -30,6 +34,22 @@
             min-height: 100vh;
         }
         
+        /* 音乐控制按钮 */
+        .music-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        
         /* 顶部状态栏 */
         .top-bar {
             display: flex;
@@ -51,20 +71,7 @@
             color: #333;
         }
         
-        .stat-icon {
-            font-size: 24px;
-        }
-        
-        .star-icon { color: #ffd700; }
-        .coin-icon { color: #ff9f43; }
-        .heart-icon { color: #ff6b6b; }
-        
-        /* 熊猫角色 */
-        .panda-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
+        /* 小熊猫 */
         .panda {
             width: 120px;
             height: 120px;
@@ -87,7 +94,6 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.05);
         }
         
         .panda-head {
@@ -107,7 +113,7 @@
             background: #333;
             border-radius: 50%;
             position: absolute;
-            top: -5px;
+            top: 0;
         }
         
         .panda-ear.left { left: 5px; }
@@ -122,11 +128,10 @@
             top: 25px;
         }
         
-        .panda-eye.left { left: 15px; }
-        .panda-eye.right { right: 15px; }
+        .panda-eye.left { left: 12px; }
+        .panda-eye.right { right: 12px; }
         
-        .panda-eye::after {
-            content: '';
+        .panda-eye-white {
             width: 8px;
             height: 8px;
             background: white;
@@ -159,153 +164,113 @@
             transform: translateX(-50%);
         }
         
-        /* 音乐控制按钮 */
-        .music-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.95);
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .music-toggle:active {
-            transform: scale(0.95);
-        }
-        
-        .panda-blush {
-            width: 15px;
-            height: 10px;
-            background: rgba(255,150,150,0.5);
-            border-radius: 50%;
-            position: absolute;
-            top: 50px;
-        }
-        
-        .panda-blush.left { left: 5px; }
-        .panda-blush.right { right: 5px; }
-        
-        /* 熊猫装扮 */
-        .panda-hat {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 40px;
-        }
-        
-        .level-badge {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 10px;
-            display: inline-block;
-        }
-        
         /* 开始页面 */
-        .screen {
-            display: none;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
         .start-screen {
             text-align: center;
             padding-top: 40px;
         }
         
-        .game-title {
-            font-size: 32px;
+        .start-title {
+            font-size: 28px;
             font-weight: bold;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
-        .game-subtitle {
+        .start-subtitle {
             font-size: 16px;
-            color: rgba(255,255,255,0.9);
+            color: rgba(255,255,255,0.8);
             margin-bottom: 40px;
-        }
-        
-        .start-btn {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            border: none;
-            padding: 18px 60px;
-            font-size: 22px;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(17,153,142,0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .start-btn:active {
-            transform: scale(0.95);
         }
         
         .subject-cards {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-top: 30px;
+            margin-bottom: 20px;
         }
         
         .subject-card {
             background: white;
             border-radius: 20px;
-            padding: 25px 20px;
-            text-align: center;
+            padding: 25px 15px;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
         }
         
         .subject-card:active {
             transform: scale(0.95);
         }
         
-        .subject-icon {
-            font-size: 50px;
+        .subject-card .icon {
+            font-size: 40px;
             margin-bottom: 10px;
         }
         
-        .subject-name {
+        .subject-card .name {
             font-size: 18px;
             font-weight: bold;
             color: #333;
         }
         
-        .math-card {
-            border: 3px solid #667eea;
+        /* 难度选择 */
+        .level-select {
+            margin: 20px 0;
         }
         
-        .chinese-card {
-            border: 3px solid #f5576c;
+        .level-title {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .level-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .level-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .level-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .level-btn.easy { background: #4CAF50; color: white; }
+        .level-btn.medium { background: #FF9800; color: white; }
+        .level-btn.hard { background: #F44336; color: white; }
+        .level-btn.selected { box-shadow: 0 0 0 3px white; }
+        
+        .start-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,165,0,0.4);
+            margin-top: 20px;
         }
         
         /* 答题页面 */
         .quiz-screen {
-            background: white;
-            border-radius: 30px;
-            padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: none;
+        }
+        
+        .quiz-screen.active {
+            display: block;
         }
         
         .quiz-header {
@@ -315,67 +280,91 @@
             margin-bottom: 20px;
         }
         
-        .back-btn {
-            background: #f0f0f0;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
         .quiz-type {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 14px;
+            font-weight: bold;
+            color: #667eea;
         }
         
-        .question-container {
-            text-align: center;
-            margin-bottom: 30px;
+        .quiz-progress {
+            flex: 1;
+            margin: 0 15px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
         }
         
-        .question-type {
+        .quiz-progress-fill {
+            height: 100%;
+            background: #FFD700;
+            transition: width 0.3s;
+        }
+        
+        .quiz-count {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
-            color: #999;
-            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* 题目卡片 */
+        .question-card {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
         
         .question-text {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .question-hint {
             font-size: 16px;
-            color: #666;
-            background: #f8f8f8;
-            padding: 10px 20px;
-            border-radius: 10px;
-            display: inline-block;
+            color: #999;
         }
+        
+        .level-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .level-badge.easy { background: #4CAF50; }
+        .level-badge.medium { background: #FF9800; }
+        .level-badge.hard { background: #F44336; }
         
         /* 选项 */
         .options {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 20px;
         }
         
         .option-btn {
+            padding: 25px;
             background: white;
-            border: 3px solid #e0e0e0;
-            padding: 20px;
-            font-size: 28px;
-            font-weight: bold;
+            border: 3px solid transparent;
             border-radius: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .option-btn:active {
@@ -383,82 +372,48 @@
         }
         
         .option-btn.correct {
-            background: #38ef7d;
-            border-color: #11998e;
+            background: #4CAF50;
             color: white;
-            animation: pulse 0.5s;
+            border-color: #388E3C;
         }
         
         .option-btn.wrong {
-            background: #ff6b6b;
-            border-color: #ee5a5a;
+            background: #F44336;
             color: white;
-            animation: shake 0.5s;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-        
-        /* 进度条 */
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s;
-        }
-        
-        .progress-text {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #999;
+            border-color: #D32F2F;
         }
         
         /* 结果页面 */
         .result-screen {
+            display: none;
             text-align: center;
-            padding-top: 20px;
+            padding-top: 40px;
         }
         
-        .result-panda {
+        .result-screen.active {
+            display: block;
+        }
+        
+        .result-icon {
             font-size: 80px;
             margin-bottom: 20px;
-            animation: bounce 1s ease-in-out infinite;
         }
         
         .result-title {
             font-size: 28px;
             font-weight: bold;
-            color: #333;
+            color: white;
             margin-bottom: 10px;
         }
         
         .result-stats {
-            background: #f8f8f8;
+            background: white;
             border-radius: 20px;
             padding: 20px;
             margin: 20px 0;
-        }
-        
-        .stat-row {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
         }
         
         .stat-item {
@@ -466,124 +421,57 @@
         }
         
         .stat-value {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             color: #667eea;
         }
         
         .stat-label {
-            font-size: 14px;
+            font-size: 12px;
             color: #999;
+            margin-top: 5px;
+        }
+        
+        .achievements-list {
+            margin: 15px 0;
+        }
+        
+        .achievement {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
         }
         
         .result-buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 10px;
         }
         
         .result-btn {
             flex: 1;
             padding: 15px;
+            border: none;
+            border-radius: 25px;
             font-size: 16px;
             font-weight: bold;
-            border: none;
-            border-radius: 15px;
             cursor: pointer;
         }
         
         .continue-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4CAF50, #45a049);
             color: white;
         }
         
         .home-btn {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        /* 奖励动画 */
-        .reward-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
             background: white;
-            padding: 30px;
-            border-radius: 30px;
-            text-align: center;
-            z-index: 100;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
+            color: #667eea;
         }
         
-        .reward-popup.show {
-            transform: translate(-50%, -50%) scale(1);
-        }
-        
-        .reward-icon {
-            font-size: 80px;
-            margin-bottom: 15px;
-        }
-        
-        .reward-text {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .reward-detail {
-            font-size: 16px;
-            color: #666;
-            margin-top: 10px;
-        }
-        
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 15px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-        }
-        
-        .nav-item {
-            text-align: center;
-            cursor: pointer;
-        }
-        
-        .nav-icon {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .nav-text {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        /* 成就徽章 */
-        .achievement {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin: 5px;
-        }
-        
-        .achievements-list {
-            margin-top: 15px;
-        }
-        
-        /* 覆盖层 */
+        /* 奖励弹窗 */
         .overlay {
             position: fixed;
             top: 0;
@@ -591,12 +479,57 @@
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 99;
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
         }
         
         .overlay.show {
+            display: flex;
+        }
+        
+        .reward-popup {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            display: none;
+            animation: popIn 0.3s ease;
+        }
+        
+        .reward-popup.show {
             display: block;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .reward-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .reward-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .reward-detail {
+            font-size: 18px;
+            color: #FFD700;
+        }
+        
+        .start-screen {
+            display: block;
+        }
+        
+        .start-screen.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -608,110 +541,108 @@
         <!-- 顶部状态栏 -->
         <div class="top-bar" id="topBar">
             <div class="stat">
-                <span class="stat-icon star-icon">⭐</span>
+                <span>⭐</span>
                 <span id="stars">0</span>
             </div>
             <div class="stat">
-                <span class="stat-icon coin-icon">🪙</span>
+                <span>🪙</span>
                 <span id="coins">0</span>
             </div>
             <div class="stat">
-                <span class="stat-icon heart-icon">❤️</span>
+                <span>❤️</span>
                 <span id="hearts">3</span>
             </div>
         </div>
         
         <!-- 开始页面 -->
-        <div class="screen start-screen active" id="startScreen">
-            <h1 class="game-title">🐼 小熊猫历险记</h1>
-            <p class="game-subtitle">边玩边学，趣味成长</p>
-            
-            <div class="panda-container">
-                <div class="panda">
+        <div class="start-screen" id="startScreen">
+            <div class="panda">
+                <div class="panda-body">
                     <div class="panda-head">
                         <div class="panda-ear left"></div>
                         <div class="panda-ear right"></div>
-                        <div class="panda-eye left"></div>
-                        <div class="panda-eye right"></div>
+                        <div class="panda-eye left"><div class="panda-eye-white"></div></div>
+                        <div class="panda-eye right"><div class="panda-eye-white"></div></div>
                         <div class="panda-nose"></div>
                         <div class="panda-mouth"></div>
-                        <div class="panda-blush left"></div>
-                        <div class="panda-blush right"></div>
                     </div>
-                    <div class="panda-body"></div>
-                    <div class="panda-hat">🎓</div>
-                </div>
-                <div class="level-badge">Lv.1 小学新生</div>
-            </div>
-            
-            <button class="start-btn" onclick="showSubjectSelect()">开始学习</button>
-            
-            <div class="subject-cards" style="display:none" id="subjectCards">
-                <div class="subject-card math-card" onclick="startQuiz('math')">
-                    <div class="subject-icon">🔢</div>
-                    <div class="subject-name">数学</div>
-                </div>
-                <div class="subject-card chinese-card" onclick="startQuiz('chinese')">
-                    <div class="subject-icon">📚</div>
-                    <div class="subject-name">语文</div>
                 </div>
             </div>
+            
+            <h1 class="start-title">小熊猫历险记</h1>
+            <p class="start-subtitle">边玩边学，欢乐成长</p>
+            
+            <div class="subject-cards">
+                <div class="subject-card" onclick="selectSubject('math')">
+                    <div class="icon">🔢</div>
+                    <div class="name">数学</div>
+                </div>
+                <div class="subject-card" onclick="selectSubject('chinese')">
+                    <div class="icon">📚</div>
+                    <div class="name">语文</div>
+                </div>
+            </div>
+            
+            <div class="level-select" id="levelSelect" style="display: none;">
+                <div class="level-title">选择难度</div>
+                <div class="level-buttons">
+                    <button class="level-btn easy selected" onclick="selectLevel('easy')">简单</button>
+                    <button class="level-btn medium" onclick="selectLevel('medium')">中等</button>
+                    <button class="level-btn hard" onclick="selectLevel('hard')">困难</button>
+                </div>
+            </div>
+            
+            <button class="start-btn" id="startBtn" onclick="startQuiz()">开始学习</button>
         </div>
         
         <!-- 答题页面 -->
-        <div class="screen" id="quizScreen">
-            <div class="quiz-screen">
-                <div class="quiz-header">
-                    <button class="back-btn" onclick="goHome()">← 返回</button>
-                    <div class="quiz-type" id="quizType">数学</div>
+        <div class="quiz-screen" id="quizScreen">
+            <div class="quiz-header">
+                <div class="quiz-type" id="quizType">数学</div>
+                <div class="quiz-progress">
+                    <div class="quiz-progress-fill" id="progressFill"></div>
                 </div>
-                
-                <div class="question-container">
-                    <div class="question-type" id="questionType">请选择正确答案</div>
-                    <div class="question-text" id="questionText">1 + 1 = ?</div>
-                    <div class="question-hint" id="questionHint">提示：掰手指算一算</div>
-                </div>
-                
-                <div class="options" id="options">
-                    <button class="option-btn">2</button>
-                    <button class="option-btn">3</button>
-                    <button class="option-btn">4</button>
-                    <button class="option-btn">5</button>
-                </div>
-                
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-                <div class="progress-text" id="progressText">第 1/10 题</div>
+                <div class="quiz-count" id="progressText">1/10</div>
+            </div>
+            
+            <div class="question-card">
+                <span class="level-badge" id="levelBadge">简单</span>
+                <div class="question-text" id="questionText">1 + 1 = ?</div>
+                <div class="question-hint" id="questionHint">提示：1个苹果加1个苹果</div>
+            </div>
+            
+            <div class="options" id="options">
+                <button class="option-btn">2</button>
+                <button class="option-btn">3</button>
+                <button class="option-btn">4</button>
+                <button class="option-btn">5</button>
             </div>
         </div>
         
         <!-- 结果页面 -->
-        <div class="screen result-screen" id="resultScreen">
-            <div class="result-panda" id="resultPanda">🎉</div>
+        <div class="result-screen" id="resultScreen">
+            <div class="result-icon" id="resultIcon">🎉</div>
             <div class="result-title" id="resultTitle">太棒了！</div>
             
             <div class="result-stats">
-                <div class="stat-row">
-                    <div class="stat-item">
-                        <div class="stat-value" id="correctCount">8</div>
-                        <div class="stat-label">正确</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="wrongCount">2</div>
-                        <div class="stat-label">错误</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="accuracy">80%</div>
-                        <div class="stat-label">正确率</div>
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">正确</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="wrongCount">0</div>
+                    <div class="stat-label">错误</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">正确率</div>
                 </div>
             </div>
             
             <div class="achievements-list" id="achievements"></div>
             
             <div class="result-buttons">
-                <button class="result-btn continue-btn" onclick="continueQuiz()">继续答题</button>
+                <button class="result-btn continue-btn" onclick="continueQuiz()">再来一次</button>
                 <button class="result-btn home-btn" onclick="goHome()">返回主页</button>
             </div>
         </div>
@@ -728,6 +659,7 @@
     <script>
         // 音乐控制
         let isMusicPlaying = false;
+        let musicInitialized = false;
         const bgMusic = document.getElementById('bgMusic');
         const musicToggle = document.getElementById('musicToggle');
         
@@ -742,19 +674,69 @@
                     isMusicPlaying = true;
                 }).catch(e => {
                     console.log('播放失败:', e);
+                    alert('音乐加载中，请稍后再试');
                 });
             }
         }
         
-        // 自动尝试播放音乐（用户交互后）
-        document.addEventListener('click', function initMusic() {
-            if (!isMusicPlaying) {
-                bgMusic.play().then(() => {
-                    musicToggle.textContent = '🎵';
-                    isMusicPlaying = true;
-                }).catch(e => {});
+        // 初始化音乐（需要用户交互）
+        function initMusic() {
+            if (musicInitialized) return;
+            musicInitialized = true;
+            bgMusic.play().then(() => {
+                musicToggle.textContent = '🎵';
+                isMusicPlaying = true;
+            }).catch(e => {
+                console.log('自动播放失败，等待用户点击');
+            });
+        }
+        
+        // 音效系统
+        function playCorrectSound() {
+            // 使用Web Audio API生成正确音效
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.4);
+            } catch(e) {
+                console.log('音效播放失败');
             }
-        }, { once: true });
+        }
+        
+        function playWrongSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.15);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch(e) {
+                console.log('音效播放失败');
+            }
+        }
         
         // 游戏状态
         let state = {
@@ -763,39 +745,90 @@
             hearts: 3,
             level: 1,
             currentSubject: 'math',
+            currentLevel: 'easy',
             currentQuestion: 0,
-            totalQuestions: 10,
+            totalQuestions: 15,
             correctAnswers: 0,
             wrongAnswers: 0,
             streak: 0,
-            achievements: []
+            achievements: [],
+            usedQuestions: []
         };
         
-        // 数学题库
-        const mathQuestions = [
-            // 10以内加法
+        // 数学题库 - 简单难度（5以内加减法）
+        const mathQuestionsEasy = [
             { a: 1, b: 1, op: '+', hint: '1个苹果加1个苹果' },
-            { a: 2, b: 3, op: '+', hint: '2只小兔子加3只' },
-            { a: 4, b: 5, op: '+', hint: '4颗糖加5颗糖' },
-            { a: 3, b: 6, op: '+', hint: '3朵花加6朵花' },
-            { a: 7, b: 2, op: '+', hint: '7颗星星加2颗' },
-            // 10以内减法
-            { a: 8, b: 3, op: '-', hint: '8个橘子吃掉3个' },
-            { a: 9, b: 4, op: '-', hint: '9只鸟飞走4只' },
-            { a: 6, b: 2, op: '-', hint: '6块饼干吃掉2块' },
-            { a: 10, b: 5, op: '-', hint: '10个气球爆了5个' },
-            // 20以内加法
-            { a: 12, b: 5, op: '+', hint: '12个苹果再加5个' },
-            { a: 8, b: 7, op: '+', hint: '8颗草莓加7颗' },
-            { a: 15, b: 3, op: '+', hint: '15只蝴蝶加3只' },
-            // 20以内减法
-            { a: 18, b: 6, op: '-', hint: '18个气球飞走6个' },
-            { a: 14, b: 8, op: '-', hint: '14颗糖果吃掉8颗' },
-            { a: 20, b: 9, op: '-', hint: '20块积木拿走9块' }
+            { a: 2, b: 1, op: '+', hint: '2只小兔子加1只' },
+            { a: 1, b: 2, op: '+', hint: '1颗糖加2颗糖' },
+            { a: 3, b: 1, op: '+', hint: '3朵花加1朵' },
+            { a: 2, b: 2, op: '+', hint: '2只鸟加2只' },
+            { a: 4, b: 1, op: '+', hint: '4颗星星加1颗' },
+            { a: 1, b: 3, op: '+', hint: '1个球加3个球' },
+            { a: 2, b: 3, op: '+', hint: '2只小猫加3只' },
+            { a: 3, b: 2, op: '+', hint: '3本书加2本' },
+            { a: 5, b: 1, op: '+', hint: '5个橘子加1个' },
+            { a: 1, b: 4, op: '+', hint: '1只小狗加4只' },
+            { a: 2, b: 1, op: '-', hint: '2个苹果吃掉1个' },
+            { a: 3, b: 1, op: '-', hint: '3只鸟飞走1只' },
+            { a: 4, b: 2, op: '-', hint: '4颗糖吃掉2颗' },
+            { a: 5, b: 1, op: '-', hint: '5朵花摘掉1朵' },
+            { a: 3, b: 2, op: '-', hint: '3个气球飞走2个' },
+            { a: 4, b: 1, op: '-', hint: '4块饼干吃掉1块' },
+            { a: 5, b: 2, op: '-', hint: '5个梨子吃掉2个' },
+            { a: 2, b: 2, op: '-', hint: '2只鱼游走2只' },
+            { a: 4, b: 3, op: '-', hint: '4只虾游走3只' }
         ];
         
-        // 语文题库（拼音）
-        const chineseQuestions = [
+        // 数学题库 - 中等难度（10以内加减法）
+        const mathQuestionsMedium = [
+            { a: 3, b: 4, op: '+', hint: '3只小兔子加4只' },
+            { a: 5, b: 3, op: '+', hint: '5颗糖加3颗糖' },
+            { a: 6, b: 2, op: '+', hint: '6朵花加2朵' },
+            { a: 4, b: 5, op: '+', hint: '4本书加5本' },
+            { a: 7, b: 2, op: '+', hint: '7颗星星加2颗' },
+            { a: 3, b: 6, op: '+', hint: '3个球加6个球' },
+            { a: 8, b: 1, op: '+', hint: '8只猫加1只' },
+            { a: 5, b: 4, op: '+', hint: '5个苹果加4个' },
+            { a: 2, b: 7, op: '+', hint: '2条鱼加7条' },
+            { a: 6, b: 3, op: '+', hint: '6块饼干加3块' },
+            { a: 8, b: 2, op: '-', hint: '8个橘子吃掉2个' },
+            { a: 9, b: 3, op: '-', hint: '9只鸟飞走3只' },
+            { a: 7, b: 4, op: '-', hint: '7块积木拿走4块' },
+            { a: 10, b: 5, op: '-', hint: '10个气球爆了5个' },
+            { a: 6, b: 3, op: '-', hint: '6颗草莓吃掉3颗' },
+            { a: 8, b: 4, op: '-', hint: '8朵花摘掉4朵' },
+            { a: 9, b: 6, op: '-', hint: '9本书借走6本' },
+            { a: 7, b: 2, op: '-', hint: '7只蝴蝶飞走2只' },
+            { a: 10, b: 3, op: '-', hint: '10颗糖吃掉3颗' },
+            { a: 8, b: 5, op: '-', hint: '8个梨子吃掉5个' }
+        ];
+        
+        // 数学题库 - 困难难度（20以内加减法）
+        const mathQuestionsHard = [
+            { a: 8, b: 7, op: '+', hint: '8个苹果加7个' },
+            { a: 9, b: 6, op: '+', hint: '9只兔子加6只' },
+            { a: 12, b: 5, op: '+', hint: '12颗糖加5颗' },
+            { a: 7, b: 8, op: '+', hint: '7朵花加8朵' },
+            { a: 11, b: 6, op: '+', hint: '11本书加6本' },
+            { a: 9, b: 9, op: '+', hint: '9颗星星加9颗' },
+            { a: 13, b: 4, op: '+', hint: '13个球加4个' },
+            { a: 8, b: 6, op: '+', hint: '8只猫加6只' },
+            { a: 15, b: 3, op: '+', hint: '15条鱼加3条' },
+            { a: 10, b: 8, op: '+', hint: '10块饼干加8块' },
+            { a: 18, b: 7, op: '-', hint: '18个橘子吃掉7个' },
+            { a: 15, b: 8, op: '-', hint: '15只鸟飞走8只' },
+            { a: 20, b: 9, op: '-', hint: '20块积木拿走9块' },
+            { a: 16, b: 7, op: '-', hint: '16颗草莓吃掉7颗' },
+            { a: 14, b: 6, op: '-', hint: '14朵花摘掉6朵' },
+            { a: 19, b: 8, op: '-', hint: '19本书借走8本' },
+            { a: 17, b: 9, op: '-', hint: '17只蝴蝶飞走9只' },
+            { a: 12, b: 5, op: '-', hint: '12颗糖吃掉5颗' },
+            { a: 20, b: 11, op: '-', hint: '20个梨子吃掉11个' },
+            { a: 13, b: 7, op: '-', hint: '13个球滚走7个' }
+        ];
+        
+        // 语文题库 - 简单（常见物品）
+        const chineseQuestionsEasy = [
             { pinyin: 'mā ma', answer: '妈妈', hint: '和妈妈打招呼' },
             { pinyin: 'bà ba', answer: '爸爸', hint: '和爸爸打招呼' },
             { pinyin: 'xiǎo gǒu', answer: '小狗', hint: '人类的好朋友' },
@@ -804,22 +837,79 @@
             { pinyin: 'huā ér', answer: '花儿', hint: '春天开的很漂亮' },
             { pinyin: 'yuè liang', answer: '月亮', hint: '晚上挂在天上' },
             { pinyin: 'tài yáng', answer: '太阳', hint: '白天出来，很暖和' },
-            { pinyin: 'shuǐ guǒ', answer: '水果', hint: '苹果、梨子、香蕉' },
             { pinyin: 'xiǎo xué', answer: '小学', hint: '你现在上学的地方' },
             { pinyin: 'chī fàn', answer: '吃饭', hint: '每天要做的事情' },
+            { pinyin: 'hé shuǐ', answer: '河水', hint: '河里的水' },
+            { pinyin: 'shān yáng', answer: '山羊', hint: '头上有角的动物' },
+            { pinyin: 'xiǎo jī', answer: '小鸡', hint: '母鸡的宝宝' },
+            { pinyin: 'qīng wā', answer: '青蛙', hint: '会跳会呱呱叫' },
+            { pinyin: 'xiǎo yā', answer: '小鸭', hint: '会游泳的黄色小动物' },
+            { pinyin: 'mì fēng', answer: '蜜蜂', hint: '会采花蜜' },
+            { pinyin: 'hú dié', answer: '蝴蝶', hint: '翅膀很漂亮' },
+            { pinyin: 'xiǎo zhū', answer: '小猪', hint: '鼻子圆圆的' },
+            { pinyin: 'mǎ ér', answer: '马儿', hint: '会跑会拉车' },
+            { pinyin: 'niú ér', answer: '牛儿', hint: '能产牛奶' }
+        ];
+        
+        // 语文题库 - 中等（常见动作/事物）
+        const chineseQuestionsMedium = [
             { pinyin: 'hē shuǐ', answer: '喝水', hint: '口渴了要干什么' },
             { pinyin: 'tiào wǔ', answer: '跳舞', hint: '随着音乐动起来' },
             { pinyin: 'chàng gē', answer: '唱歌', hint: '发出动听的声音' },
-            { pinyin: 'dú shū', answer: '读书', hint: '学习知识' }
+            { pinyin: 'dú shū', answer: '读书', hint: '学习知识' },
+            { pinyin: 'xiě zì', answer: '写字', hint: '用笔在本子上写' },
+            { pinyin: 'huà huà', answer: '画画', hint: '用笔在纸上画' },
+            { pinyin: 'shuì jiào', answer: '睡觉', hint: '晚上要做的事情' },
+            { pinyin: 'xǐ liǎn', answer: '洗脸', hint: '早上起来要做的事' },
+            { pinyin: 'shū tóu', answer: '梳头', hint: '整理头发' },
+            { pinyin: 'guāi guāi', answer: '乖乖', hint: '听话的样子' },
+            { pinyin: 'kāi xīn', answer: '开心', hint: '很高兴的心情' },
+            { pinyin: 'shāng xīn', answer: '伤心', hint: '难过的反义词' },
+            { pinyin: 'xiǎo péng yǒu', answer: '小朋友', hint: '你的同学们' },
+            { pinyin: 'lǎo shī', answer: '老师', hint: '教我们知识的人' },
+            { pinyin: 'tóng xué', answer: '同学', hint: '一起上课的小伙伴' },
+            { pinyin: 'xiào guǒ', answer: '效果', hint: '做事的成绩' },
+            { pinyin: 'jiāo yóu', answer: '郊游', hint: '到户外去玩' },
+            { pinyin: 'yùn dòng', answer: '运动', hint: '跑步、打球等' },
+            { pinyin: 'kē xué', answer: '科学', hint: '探索自然奥秘' },
+            { pinyin: 'yīn yuè', answer: '音乐', hint: '好听的声音' }
+        ];
+        
+        // 语文题库 - 困难（抽象词汇/成语）
+        const chineseQuestionsHard = [
+            { pinyin: 'zhuǎn shēn', answer: '转身', hint: '把身体转过去' },
+            { pinyin: ' tái tóu', answer: '抬头', hint: '把头抬起来' },
+            { pinyin: 'dī tóu', answer: '低头', hint: '把头低下去' },
+            { pinyin: 'jǔ shǒu', answer: '举手', hint: '回答问题时' },
+            { pinyin: 'bǎi shǒu', answer: '摆手', hint: '和人再见时' },
+            { pinyin: 'tiào gāo', answer: '跳高', hint: '体育运动的一种' },
+            { pinyin: 'pǎo bù', answer: '跑步', hint: '用脚快速移动' },
+            { pinyin: 'yóu yǒng', answer: '游泳', hint: '在水里游动' },
+            { pinyin: 'cā shā fā', answer: '擦沙发', hint: '让沙发变干净' },
+            { pinyin: 'sǎo dì', answer: '扫地', hint: '让地面变干净' },
+            { pinyin: 'shōu shi', answer: '收拾', hint: '整理东西' },
+            { pinyin: 'zhěng qí', answer: '整齐', hint: '不乱的样子' },
+            { pinyin: 'gān jìng', answer: '干净', hint: '没有脏东西' },
+            { pinyin: 'piào liang', answer: '漂亮', hint: '很好看' },
+            { pinyin: 'kě ài', answer: '可爱', hint: '让人喜欢的' },
+            { pinyin: 'yǒu qù', answer: '有趣', hint: '很好玩' },
+            { pinyin: 'gāo xìng', answer: '高兴', hint: '开心的另一种说法' },
+            { pinyin: 'cōng míng', answer: '聪明', hint: '脑子很灵光' },
+            { pinyin: 'yǒng gǎn', answer: '勇敢', hint: '不怕困难' },
+            { pinyin: 'lèi le', answer: '累了', hint: '需要休息' }
         ];
         
         let currentQuestion = null;
         let options = [];
+        let selectedSubject = null;
         
         // 初始化
         function init() {
             loadState();
             updateUI();
+            
+            // 尝试初始化音乐
+            document.addEventListener('click', initMusic, { once: true });
         }
         
         // 保存状态
@@ -842,57 +932,114 @@
             document.getElementById('hearts').textContent = state.hearts;
         }
         
-        // 显示科目选择
-        function showSubjectSelect() {
-            document.getElementById('subjectCards').style.display = 'grid';
-            document.querySelector('.start-btn').textContent = '选择科目开始学习';
-            document.querySelector('.start-btn').onclick = null;
+        // 选择科目
+        function selectSubject(subject) {
+            selectedSubject = subject;
+            state.currentSubject = subject;
+            document.getElementById('levelSelect').style.display = 'block';
+            
+            // 更新卡片样式
+            document.querySelectorAll('.subject-card').forEach(card => {
+                card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            });
+            event.currentTarget.style.boxShadow = '0 0 0 3px #FFD700';
+            
+            // 更新按钮文字
+            document.getElementById('startBtn').textContent = '开始挑战';
+        }
+        
+        // 选择难度
+        function selectLevel(level) {
+            state.currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
         }
         
         // 开始答题
-        function startQuiz(subject) {
-            state.currentSubject = subject;
+        function startQuiz() {
+            if (!selectedSubject) {
+                alert('请先选择科目');
+                return;
+            }
+            
             state.currentQuestion = 0;
             state.correctAnswers = 0;
             state.wrongAnswers = 0;
             state.streak = 0;
+            state.usedQuestions = [];
+            state.hearts = 3;
             
-            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('quizScreen').classList.add('active');
-            document.getElementById('quizType').textContent = subject === 'math' ? '数学' : '语文';
+            document.getElementById('quizType').textContent = selectedSubject === 'math' ? '数学' : '语文';
             
             showQuestion();
         }
         
-        // 显示问题
-        function showQuestion() {
-            let q;
+        // 获取题目
+        function getQuestion() {
+            let questions;
             
             if (state.currentSubject === 'math') {
-                q = mathQuestions[Math.floor(Math.random() * mathQuestions.length)];
-                currentQuestion = {
-                    answer: q.a + q.b,
+                if (state.currentLevel === 'easy') questions = mathQuestionsEasy;
+                else if (state.currentLevel === 'medium') questions = mathQuestionsMedium;
+                else questions = mathQuestionsHard;
+            } else {
+                if (state.currentLevel === 'easy') questions = chineseQuestionsEasy;
+                else if (state.currentLevel === 'medium') questions = chineseQuestionsMedium;
+                else questions = chineseQuestionsHard;
+            }
+            
+            // 随机选择一道没做过的题
+            let availableQuestions = questions.filter((_, i) => !state.usedQuestions.includes(i));
+            if (availableQuestions.length === 0) {
+                state.usedQuestions = [];
+                availableQuestions = questions;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            const questionIndex = questions.indexOf(availableQuestions[randomIndex]);
+            state.usedQuestions.push(questionIndex);
+            
+            const q = availableQuestions[randomIndex];
+            
+            if (state.currentSubject === 'math') {
+                return {
+                    answer: String(q.a + q.b), // 确保答案是字符串
                     display: `${q.a} ${q.op} ${q.b} = ?`,
                     hint: q.hint
                 };
             } else {
-                q = chineseQuestions[Math.floor(Math.random() * chineseQuestions.length)];
-                currentQuestion = {
+                return {
                     answer: q.answer,
                     display: q.pinyin,
                     hint: q.hint
                 };
             }
+        }
+        
+        // 显示问题
+        function showQuestion() {
+            currentQuestion = getQuestion();
             
             // 生成选项
             generateOptions();
             
+            // 更新界面
             document.getElementById('questionText').textContent = currentQuestion.display;
             document.getElementById('questionHint').textContent = currentQuestion.hint;
             document.getElementById('progressText').textContent = 
                 `第 ${state.currentQuestion + 1}/${state.totalQuestions} 题`;
             document.getElementById('progressFill').style.width = 
                 `${(state.currentQuestion / state.totalQuestions) * 100}%`;
+            
+            // 更新难度标签
+            const levelBadge = document.getElementById('levelBadge');
+            levelBadge.textContent = state.currentLevel === 'easy' ? '简单' : 
+                                     state.currentLevel === 'medium' ? '中等' : '困难';
+            levelBadge.className = 'level-badge ' + state.currentLevel;
         }
         
         // 生成选项
@@ -900,20 +1047,27 @@
             const container = document.getElementById('options');
             options = [currentQuestion.answer];
             
-            // 生成干扰项
             if (state.currentSubject === 'math') {
+                // 数学：生成数字干扰项
                 while (options.length < 4) {
-                    const offset = Math.floor(Math.random() * 5) + 1;
+                    const answerNum = parseInt(currentQuestion.answer);
+                    const offset = Math.floor(Math.random() * 6) + 1;
                     const wrong = Math.random() > 0.5 
-                        ? currentQuestion.answer + offset 
-                        : Math.max(0, currentQuestion.answer - offset);
-                    if (wrong !== currentQuestion.answer && !options.includes(wrong) && wrong > 0) {
-                        options.push(wrong);
+                        ? answerNum + offset 
+                        : Math.max(0, answerNum - offset);
+                    const wrongStr = String(wrong);
+                    if (wrong !== answerNum && !options.includes(wrongStr) && wrong >= 0) {
+                        options.push(wrongStr);
                     }
                 }
             } else {
                 // 语文：随机选择其他答案作为干扰项
-                const allAnswers = chineseQuestions.map(q => q.answer);
+                let allQuestions;
+                if (state.currentLevel === 'easy') allQuestions = chineseQuestionsEasy;
+                else if (state.currentLevel === 'medium') allQuestions = chineseQuestionsMedium;
+                else allQuestions = chineseQuestionsHard;
+                
+                const allAnswers = allQuestions.map(q => q.answer);
                 while (options.length < 4) {
                     const wrong = allAnswers[Math.floor(Math.random() * allAnswers.length)];
                     if (wrong !== currentQuestion.answer && !options.includes(wrong)) {
@@ -936,25 +1090,25 @@
             const buttons = document.querySelectorAll('.option-btn');
             buttons.forEach(btn => {
                 btn.disabled = true;
-                if (btn.textContent == answer) {
-                    if (answer == currentQuestion.answer) {
-                        btn.classList.add('correct');
-                    } else {
-                        btn.classList.add('wrong');
-                    }
-                }
-                if (btn.textContent == currentQuestion.answer) {
+                const btnText = btn.textContent.trim();
+                const correctAnswer = currentQuestion.answer.trim();
+                
+                if (btnText === correctAnswer) {
                     btn.classList.add('correct');
+                } else if (btnText === answer && answer !== correctAnswer) {
+                    btn.classList.add('wrong');
                 }
             });
             
             setTimeout(() => {
-                if (answer == currentQuestion.answer) {
+                if (answer.trim() === currentQuestion.answer.trim()) {
+                    playCorrectSound();
                     handleCorrect();
                 } else {
+                    playWrongSound();
                     handleWrong();
                 }
-            }, 800);
+            }, 600);
         }
         
         // 答对了
@@ -963,19 +1117,18 @@
             state.streak++;
             state.currentQuestion++;
             
-            // 奖励
             let reward = 10;
             let rewardIcon = '⭐';
             
             if (state.streak >= 5) {
                 reward = 20;
                 rewardIcon = '🔥';
-                addAchievement('streak5', '连续答对5题', '🔥');
+                addAchievement('streak5', '连续5题');
             }
             if (state.streak >= 10) {
                 reward = 30;
                 rewardIcon = '🌟';
-                addAchievement('streak10', '连续答对10题', '🌟');
+                addAchievement('streak10', '连续10题');
             }
             
             state.stars += reward;
@@ -1001,7 +1154,7 @@
             state.currentQuestion++;
             state.hearts--;
             
-            showReward('😢', '没关系~', '继续加油！');
+            showReward('💪', '加油！', '再试一次！');
             saveState();
             updateUI();
             
@@ -1031,7 +1184,7 @@
         }
         
         // 添加成就
-        function addAchievement(id, name, icon) {
+        function addAchievement(id, name) {
             if (!state.achievements.includes(id)) {
                 state.achievements.push(id);
             }
@@ -1045,13 +1198,13 @@
             const accuracy = Math.round((state.correctAnswers / state.totalQuestions) * 100);
             
             if (accuracy >= 80) {
-                document.getElementById('resultPanda').textContent = '🎉';
+                document.getElementById('resultIcon').textContent = '🎉';
                 document.getElementById('resultTitle').textContent = '太棒了！';
             } else if (accuracy >= 60) {
-                document.getElementById('resultPanda').textContent = '😊';
+                document.getElementById('resultIcon').textContent = '👍';
                 document.getElementById('resultTitle').textContent = '还不错！';
             } else {
-                document.getElementById('resultPanda').textContent = '💪';
+                document.getElementById('resultIcon').textContent = '💪';
                 document.getElementById('resultTitle').textContent = '继续加油！';
             }
             
@@ -1060,46 +1213,48 @@
             document.getElementById('accuracy').textContent = accuracy + '%';
             
             // 显示成就
-            const achievementList = document.getElementById('achievements');
-            if (state.achievements.length > 0) {
-                achievementList.innerHTML = state.achievements.map(id => {
-                    const names = {
-                        'streak5': { icon: '🔥', name: '连续5题' },
-                        'streak10': { icon: '🌟', name: '连续10题' }
-                    };
-                    return `<span class="achievement">${names[id]?.icon || '🏆'} ${names[id]?.name || id}</span>`;
-                }).join('');
-            }
+            const achievementsDiv = document.getElementById('achievements');
+            achievementsDiv.innerHTML = state.achievements.map(id => {
+                if (id === 'streak5') return '<span class="achievement">🔥 连续5题</span>';
+                if (id === 'streak10') return '<span class="achievement">🌟 连续10题</span>';
+                return '';
+            }).join('');
             
             saveState();
         }
         
         // 继续答题
         function continueQuiz() {
-            state.hearts = 3;
-            document.getElementById('resultScreen').classList.remove('active');
-            document.getElementById('quizScreen').classList.add('active');
             state.currentQuestion = 0;
             state.correctAnswers = 0;
             state.wrongAnswers = 0;
             state.streak = 0;
-            saveState();
-            updateUI();
+            state.usedQuestions = [];
+            
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('quizScreen').classList.add('active');
             showQuestion();
         }
         
         // 返回主页
         function goHome() {
-            document.getElementById('quizScreen').classList.remove('active');
-            document.getElementById('resultScreen').classList.remove('active');
-            document.getElementById('startScreen').classList.add('active');
-            document.getElementById('subjectCards').style.display = 'none';
-            document.querySelector('.start-btn').textContent = '开始学习';
-            document.querySelector('.start-btn').onclick = showSubjectSelect;
+            state.hearts = 3;
+            saveState();
             updateUI();
+            
+            document.getElementById('resultScreen').classList.remove('active');
+            document.getElementById('quizScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.remove('hidden');
+            
+            selectedSubject = null;
+            document.querySelectorAll('.subject-card').forEach(card => {
+                card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            });
+            document.getElementById('levelSelect').style.display = 'none';
+            document.getElementById('startBtn').textContent = '开始学习';
         }
         
-        // 初始化游戏
+        // 启动游戏
         init();
     </script>
 </body>
