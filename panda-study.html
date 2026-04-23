@@ -496,12 +496,10 @@
             text-align: center;
             display: none;
             animation: popIn 0.3s ease;
-            z-index: 1001;
-            position: relative;
         }
         
-        .reward-popup.show {
-            display: block !important;
+        .overlay.show .reward-popup {
+            display: block;
         }
         
         @keyframes popIn {
@@ -651,11 +649,12 @@
     </div>
     
     <!-- 奖励弹窗 -->
-    <div class="overlay" id="overlay"></div>
-    <div class="reward-popup" id="rewardPopup">
-        <div class="reward-icon" id="rewardIcon">🎉</div>
-        <div class="reward-text" id="rewardText">太棒了！</div>
-        <div class="reward-detail" id="rewardDetail">+10 ⭐</div>
+    <div class="overlay" id="overlay">
+        <div class="reward-popup" id="rewardPopup">
+            <div class="reward-icon" id="rewardIcon">🎉</div>
+            <div class="reward-text" id="rewardText">太棒了！</div>
+            <div class="reward-detail" id="rewardDetail">+10 ⭐</div>
+        </div>
     </div>
     
     <script>
