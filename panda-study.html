@@ -744,7 +744,7 @@
             { a: 8, b: 5, op: '-', hint: '8个梨子吃掉5个' }
         ];
         
-        // 数学题库 - 困难难度（20以内加减法）
+        // 数学题库 - 困难难度（加减混合、连加连减、简单乘法）
         const mathQuestionsHard = [
             { a: 8, b: 7, op: '+', hint: '8个苹果加7个' },
             { a: 9, b: 6, op: '+', hint: '9只兔子加6只' },
@@ -765,7 +765,22 @@
             { a: 17, b: 9, op: '-', hint: '17只蝴蝶飞走9只' },
             { a: 12, b: 5, op: '-', hint: '12颗糖吃掉5颗' },
             { a: 20, b: 11, op: '-', hint: '20个梨子吃掉11个' },
-            { a: 13, b: 7, op: '-', hint: '13个球滚走7个' }
+            { a: 13, b: 7, op: '-', hint: '13个球滚走7个' },
+            // 连加
+            { a: 3, b: 4, c: 5, op: '++', hint: '3个苹果加4个再加5个' },
+            { a: 2, b: 6, c: 3, op: '++', hint: '2颗糖加6颗再加3颗' },
+            { a: 5, b: 3, c: 4, op: '++', hint: '5朵花加3朵再加4朵' },
+            // 连减
+            { a: 15, b: 4, c: 3, op: '--', hint: '15个橘子先吃掉4个再吃掉3个' },
+            { a: 18, b: 5, c: 2, op: '--', hint: '18颗糖先吃掉5颗再吃掉2颗' },
+            // 加减混合
+            { a: 8, b: 5, c: 3, op: '+-', hint: '8只鸟飞来5只又飞走3只' },
+            { a: 12, b: 7, c: 4, op: '+-', hint: '12个气球买了7个爆了4个' },
+            // 简单乘法
+            { a: 2, b: 3, op: '*', hint: '2组每组3个' },
+            { a: 3, b: 4, op: '*', hint: '3排每排4个' },
+            { a: 2, b: 5, op: '*', hint: '2双手每只手5个手指' },
+            { a: 4, b: 2, op: '*', hint: '4对每对2个' }
         ];
         
         // 语文题库 - 简单（常见物品）
@@ -816,28 +831,28 @@
             { pinyin: 'yīn yuè', answer: '音乐', hint: '好听的声音' }
         ];
         
-        // 语文题库 - 困难（抽象词汇/成语）
+        // 语文题库 - 困难（成语、古诗词、多字词）
         const chineseQuestionsHard = [
-            { pinyin: 'zhuǎn shēn', answer: '转身', hint: '把身体转过去' },
-            { pinyin: ' tái tóu', answer: '抬头', hint: '把头抬起来' },
-            { pinyin: 'dī tóu', answer: '低头', hint: '把头低下去' },
-            { pinyin: 'jǔ shǒu', answer: '举手', hint: '回答问题时' },
-            { pinyin: 'bǎi shǒu', answer: '摆手', hint: '和人再见时' },
-            { pinyin: 'tiào gāo', answer: '跳高', hint: '体育运动的一种' },
-            { pinyin: 'pǎo bù', answer: '跑步', hint: '用脚快速移动' },
-            { pinyin: 'yóu yǒng', answer: '游泳', hint: '在水里游动' },
-            { pinyin: 'cā shā fā', answer: '擦沙发', hint: '让沙发变干净' },
-            { pinyin: 'sǎo dì', answer: '扫地', hint: '让地面变干净' },
-            { pinyin: 'shōu shi', answer: '收拾', hint: '整理东西' },
-            { pinyin: 'zhěng qí', answer: '整齐', hint: '不乱的样子' },
-            { pinyin: 'gān jìng', answer: '干净', hint: '没有脏东西' },
-            { pinyin: 'piào liang', answer: '漂亮', hint: '很好看' },
-            { pinyin: 'kě ài', answer: '可爱', hint: '让人喜欢的' },
-            { pinyin: 'yǒu qù', answer: '有趣', hint: '很好玩' },
-            { pinyin: 'gāo xìng', answer: '高兴', hint: '开心的另一种说法' },
-            { pinyin: 'cōng míng', answer: '聪明', hint: '脑子很灵光' },
-            { pinyin: 'yǒng gǎn', answer: '勇敢', hint: '不怕困难' },
-            { pinyin: 'lèi le', answer: '累了', hint: '需要休息' }
+            { pinyin: 'yī míng jīng rén', answer: '一鸣惊人', hint: '一下子做出惊人的成绩' },
+            { pinyin: 'huà lóng diǎn jīng', answer: '画龙点睛', hint: '在关键处加上一笔使内容更生动' },
+            { pinyin: 'shǒu zhū dài tù', answer: '守株待兔', hint: '守着树桩等兔子撞上来' },
+            { pinyin: 'yè gōng hào lóng', answer: '叶公好龙', hint: '口头上说喜欢，实际并非真喜欢' },
+            { pinyin: 'sài wēng shī mǎ', answer: '塞翁失马', hint: '坏事可能变成好事' },
+            { pinyin: 'bēi shuǐ chē xīn', answer: '杯水车薪', hint: '用一杯水去救一车着火的柴草' },
+            { pinyin: 'kè zhōu qiú jiàn', answer: '刻舟求剑', hint: '在船上刻记号找掉下去的剑' },
+            { pinyin: 'bá miáo zhù zhǎng', answer: '拔苗助长', hint: '把苗往上拔帮助它生长' },
+            { pinyin: 'yán ér wú xìn', answer: '言而无信', hint: '说话不算数' },
+            { pinyin: 'zì xiāng máo dùn', answer: '自相矛盾', hint: '自己的话互相抵触' },
+            { pinyin: 'jīng gōng zhī niǎo', answer: '惊弓之鸟', hint: '被弓箭吓怕了的鸟' },
+            { pinyin: 'wáng yáng bǔ láo', answer: '亡羊补牢', hint: '羊丢了才修补羊圈' },
+            { pinyin: 'duì niú tán qín', answer: '对牛弹琴', hint: '对着牛弹奏琴' },
+            { pinyin: 'tiě chǔ chéng zhēn', answer: '铁杵成针', hint: '铁棒磨成细针' },
+            { pinyin: 'wén jī qǐ wǔ', answer: '闻鸡起舞', hint: '听到鸡叫就起床舞剑' },
+            { pinyin: 'xuán liáng cì gǔ', answer: '悬梁刺股', hint: '把头发绑在梁上，用锥子刺大腿' },
+            { pinyin: 'chéng mén lì xuě', answer: '程门立雪', hint: '站在老师门前雪地里等待' },
+            { pinyin: 'bù chǐ xià wèn', answer: '不耻下问', hint: '不以向地位低的人请教为耻' },
+            { pinyin: 'qín néng bǔ zhuō', answer: '勤能补拙', hint: '勤奋可以弥补笨拙' },
+            { pinyin: 'bó wén qiáng zhì', answer: '博闻强识', hint: '见闻广博，记忆力强' }
         ];
         
         let currentQuestion = null;
@@ -946,14 +961,29 @@
             if (state.currentSubject === 'math') {
                 // 修复：根据运算符计算正确答案
                 let correctAnswer;
-                if (q.op === '+') {
+                let display;
+                if (q.op === '++') {
+                    correctAnswer = q.a + q.b + q.c;
+                    display = `${q.a} + ${q.b} + ${q.c} = ?`;
+                } else if (q.op === '--') {
+                    correctAnswer = q.a - q.b - q.c;
+                    display = `${q.a} - ${q.b} - ${q.c} = ?`;
+                } else if (q.op === '+-') {
+                    correctAnswer = q.a + q.b - q.c;
+                    display = `${q.a} + ${q.b} - ${q.c} = ?`;
+                } else if (q.op === '*') {
+                    correctAnswer = q.a * q.b;
+                    display = `${q.a} × ${q.b} = ?`;
+                } else if (q.op === '+') {
                     correctAnswer = q.a + q.b;
+                    display = `${q.a} + ${q.b} = ?`;
                 } else {
                     correctAnswer = q.a - q.b;
+                    display = `${q.a} - ${q.b} = ?`;
                 }
                 return {
                     answer: String(correctAnswer),
-                    display: `${q.a} ${q.op} ${q.b} = ?`,
+                    display: display,
                     hint: q.hint
                 };
             } else {
@@ -996,7 +1026,7 @@
                 // 数学：生成数字干扰项
                 while (options.length < 4) {
                     const answerNum = parseInt(currentQuestion.answer);
-                    const offset = Math.floor(Math.random() * 6) + 1;
+                    const offset = Math.floor(Math.random() * 8) + 1;
                     const wrong = Math.random() > 0.5 
                         ? answerNum + offset 
                         : Math.max(0, answerNum - offset);
