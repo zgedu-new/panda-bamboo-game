@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>小熊猫历险记 - 语文数学学习</title>
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-kindergarten-surprise-240.mp3" type="audio/mpeg">
+    </audio>
     <style>
         * {
             margin: 0;
@@ -153,6 +157,30 @@
             top: 52px;
             left: 50%;
             transform: translateX(-50%);
+        }
+        
+        /* 音乐控制按钮 */
+        .music-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .music-toggle:active {
+            transform: scale(0.95);
         }
         
         .panda-blush {
@@ -573,6 +601,9 @@
     </style>
 </head>
 <body>
+    <!-- 音乐控制按钮 -->
+    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()">🔇</button>
+    
     <div class="game-container">
         <!-- 顶部状态栏 -->
         <div class="top-bar" id="topBar">
@@ -695,6 +726,36 @@
     </div>
     
     <script>
+        // 音乐控制
+        let isMusicPlaying = false;
+        const bgMusic = document.getElementById('bgMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicToggle.textContent = '🔇';
+                isMusicPlaying = false;
+            } else {
+                bgMusic.play().then(() => {
+                    musicToggle.textContent = '🎵';
+                    isMusicPlaying = true;
+                }).catch(e => {
+                    console.log('播放失败:', e);
+                });
+            }
+        }
+        
+        // 自动尝试播放音乐（用户交互后）
+        document.addEventListener('click', function initMusic() {
+            if (!isMusicPlaying) {
+                bgMusic.play().then(() => {
+                    musicToggle.textContent = '🎵';
+                    isMusicPlaying = true;
+                }).catch(e => {});
+            }
+        }, { once: true });
+        
         // 游戏状态
         let state = {
             stars: 0,
