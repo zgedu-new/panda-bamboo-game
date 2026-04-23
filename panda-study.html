@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>小熊猫历险记 - 语文数学学习</title>
-    <!-- 背景音乐 -->
-    <audio id="bgMusic" loop preload="auto">
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
-    <!-- 音效 -->
-    <audio id="correctSound" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQAAAAA=" type="audio/wav">
-    </audio>
+
     <style>
         * {
             margin: 0;
@@ -32,22 +25,6 @@
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
-        }
-        
-        /* 音乐控制按钮 */
-        .music-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.95);
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
         }
         
         /* 顶部状态栏 */
@@ -534,9 +511,6 @@
     </style>
 </head>
 <body>
-    <!-- 音乐控制按钮 -->
-    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()">🔇</button>
-    
     <div class="game-container">
         <!-- 顶部状态栏 -->
         <div class="top-bar" id="topBar">
@@ -658,40 +632,6 @@
     </div>
     
     <script>
-        // 音乐控制
-        let isMusicPlaying = false;
-        let musicInitialized = false;
-        const bgMusic = document.getElementById('bgMusic');
-        const musicToggle = document.getElementById('musicToggle');
-        
-        function toggleMusic() {
-            if (isMusicPlaying) {
-                bgMusic.pause();
-                musicToggle.textContent = '🔇';
-                isMusicPlaying = false;
-            } else {
-                bgMusic.play().then(() => {
-                    musicToggle.textContent = '🎵';
-                    isMusicPlaying = true;
-                }).catch(e => {
-                    console.log('播放失败:', e);
-                    alert('音乐加载中，请稍后再试');
-                });
-            }
-        }
-        
-        // 初始化音乐（需要用户交互）
-        function initMusic() {
-            if (musicInitialized) return;
-            musicInitialized = true;
-            bgMusic.play().then(() => {
-                musicToggle.textContent = '🎵';
-                isMusicPlaying = true;
-            }).catch(e => {
-                console.log('自动播放失败，等待用户点击');
-            });
-        }
-        
         // 音效系统
         function playCorrectSound() {
             // 使用Web Audio API生成正确音效
@@ -908,9 +848,6 @@
         function init() {
             loadState();
             updateUI();
-            
-            // 尝试初始化音乐
-            document.addEventListener('click', initMusic, { once: true });
         }
         
         // 保存状态
