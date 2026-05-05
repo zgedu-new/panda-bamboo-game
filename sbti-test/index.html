@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBTI 人格测试 — 2026最火自嘲测试</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .bg-particles {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      animation: float linear infinite; opacity: 0.12;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.12; }
+      90% { opacity: 0.12; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 560px;
+      padding: 24px 20px; text-align: center;
+    }
+
+    /* ===== 首页 ===== */
+    .logo-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 4px 14px; border-radius: 20px;
+      margin-bottom: 16px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+    .logo-title {
+      font-size: 56px; font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.2; letter-spacing: -2px;
+    }
+    .logo-subtitle {
+      font-size: 14px; color: #555; margin-top: 8px; letter-spacing: 1px;
+    }
+    .logo-desc {
+      font-size: 14px; color: #555; margin-top: 16px; line-height: 1.8;
+    }
+    .hot-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff; font-size: 11px; font-weight: 700;
+      padding: 3px 12px; border-radius: 12px;
+      animation: pulse 2s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    .start-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; font-size: 18px; font-weight: 700;
+      padding: 14px 52px; border-radius: 40px; border: none;
+      cursor: pointer; margin-top: 16px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 24px rgba(102, 126, 234, 0.4);
+      letter-spacing: 2px;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+    }
+
+    .stats-bar {
+      display: flex; gap: 16px; justify-content: center;
+      margin-top: 20px; font-size: 12px; color: #444;
+    }
+    .stat-item { display: flex; align-items: center; gap: 4px; }
+    .stat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* ===== 进度条 ===== */
+    .progress-wrap { display: none; margin-bottom: 24px; }
+    .progress-bar-bg {
+      width: 100%; height: 5px; background: #1a1a2e;
+      border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      border-radius: 3px; transition: width 0.4s ease; width: 0%;
+    }
+    .progress-text { font-size: 12px; color: #444; margin-top: 6px; text-align: right; }
+
+    /* ===== 题目 ===== */
+    .quiz-area { display: none; text-align: left; }
+    .question-number { font-size: 11px; color: #667eea; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+    .question-text { font-size: 20px; font-weight: 700; color: #fff; line-height: 1.6; margin-bottom: 24px; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .option {
+      background: #13132a; border: 2px solid #1e1e3f;
+      border-radius: 14px; padding: 14px 18px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; gap: 12px;
+      color: #888; font-size: 14px; line-height: 1.5;
+    }
+    .option:hover { border-color: #667eea; background: #1a1a35; color: #fff; transform: translateX(4px); }
+    .option.selected { border-color: #667eea; background: linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15)); color: #fff; }
+    .option-letter {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #1e1e3f; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; flex-shrink: 0; transition: all 0.2s;
+    }
+    .option.selected .option-letter { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+
+    /* ===== 结果页 ===== */
+    .result-area { display: none; text-align: center; }
+
+    /* 头像 */
+    .result-avatar {
+      width: 120px; height: 120px; margin: 0 auto 16px;
+      border-radius: 50%; overflow: hidden;
+      background: #13132a; border: 3px solid #1e1e3f;
+      display: flex; align-items: center; justify-content: center;
+      animation: bounceIn 0.8s ease;
+    }
+    .result-avatar svg { width: 100%; height: 100%; }
+    @keyframes bounceIn {
+      0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+      50% { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .result-match {
+      font-size: 13px; color: #667eea; font-weight: 700;
+      margin-bottom: 8px; letter-spacing: 1px;
+    }
+    .result-match-bar {
+      width: 100%; height: 6px; background: #1a1a2e;
+      border-radius: 3px; overflow: hidden; margin-bottom: 6px;
+    }
+    .result-match-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+      transition: width 1s ease;
+    }
+    .result-match-pct {
+      font-size: 28px; font-weight: 900;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .result-type { font-size: 13px; color: #555; letter-spacing: 3px; margin-bottom: 4px; }
+    .result-name { font-size: 36px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    .result-motto {
+      font-size: 13px; color: #666; font-style: italic;
+      margin-bottom: 20px; padding: 0 16px;
+    }
+
+    /* 人格解读 */
+    .result-desc {
+      background: #13132a; border: 1px solid #1e1e3f;
+      border-radius: 16px; padding: 20px;
+      font-size: 13px; color: #888; line-height: 2;
+      text-align: left; margin-bottom: 20px;
+    }
+    .result-desc strong { color: #667eea; }
+
+    /* 次级人格 */
+    .sub-types {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .sub-type {
+      background: #1a1a2e; border: 1px solid #2a2a4a;
+      border-radius: 20px; padding: 5px 14px;
+      font-size: 12px; color: #555;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .sub-type .sub-icon { width: 20px; height: 20px; }
+    .sub-type .sub-name { color: #888; }
+
+    /* 十五维度 */
+    .dimensions-title {
+      font-size: 13px; color: #667eea; font-weight: 700;
+      letter-spacing: 2px; margin-bottom: 14px; text-align: left;
+    }
+    .dimensions-grid {
+      background: #13132a; border: 1px solid #1e1e3f;
+      border-radius: 16px; padding: 16px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px 16px; margin-bottom: 20px; text-align: left;
+    }
+    .dim-item { }
+    .dim-label {
+      font-size: 11px; color: #555; margin-bottom: 4px;
+      display: flex; justify-content: space-between;
+    }
+    .dim-val { color: #667eea; font-weight: 700; }
+    .dim-bar-bg {
+      width: 100%; height: 4px; background: #1a1a2e;
+      border-radius: 2px; overflow: hidden;
+    }
+    .dim-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 1.2s ease;
+    }
+
+    /* 分享按钮 */
+    .share-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .share-btn {
+      padding: 10px 22px; border-radius: 24px; border: none;
+      cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;
+    }
+    .share-btn.primary {
+      background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+    }
+    .share-btn.secondary { background: #1e1e3f; color: #666; border: 1px solid #2a2a4a; }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .share-btn.save-img {
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: #fff;
+    }
+
+    /* 保存图片弹层 */
+    .save-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 9999;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; overflow-y: auto;
+    }
+    .save-overlay.show { display: flex; }
+    .save-card {
+      width: 100%; max-width: 400px;
+      background: #1a1a2e;
+      border-radius: 20px; border: 2px solid #2a2a4a;
+      overflow: hidden; text-align: center;
+    }
+    .save-card-header {
+      padding: 16px; font-size: 12px; color: #667eea;
+      letter-spacing: 2px; border-bottom: 1px solid #2a2a4a;
+    }
+    .save-card-body { padding: 20px 16px; }
+    .save-avatar-lg {
+      width: 90px; height: 90px; margin: 0 auto 12px;
+      border-radius: 50%; overflow: hidden;
+      background: #13132a; border: 3px solid #667eea;
+    }
+    .save-avatar-lg svg { width: 100%; height: 100%; }
+    .save-type-tag {
+      font-size: 11px; color: #555; letter-spacing: 3px;
+    }
+    .save-name-lg {
+      font-size: 32px; font-weight: 900; color: #fff;
+      margin: 6px 0;
+    }
+    .save-motto-sm {
+      font-size: 12px; color: #666; font-style: italic;
+      margin-bottom: 14px;
+    }
+    .save-match-row { margin-bottom: 14px; text-align: center; padding: 16px 0; background: #1f1f38; border-radius: 12px; margin-top: 12px;}
+    .save-match-label { font-size: 11px; color: #888; margin-bottom: 6px; letter-spacing: 2px; }
+    .save-pct-big {
+      font-size: 52px; font-weight: 900;
+      color: #a78bfa;
+      line-height: 1.1;
+    }
+    .save-dims-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; text-align: left; margin-top: 12px;
+    }
+    .save-dim-item { }
+    .save-dim-lbl { font-size: 10px; color:#888; display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .save-dim-val { color: #a78bfa; font-weight: 700; font-size: 10px; }
+    .save-dim-bar { width: 100%; height: 5px; background: #0f0f23; border-radius: 3px; overflow: hidden; }
+    .save-dim-fill { height: 100%; border-radius: 3px; background: #a78bfa; }
+    .save-card-footer {
+      padding: 12px; font-size: 10px; color: #333;
+      border-top: 1px solid #2a2a4a;
+    }
+    .save-tip {
+      color: #888; font-size: 13px; margin-top: 16px;
+      text-align: center; line-height: 1.8;
+    }
+    .close-save-btn {
+      margin-top: 16px; padding: 10px 36px; border-radius: 24px;
+      border: 1px solid #444; background: transparent;
+      color: #888; cursor: pointer; font-size: 13px;
+    }
+    .close-save-btn:hover { border-color: #666; color: #aaa; }
+
+    /* 二维码区域（截图时显示）*/
+    .result-qrcode {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background: #13132a;
+      border: 1px solid #1e1e3f;
+      border-radius: 16px;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: left;
+    }
+    .result-qrcode img {
+      width: 80px; height: 80px;
+      border-radius: 8px; flex-shrink: 0;
+    }
+    .result-qrcode .qr-title {
+      font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;
+    }
+    .result-qrcode .qr-sub {
+      font-size: 12px; color: #667eea; line-height: 1.6;
+    }
+
+    .retest-link {
+      display: inline-block; margin-top: 8px;
+      color: #333; font-size: 12px; cursor: pointer;
+      text-decoration: underline; text-decoration-style: dotted;
+    }
+    .retest-link:hover { color: #555; }
+
+    .footer {
+      text-align: center; font-size: 12px; color: #777;
+      margin-top: 24px; padding: 0 20px; letter-spacing: 1px;
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    @keyframes dimBar {
+      from { width: 0%; }
+      to { width: var(--target-width); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-particles" id="particles"></div>
+
+<div class="container">
+  <!-- 首页 -->
+  <div id="home" class="fade-in">
+    <div class="logo-badge">2026 最火自嘲测试</div>
+    <div class="logo-title">SBTI<br>人格测试</div>
+    <div class="logo-subtitle">Silly Big Personality Test</div>
+    <div class="logo-desc">
+      15道题，1分钟测出你的真实人格<br>
+      <span style="color:#667eea">27种</span> 魔性人格类型 + <span style="color:#764ba2">十五维度</span> 精准分析
+    </div>
+    <div class="hot-tag" style="margin-top: 20px; display: block; max-width: 320px; margin-left: auto; margin-right: auto;">🔥 4月9日热搜霸榜 · 已有 892万人 测试</div>
+    <div style="margin-top: 20px;"><button class="start-btn" onclick="startQuiz()">开始测试 →</button></div>
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-dot" style="background:#667eea"></div> 已测 892万</div>
+      <div class="stat-item"><div class="stat-dot" style="background:#ff6b81"></div> 最热标签 #死者</div>
+      <div class="stat-item"><div class="stat-dot" style="background:#f093fb"></div> 热搜持续中</div>
+    </div>
+    <div class="footer">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
+  </div>
+
+  <!-- 题目区 -->
+  <div id="quiz" class="quiz-area fade-in">
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">1 / 15</div>
+    </div>
+    <div class="question-number" id="qNum">第 1 题</div>
+    <div class="question-text" id="qText"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- 结果区 -->
+  <div id="result" class="result-area fade-in">
+    <div class="result-avatar" id="rAvatar"></div>
+    <div class="result-match">系统判定匹配度</div>
+    <div class="result-match-bar"><div class="result-match-fill" id="rMatchBar"></div></div>
+    <div class="result-match-pct" id="rMatchPct">0%</div>
+    <div class="result-type" id="rType"></div>
+    <div class="result-name" id="rName"></div>
+    <div class="result-motto" id="rMotto"></div>
+    <div class="sub-types" id="subTypes"></div>
+    <div class="result-desc" id="rDesc"></div>
+    <div class="dimensions-title">十五维度评分</div>
+    <div class="dimensions-grid" id="dimensionsGrid"></div>
+    <!-- 二维码区（截图时显示）-->
+    <div class="result-qrcode" id="resultQrcode">
+      <img src="qrcode.jpg" alt="微信二维码" crossorigin="anonymous" />
+      <div>
+        <div class="qr-title">扫码关注公众号,回复SBTI</div>
+        <div class="qr-sub">测测你的朋友是什么人格？<br>转发给TA，看看结果吧 👀</div>
+      </div>
+    </div>
+    <!-- 按钮区（截图时隐藏）-->
+    <div id="shareBtnsWrap">
+      <div class="share-btns">
+        <button class="share-btn save-img" onclick="saveAsImage()">📸 保存图片</button>
+        <button class="share-btn secondary" onclick="retest()">🔄 再测一次</button>
+      </div>
+    </div>
+    <div class="footer" id="resultFooter">本测试纯属娱乐 · 无任何心理学依据 · 请勿当真</div>
+  </div>
+
+  <!-- 保存图片弹层 -->
+  <div class="save-overlay" id="saveOverlay"> <div class="save-card" id="saveCard"> <div class="save-card-header">SBTI 人格测试结果</div> <div class="save-card-body" id="saveCardBody"></div> <div class="save-card-footer">长按图片保存 · 分享到朋友圈</div> </div> <div class="save-tip" id="saveTip">📸 长按上方卡片保存图片<br>或点击下方按钮下载</div>
+    <button class="close-save-btn" onclick="closeSaveOverlay()">关闭</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+// ========================================================
+// SVG 头像数据 (27种人格)
+// ========================================================
+const AVATARS = {
+  Dead: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="45" fill="#2d2d3a"/>
+    <circle cx="35" cy="40" r="7" fill="#555"/>
+    <circle cx="65" cy="40" r="7" fill="#555"/>
+    <path d="M35 65 Q50 55 65 65" stroke="#555" stroke-width="3" fill="none"/>
+    <path d="M25 28 L30 22 M75 28 L70 22" stroke="#444" stroke-width="2"/>
+    <path d="M42 28 L58 28" stroke="#444" stroke-width="2"/>
+  </svg>`,
+  Shit: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="55" rx="35" ry="30" fill="#8B4513"/>
+    <ellipse cx="50" cy="40" rx="25" ry="20" fill="#A0522D"/>
+    <ellipse cx="50" cy="28" rx="15" ry="12" fill="#CD853F"/>
+    <circle cx="40" cy="50" r="4" fill="#333"/>
+    <circle cx="60" cy="50" r="4" fill="#333"/>
+    <path d="M42 62 Q50 58 58 62" stroke="#333" stroke-width="2" fill="none"/>
+  </svg>`,
+  Malo: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#8B7355"/>
+    <circle cx="35" cy="42" r="9" fill="#fff"/>
+    <circle cx="65" cy="42" r="9" fill="#fff"/>
+    <circle cx="35" cy="42" r="5" fill="#333"/>
+    <circle cx="65" cy="42" r="5" fill="#333"/>
+    <ellipse cx="50" cy="56" rx="14" ry="10" fill="#5C4033"/>
+    <path d="M28 24 Q35 18 42 24 M58 24 Q65 18 72 24" stroke="#5C4033" stroke-width="4" fill="none"/>
+  </svg>`,
+  ATM: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="22" width="60" height="55" rx="6" fill="#2d5a3d"/>
+    <rect x="28" y="30" width="44" height="28" rx="4" fill="#1a3d2a"/>
+    <text x="50" y="48" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="bold">ATM</text>
+    <rect x="42" y="62" width="16" height="4" rx="2" fill="#c0c0c0"/>
+    <circle cx="50" cy="14" r="10" fill="#ffd700"/>
+    <text x="50" y="18" text-anchor="middle" fill="#b8860b" font-size="13">$</text>
+  </svg>`,
+  Fuck: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#ff4757"/>
+    <circle cx="35" cy="40" r="7" fill="#fff"/>
+    <circle cx="65" cy="40" r="7" fill="#fff"/>
+    <circle cx="35" cy="40" r="3" fill="#333"/>
+    <circle cx="65" cy="40" r="3" fill="#333"/>
+    <path d="M28 58 L42 52 M72 58 L58 52" stroke="#fff" stroke-width="4"/>
+    <path d="M44 70 L56 70" stroke="#fff" stroke-width="5"/>
+  </svg>`,
+  Solo: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#374151"/>
+    <circle cx="50" cy="46" r="28" fill="#4b5563"/>
+    <circle cx="38" cy="42" r="5" fill="#1f2937"/>
+    <circle cx="62" cy="42" r="5" fill="#1f2937"/>
+    <path d="M42 58 Q50 54 58 58" stroke="#1f2937" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="24" r="3" fill="#9ca3af" opacity="0.4"/>
+    <circle cx="28" cy="34" r="2" fill="#9ca3af" opacity="0.2"/>
+    <circle cx="72" cy="60" r="2" fill="#9ca3af" opacity="0.2"/>
+  </svg>`,
+  IMSB: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#553c3c"/>
+    <ellipse cx="50" cy="50" rx="30" ry="34" fill="#6b4c4c"/>
+    <circle cx="36" cy="45" r="6" fill="#8b6b6b"/>
+    <circle cx="64" cy="45" r="6" fill="#8b6b6b"/>
+    <path d="M40 62 Q50 56 60 62" stroke="#8b6b6b" stroke-width="2" fill="none"/>
+    <path d="M24 34 L30 28 M76 34 L70 28" stroke="#8b6b6b" stroke-width="2"/>
+  </svg>`,
+  Ghost: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 12 C72 12 88 28 88 54 C88 76 76 88 50 92 C24 88 12 76 12 54 C12 28 28 12 50 12" fill="#e2e8f0" opacity="0.85"/>
+    <circle cx="36" cy="46" r="7" fill="#2d3748"/>
+    <circle cx="64" cy="46" r="7" fill="#2d3748"/>
+    <ellipse cx="50" cy="62" rx="10" ry="6" fill="#2d3748" opacity="0.25"/>
+    <path d="M28 70 L34 62 L40 70 L46 62 L52 70 L58 62 L64 70 L70 62 L76 70" stroke="#d1d5db" stroke-width="2" fill="none"/>
+  </svg>`,
+  Robot: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="22" y="22" width="56" height="52" rx="10" fill="#4a5568"/>
+    <rect x="28" y="28" width="44" height="32" rx="5" fill="#1f2937"/>
+    <rect x="36" y="36" width="12" height="9" rx="2" fill="#4ade80"/>
+    <rect x="52" y="36" width="12" height="9" rx="2" fill="#4ade80"/>
+    <rect x="38" y="56" width="24" height="4" rx="2" fill="#6b7280"/>
+    <rect x="34" y="16" width="10" height="12" rx="3" fill="#4a5568"/>
+    <rect x="56" y="16" width="10" height="12" rx="3" fill="#4a5568"/>
+    <circle cx="39" cy="10" r="4" fill="#ef4444"/>
+    <circle cx="61" cy="10" r="4" fill="#ef4444"/>
+  </svg>`,
+  NPC: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#4b5563"/>
+    <circle cx="50" cy="48" r="30" fill="#6b7280"/>
+    <rect x="34" y="38" width="14" height="9" rx="2" fill="#374151"/>
+    <rect x="52" y="38" width="14" height="9" rx="2" fill="#374151"/>
+    <rect x="40" y="56" width="20" height="5" rx="2" fill="#374151"/>
+    <text x="50" y="88" text-anchor="middle" fill="#374151" font-size="11" font-weight="bold" letter-spacing="2">NPC</text>
+  </svg>`,
+  Chaos: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#4c1d95"/>
+    <circle cx="50" cy="50" r="35" fill="#5b21b6"/>
+    <path d="M28 38 Q42 28 50 38 Q58 48 72 38" stroke="#c4b5fd" stroke-width="3" fill="none"/>
+    <path d="M28 62 Q42 52 50 62 Q58 72 72 62" stroke="#c4b5fd" stroke-width="3" fill="none"/>
+    <circle cx="34" cy="34" r="5" fill="#f0abfc"/>
+    <circle cx="66" cy="34" r="5" fill="#f0abfc"/>
+    <circle cx="50" cy="72" r="5" fill="#f0abfc"/>
+    <circle cx="28" cy="55" r="3" fill="#f0abfc" opacity="0.5"/>
+    <circle cx="72" cy="45" r="3" fill="#f0abfc" opacity="0.5"/>
+  </svg>`,
+  Broken: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#374151"/>
+    <path d="M15 28 L32 50 L22 72" stroke="#6b7280" stroke-width="2" fill="none"/>
+    <path d="M85 28 L68 50 L78 72" stroke="#6b7280" stroke-width="2" fill="none"/>
+    <circle cx="50" cy="46" r="22" fill="#4b5563"/>
+    <circle cx="42" cy="42" r="5" fill="#9ca3af"/>
+    <circle cx="58" cy="42" r="5" fill="#9ca3af"/>
+    <path d="M44 56 Q50 52 56 56" stroke="#9ca3af" stroke-width="2" fill="none"/>
+    <path d="M30 60 L50 72 L70 60" stroke="#4b5563" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
+  </svg>`,
+  Witch: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="58" r="34" fill="#4a1a6b"/>
+    <path d="M50 12 L33 46 L67 46 Z" fill="#6b2c91"/>
+    <circle cx="50" cy="16" r="6" fill="#fbbf24"/>
+    <circle cx="38" cy="52" r="6" fill="#f0abfc"/>
+    <circle cx="62" cy="52" r="6" fill="#f0abfc"/>
+    <path d="M40 66 Q50 60 60 66" stroke="#f0abfc" stroke-width="2" fill="none"/>
+    <path d="M50 46 L50 58 M42 52 L58 52" stroke="#6b2c91" stroke-width="2"/>
+  </svg>`,
+  Alien: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="52" rx="32" ry="42" fill="#2d5a3d"/>
+    <ellipse cx="50" cy="48" rx="26" ry="32" fill="#3d7a4d"/>
+    <ellipse cx="35" cy="42" rx="11" ry="7" fill="#000"/>
+    <ellipse cx="65" cy="42" rx="11" ry="7" fill="#000"/>
+    <ellipse cx="35" cy="42" rx="5" ry="3" fill="#4ade80"/>
+    <ellipse cx="65" cy="42" rx="5" ry="3" fill="#4ade80"/>
+    <path d="M42 62 Q50 56 58 62" stroke="#2d5a3d" stroke-width="2" fill="none"/>
+  </svg>`,
+  Zombie: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#3d5a3d"/>
+    <circle cx="50" cy="50" r="36" fill="#4b6b4b"/>
+    <circle cx="34" cy="44" r="7" fill="#2d4a2d"/>
+    <circle cx="66" cy="44" r="7" fill="#2d4a2d"/>
+    <circle cx="34" cy="42" r="3" fill="#8b0000"/>
+    <circle cx="66" cy="42" r="3" fill="#8b0000"/>
+    <path d="M40 62 Q50 68 60 62" stroke="#3d5a3d" stroke-width="4" fill="none"/>
+    <rect x="44" y="28" width="4" height="8" fill="#3d5a3d" opacity="0.5"/>
+    <rect x="54" y="26" width="6" height="6" fill="#3d5a3d" opacity="0.5"/>
+  </svg>`,
+  Vampire: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#1a1a2e"/>
+    <circle cx="50" cy="50" r="35" fill="#2d1a3d"/>
+    <path d="M42 54 L46 66 L50 54" fill="#fff"/>
+    <path d="M50 54 L54 66 L58 54" fill="#fff"/>
+    <circle cx="36" cy="42" r="6" fill="#dc2626"/>
+    <circle cx="64" cy="42" r="6" fill="#dc2626"/>
+    <circle cx="36" cy="42" r="3" fill="#000"/>
+    <circle cx="64" cy="42" r="3" fill="#000"/>
+    <path d="M20 30 Q30 20 40 28" stroke="#2d1a3d" stroke-width="3" fill="none"/>
+    <path d="M80 30 Q70 20 60 28" stroke="#2d1a3d" stroke-width="3" fill="none"/>
+  </svg>`,
+  Boss: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#78350f"/>
+    <polygon points="50,8 57,30 80,30 62,46 70,70 50,54 30,70 38,46 20,30 43,30" fill="#fbbf24"/>
+    <circle cx="50" cy="60" r="28" fill="#92400e"/>
+    <rect x="38" y="52" width="10" height="10" rx="2" fill="#fff"/>
+    <rect x="52" y="52" width="10" height="10" rx="2" fill="#fff"/>
+    <path d="M42 68 Q50 72 58 68" stroke="#fff" stroke-width="2" fill="none"/>
+  </svg>`,
+  Baby: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="54" r="38" fill="#ffdbac"/>
+    <ellipse cx="50" cy="54" rx="32" ry="34" fill="#ffe4c4"/>
+    <circle cx="36" cy="48" r="7" fill="#333"/>
+    <circle cx="64" cy="48" r="7" fill="#333"/>
+    <circle cx="36" cy="46" r="2" fill="#fff"/>
+    <circle cx="64" cy="46" r="2" fill="#fff"/>
+    <path d="M44 62 Q50 70 56 62" stroke="#ff9999" stroke-width="3" fill="none"/>
+    <circle cx="32" cy="60" r="6" fill="#ffb6c1" opacity="0.5"/>
+    <circle cx="68" cy="60" r="6" fill="#ffb6c1" opacity="0.5"/>
+    <path d="M28 35 Q36 28 44 35 Q52 28 60 35 Q68 28 76 35" stroke="#e0c0a0" stroke-width="2" fill="none"/>
+  </svg>`,
+  Healer: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#14532d"/>
+    <circle cx="50" cy="50" r="36" fill="#166534"/>
+    <circle cx="50" cy="50" r="30" fill="#22c55e"/>
+    <path d="M50 20 L50 80 M20 50 L80 50" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="38" cy="42" r="5" fill="#052e16"/>
+    <circle cx="62" cy="42" r="5" fill="#052e16"/>
+    <path d="M44 58 Q50 63 56 58" stroke="#052e16" stroke-width="2" fill="none"/>
+  </svg>`,
+  Observer: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#1f2937"/>
+    <circle cx="50" cy="50" r="36" fill="#111827"/>
+    <circle cx="50" cy="50" r="24" fill="#000"/>
+    <circle cx="50" cy="50" r="12" fill="#1f2937"/>
+    <circle cx="50" cy="50" r="5" fill="#3b82f6"/>
+    <circle cx="50" cy="38" r="2" fill="#60a5fa"/>
+    <circle cx="62" cy="50" r="2" fill="#60a5fa" opacity="0.5"/>
+    <circle cx="50" cy="62" r="2" fill="#60a5fa" opacity="0.5"/>
+    <circle cx="38" cy="50" r="2" fill="#60a5fa" opacity="0.5"/>
+  </svg>`,
+  Survivor: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#78716c"/>
+    <path d="M18 50 L35 32 L50 50 L65 32 L82 50" stroke="#a8a29e" stroke-width="5" fill="none"/>
+    <circle cx="50" cy="60" r="28" fill="#8b8378"/>
+    <circle cx="38" cy="54" r="6" fill="#444"/>
+    <circle cx="62" cy="54" r="6" fill="#444"/>
+    <path d="M44 68 Q50 72 56 68" stroke="#444" stroke-width="2" fill="none"/>
+    <text x="50" y="90" text-anchor="middle" fill="#a8a29e" font-size="11" font-weight="bold" letter-spacing="1">SOS</text>
+  </svg>`,
+  Phantom: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#1e1b4b" opacity="0.7"/>
+    <circle cx="50" cy="50" r="34" fill="#312e81" opacity="0.5"/>
+    <circle cx="50" cy="50" r="26" fill="#4338ca" opacity="0.4"/>
+    <circle cx="50" cy="50" r="18" fill="#6366f1" opacity="0.3"/>
+    <circle cx="50" cy="50" r="8" fill="#a5b4fc"/>
+    <circle cx="32" cy="40" r="4" fill="#c7d2fe" opacity="0.4"/>
+    <circle cx="68" cy="40" r="4" fill="#c7d2fe" opacity="0.4"/>
+    <circle cx="30" cy="65" r="3" fill="#818cf8" opacity="0.3"/>
+    <circle cx="70" cy="60" r="3" fill="#818cf8" opacity="0.3"/>
+  </svg>`,
+  Joker: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" fill="#5b21b6"/>
+    <path d="M28 28 L40 38 M72 28 L60 38" stroke="#fff" stroke-width="3"/>
+    <circle cx="50" cy="50" r="32" fill="#7c3aed"/>
+    <circle cx="34" cy="44" r="8" fill="#fff"/>
+    <circle cx="66" cy="44" r="8" fill="#fff"/>
+    <circle cx="34" cy="44" r="4" fill="#000"/>
+    <circle cx="66" cy="44" r="4" fill="#000"/>
+    <path d="M32 62 Q50 78 68 62" stroke="#fff" stroke-width="5" fill="none"/>
+    <circle cx="26" cy="54" r="5" fill="#ef4444"/>
+    <circle cx="74" cy="54" r="5" fill="#3b82f6"/>
+  </svg>`,
+  Edge: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#292524"/>
+    <circle cx="50" cy="50" r="35" fill="#44403c"/>
+    <path d="M28 50 L46 38 L46 62 Z" fill="#78716c"/>
+    <path d="M72 50 L54 38 L54 62 Z" fill="#78716c"/>
+    <circle cx="40" cy="44" r="5" fill="#1c1917"/>
+    <circle cx="60" cy="44" r="5" fill="#1c1917"/>
+    <rect x="44" y="56" width="12" height="4" rx="2" fill="#1c1917"/>
+  </svg>`,
+  Faker: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#3f6212"/>
+    <ellipse cx="50" cy="50" rx="32" ry="36" fill="#65a30d"/>
+    <path d="M32 34 L38 40 L32 46" stroke="#1a2e05" stroke-width="2" fill="none"/>
+    <path d="M68 34 L62 40 L68 46" stroke="#1a2e05" stroke-width="2" fill="none"/>
+    <circle cx="38" cy="48" r="6" fill="#fff"/>
+    <circle cx="62" cy="48" r="6" fill="#fff"/>
+    <circle cx="38" cy="48" r="3" fill="#000"/>
+    <circle cx="62" cy="48" r="3" fill="#000"/>
+    <path d="M40 64 Q50 58 60 64" stroke="#1a2e05" stroke-width="2" fill="none"/>
+  </svg>`,
+  Clown: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="52" r="40" fill="#fff"/>
+    <circle cx="50" cy="52" r="36" fill="#fef3c7"/>
+    <circle cx="34" cy="40" r="9" fill="#3b82f6"/>
+    <circle cx="66" cy="40" r="9" fill="#ef4444"/>
+    <circle cx="34" cy="40" r="5" fill="#fff"/>
+    <circle cx="66" cy="40" r="5" fill="#fff"/>
+    <path d="M38 62 Q50 74 62 62" stroke="#ef4444" stroke-width="4" fill="none"/>
+    <circle cx="28" cy="56" r="6" fill="#fbbf24"/>
+    <circle cx="72" cy="56" r="6" fill="#fbbf24"/>
+    <path d="M50 28 L50 16 M44 22 L56 22" stroke="#ef4444" stroke-width="4"/>
+  </svg>`,
+  God: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="42" fill="#713f12"/>
+    <polygon points="50,6 57,32 84,32 63,50 72,76 50,58 28,76 37,50 16,32 43,32" fill="#fbbf24"/>
+    <circle cx="50" cy="56" r="26" fill="#92400e"/>
+    <circle cx="40" cy="50" r="5" fill="#fff"/>
+    <circle cx="60" cy="50" r="5" fill="#fff"/>
+    <path d="M44 62 Q50 58 56 62" stroke="#fff" stroke-width="2" fill="none"/>
+  </svg>`
+};
+
+// ========================================================
+// 27种人格完整数据（含十五维度）
+// ========================================================
+const TYPES = [
+  {
+    id: "Dead", name: "已死者", motto: "人间不值得，但我还是来了",
+    icon: "💀",
+    desc: "你是<b>已死者</b>。对生活已经没有任何期待，上班如上坟，下班如诈尸。你的口头禅是「算了」「随便」「都行」「无所谓」。表面上看起来还活着，实际上灵魂早已在周一早上8点的地铁上当场去世。同事以为你很稳重，其实你只是在节省能量。",
+    dims: { 摆烂度: 95, 反骨度: 30, 社恐度: 60, 内耗度: 20, 打工人指数: 10, 穷鬼度: 50, 搞笑度: 30, 内卷度: 5, 情绪化: 15, 治愈力: 5, 躺平指数: 98, 阴阳怪气: 40, 社牛度: 5, 自恋度: 10, 打工魂: 8 }
+  },
+  {
+    id: "Shit", name: "狗屎人", motto: "这个世界是坨屎，但我来收拾",
+    icon: "💩",
+    desc: "你是<b>狗屎人</b>。干啥啥不行，吐槽第一名。你对世界的评价永远只有一个词——「狗屎」。但奇妙的是，你吐槽完还是会默默把事情做完。嘴上说摆烂，手上在干活，心里在骂人，三位一体，完美闭环。",
+    dims: { 摆烂度: 65, 反骨度: 85, 社恐度: 40, 内耗度: 30, 打工人指数: 60, 穷鬼度: 45, 搞笑度: 55, 内卷度: 20, 情绪化: 40, 治愈力: 20, 躺平指数: 40, 阴阳怪气: 90, 社牛度: 35, 自恋度: 15, 打工魂: 55 }
+  },
+  {
+    id: "Malo", name: "吗喽", motto: "人生是副本，我只是一只猴",
+    icon: "🐒",
+    desc: "你是<b>吗喽</b>。打工人本工，西装下的猴子。每天在工位上演「认真工作」，实际上脑子里全是香蕉和周末。你深刻理解一个道理：只要我演得够像，老板就以为我很忙。",
+    dims: { 摆烂度: 70, 反骨度: 40, 社恐度: 30, 内耗度: 25, 打工人指数: 85, 穷鬼度: 60, 搞笑度: 50, 内卷度: 15, 情绪化: 20, 治愈力: 30, 躺平指数: 60, 阴阳怪气: 45, 社牛度: 45, 自恋度: 10, 打工魂: 88 }
+  },
+  {
+    id: "ATM", name: "送钱者", motto: "我的钱包是公共物品",
+    icon: "💸",
+    desc: "你是<b>ATM-er（送钱者）</b>。朋友聚会你请客，红包你最大，月光你是认真的。你的人生哲学是：钱不是省出来的，是花出来的。只不过花着花着，余额就变成了零。",
+    dims: { 摆烂度: 45, 反骨度: 20, 社恐度: 20, 内耗度: 35, 打工人指数: 55, 穷鬼度: 95, 搞笑度: 40, 内卷度: 30, 情绪化: 30, 治愈力: 60, 躺平指数: 30, 阴阳怪气: 10, 社牛度: 75, 自恋度: 25, 打工魂: 50 }
+  },
+  {
+    id: "Fuck", name: "草者", motto: "反了就是反了，干就完了",
+    icon: "🖕",
+    desc: "你是<b>草者</b>。内卷？卷不动。反骨？天生有。你的存在就是为了证明：这个世界上有一种人，越是不让你干什么，你就越想干什么。领导说「这个 deadline 很紧」，你的内心：紧你个头。",
+    dims: { 摆烂度: 55, 反骨度: 98, 社恐度: 25, 内耗度: 15, 打工人指数: 40, 穷鬼度: 40, 搞笑度: 60, 内卷度: 10, 情绪化: 50, 治愈力: 35, 躺平指数: 35, 阴阳怪气: 80, 社牛度: 50, 自恋度: 20, 打工魂: 35 }
+  },
+  {
+    id: "Solo", name: "孤儿", motto: "一个人挺好的，别来打扰我",
+    icon: "🏝️",
+    desc: "你是<b>Solo（孤儿）</b>。社交对你来说是一种消耗，独处才是充电。你不是不合群，你只是懒得经营关系。已读不回不是因为你讨厌对方，是因为你真的觉得回消息好麻烦。",
+    dims: { 摆烂度: 50, 反骨度: 25, 社恐度: 90, 内耗度: 20, 打工人指数: 40, 穷鬼度: 30, 搞笑度: 20, 内卷度: 10, 情绪化: 10, 治愈力: 50, 躺平指数: 70, 阴阳怪气: 15, 社牛度: 5, 自恋度: 30, 打工魂: 35 }
+  },
+  {
+    id: "IMSB", name: "自我攻击者", motto: "我太难了，全是我的错",
+    icon: "🔪",
+    desc: "你是<b>IMSB（自我攻击者）</b>。出了问题先反思自己，项目黄了是你不够努力，对象跑了是你不够好。每天晚上躺在床上复盘白天的每一句话，恨不得穿越回去把自己打一顿。内心戏比电视剧还多。",
+    dims: { 摆烂度: 30, 反骨度: 10, 社恐度: 70, 内耗度: 98, 打工人指数: 60, 穷鬼度: 50, 搞笑度: 10, 内卷度: 40, 情绪化: 75, 治愈力: 5, 躺平指数: 20, 阴阳怪气: 20, 社牛度: 5, 自恋度: 5, 打工魂: 55 }
+  },
+  {
+    id: "Ghost", name: "幽灵", motto: "我在，但你看不见我",
+    icon: "👻",
+    desc: "你是<b>Ghost（幽灵）</b>。群里的气氛担当？不，你是空气担当。开会永远坐在最角落，发言永远最后才说，也经常忘记说。你的存在感约等于WiFi信号——有，但很弱。朋友圈永远三天可见，不是不发，是懒得发。",
+    dims: { 摆烂度: 60, 反骨度: 15, 社恐度: 95, 内耗度: 40, 打工人指数: 35, 穷鬼度: 40, 搞笑度: 25, 内卷度: 5, 情绪化: 15, 治愈力: 25, 躺平指数: 65, 阴阳怪气: 10, 社牛度: 3, 自恋度: 15, 打工魂: 30 }
+  },
+  {
+    id: "Robot", name: "机器人", motto: "Input任务，Output结果",
+    icon: "🤖",
+    desc: "你是<b>Robot（机器人）</b>。你的人生如代码般稳定运转：起床→上班→下班→睡觉，循环往复。你不emo，不激动，不崩溃，偶尔被同事问「你是不是不高兴」，其实你只是面部表情比较节能。",
+    dims: { 摆烂度: 35, 反骨度: 10, 社恐度: 50, 内耗度: 5, 打工人指数: 90, 穷鬼度: 30, 搞笑度: 5, 内卷度: 50, 情绪化: 5, 治愈力: 15, 躺平指数: 25, 阴阳怪气: 5, 社牛度: 20, 自恋度: 15, 打工魂: 92 }
+  },
+  {
+    id: "NPC", name: "路人甲", motto: "我就是世界的背景板",
+    icon: "🎭",
+    desc: "你是<b>NPC（路人甲）</b>。你的人生任务就是衬托主角发光。拍照永远站边上，合照永远被裁掉，群聊永远没人@你。你很安静，不是因为你高冷，是因为你真的是个路人。",
+    dims: { 摆烂度: 55, 反骨度: 5, 社恐度: 80, 内耗度: 15, 打工人指数: 45, 穷鬼度: 35, 搞笑度: 15, 内卷度: 10, 情绪化: 10, 治愈力: 20, 躺平指数: 50, 阴阳怪气: 5, 社牛度: 5, 自恋度: 5, 打工魂: 40 }
+  },
+  {
+    id: "Chaos", name: "混沌者", motto: "我也不知道我下一秒会干什么",
+    icon: "🌀",
+    desc: "你是<b>Chaos（混沌者）</b>。计划这种东西，不存在的。今天想健身，明天想辞职，后天想养猫，计划永远赶不上变化。你的人生字典里没有「按部就班」，只有「随机应变」。",
+    dims: { 摆烂度: 50, 反骨度: 45, 社恐度: 40, 内耗度: 50, 打工人指数: 30, 穷鬼度: 55, 搞笑度: 55, 内卷度: 20, 情绪化: 45, 治愈力: 30, 躺平指数: 45, 阴阳怪气: 50, 社牛度: 35, 自恋度: 25, 打工魂: 25 }
+  },
+  {
+    id: "Broken", name: "碎了", motto: "我碎了，但还在粘",
+    icon: "🫠",
+    desc: "你是<b>Broken（碎了）</b>。生活把你击碎无数次，你把自己粘起来继续走。崩溃只需要一秒，自愈需要一整晚，第二天还得爬起来上班。你嘴上说「我没事」，心里早就碎成了二维码。",
+    dims: { 摆烂度: 40, 反骨度: 20, 社恐度: 55, 内耗度: 90, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 20, 内卷度: 25, 情绪化: 85, 治愈力: 10, 躺平指数: 35, 阴阳怪气: 25, 社牛度: 15, 自恋度: 10, 打工魂: 45 }
+  },
+  {
+    id: "Witch", name: "阴阳师", motto: "我没有在讽刺你，我是在关心你",
+    icon: "🧙",
+    desc: "你是<b>Witch（阴阳师）</b>。你的嘴和你的心，永远在两个频道。明明想说「你今天真好看」，出口变成了「你今天居然洗头了？」朋友被你气笑了，你也笑了。情商？你只是懒得装。",
+    dims: { 摆烂度: 40, 反骨度: 65, 社恐度: 30, 内耗度: 35, 打工人指数: 55, 穷鬼度: 35, 搞笑度: 75, 内卷度: 20, 情绪化: 45, 治愈力: 40, 躺平指数: 30, 阴阳怪气: 98, 社牛度: 40, 自恋度: 20, 打工魂: 50 }
+  },
+  {
+    id: "Alien", name: "外星人", motto: "地球人，你们真奇怪",
+    icon: "👽",
+    desc: "你是<b>Alien（外星人）</b>。你觉得自己和周围的人格格不入，对方的梗你听不懂，你的笑点对方不明白。你有时候怀疑自己是不是投错胎了，地球规则太复杂，社会常识太难记。",
+    dims: { 摆烂度: 45, 反骨度: 50, 社恐度: 75, 内耗度: 45, 打工人指数: 35, 穷鬼度: 40, 搞笑度: 35, 内卷度: 15, 情绪化: 25, 治愈力: 30, 躺平指数: 50, 阴阳怪气: 30, 社牛度: 8, 自恋度: 35, 打工魂: 30 }
+  },
+  {
+    id: "Zombie", name: "僵尸", motto: "身体在运转，灵魂不在线",
+    icon: "🧟",
+    desc: "你是<b>Zombie（僵尸）</b>。每天早上被闹钟叫醒的那一刻，你的灵魂就已经死了。身体走进地铁，灵魂留在床上。你的日常状态：睁眼上班，闭眼睡觉，中间靠咖啡续命。",
+    dims: { 摆烂度: 75, 反骨度: 20, 社恐度: 40, 内耗度: 30, 打工人指数: 65, 穷鬼度: 55, 搞笑度: 20, 内卷度: 10, 情绪化: 20, 治愈力: 15, 躺平指数: 80, 阴阳怪气: 15, 社牛度: 10, 自恋度: 5, 打工魂: 68 }
+  },
+  {
+    id: "Vampire", name: "吸血鬼", motto: "你的能量，我来充电",
+    icon: "🧛",
+    desc: "你是<b>Vampire（吸血鬼）</b>。你从别人身上汲取能量。朋友的一顿饭让你满血复活，路人的一句夸奖能让你开心一整天。你是社交动物，独处会让你掉电关机。",
+    dims: { 摆烂度: 30, 反骨度: 20, 社恐度: 15, 内耗度: 25, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 55, 内卷度: 30, 情绪化: 40, 治愈力: 55, 躺平指数: 25, 阴阳怪气: 20, 社牛度: 90, 自恋度: 40, 打工魂: 45 }
+  },
+  {
+    id: "Boss", name: "内卷王", motto: "凌晨三点，我还在学",
+    icon: "👑",
+    desc: "你是<b>Boss（内卷王）</b>。你不允许自己落后，比你优秀的人让你焦虑，比你差的人让你更焦虑。你是朋友圈最晚睡的人，也是早上第一个到公司的人。你卷到飞起，却不知道终点在哪里。",
+    dims: { 摆烂度: 10, 反骨度: 25, 社恐度: 35, 内耗度: 80, 打工人指数: 98, 穷鬼度: 40, 搞笑度: 15, 内卷度: 98, 情绪化: 50, 治愈力: 5, 躺平指数: 5, 阴阳怪气: 15, 社牛度: 35, 自恋度: 60, 打工魂: 100 }
+  },
+  {
+    id: "Baby", name: "巨婴", motto: "哄一哄，我就好了",
+    icon: "🍼",
+    desc: "你是<b>Baby（巨婴）</b>。你情绪来得快去得也快，一杯奶茶就能满血复活，一点小事又能让你瞬间破防。你需要很多很多的爱和关注，如果没有，你就会用闹来获得。",
+    dims: { 摆烂度: 35, 反骨度: 30, 社恐度: 45, 内耗度: 60, 打工人指数: 30, 穷鬼度: 60, 搞笑度: 40, 内卷度: 15, 情绪化: 95, 治愈力: 40, 躺平指数: 30, 阴阳怪气: 20, 社牛度: 40, 自恋度: 50, 打工魂: 25 }
+  },
+  {
+    id: "Healer", name: "治愈系", motto: "我来帮你，但我自己也需要帮助",
+    icon: "🌿",
+    desc: "你是<b>Healer（治愈系）</b>。你是朋友中的情绪稳定担当，谁崩溃了都来找你倾诉，你永远在安慰别人。但夜深人静的时候，你也会想：谁来治愈我啊？答案是：没有。",
+    dims: { 摆烂度: 30, 反骨度: 15, 社恐度: 40, 内耗度: 45, 打工人指数: 60, 穷鬼度: 35, 搞笑度: 45, 内卷度: 30, 情绪化: 35, 治愈力: 98, 躺平指数: 25, 阴阳怪气: 10, 社牛度: 55, 自恋度: 10, 打工魂: 55 }
+  },
+  {
+    id: "Observer", name: "观察者", motto: "我什么都看在眼里，什么都不说",
+    icon: "🕵️",
+    desc: "你是<b>Observer（观察者）</b>。你是朋友圈里的洞察担当，谁和谁关系好，谁又和谁闹矛盾，你全都知道，但你选择沉默。你的眼神里有故事，你的嘴巴里只有「嗯」「哦」「这样啊」。",
+    dims: { 摆烂度: 45, 反骨度: 20, 社恐度: 65, 内耗度: 55, 打工人指数: 50, 穷鬼度: 30, 搞笑度: 20, 内卷度: 25, 情绪化: 15, 治愈力: 35, 躺平指数: 40, 阴阳怪气: 30, 社牛度: 10, 自恋度: 25, 打工魂: 48 }
+  },
+  {
+    id: "Survivor", name: "幸存者", motto: "我没有赢，但我还在",
+    icon: "🆘",
+    desc: "你是<b>Survivor（幸存者）</b>。经历了九九八十一难，你活下来了。不是因为你强，是因为你运气好，或者因为你学会了认怂。活着就是胜利，你早就接受了这个事实。",
+    dims: { 摆烂度: 50, 反骨度: 30, 社恐度: 50, 内耗度: 35, 打工人指数: 55, 穷鬼度: 55, 搞笑度: 30, 内卷度: 20, 情绪化: 25, 治愈力: 45, 躺平指数: 55, 阴阳怪气: 25, 社牛度: 25, 自恋度: 20, 打工魂: 52 }
+  },
+  {
+    id: "Phantom", name: "幻影者", motto: "梦里比现实更真实",
+    icon: "🦋",
+    desc: "你是<b>Phantom（幻影者）</b>。你的现实和幻想边界很模糊。你有一百种理想人生，但实际行动为零。你活在自己的世界里，那里一切都很美好，现实只是偶尔来打扰一下。",
+    dims: { 摆烂度: 55, 反骨度: 35, 社恐度: 55, 内耗度: 60, 打工人指数: 25, 穷鬼度: 50, 搞笑度: 40, 内卷度: 10, 情绪化: 50, 治愈力: 25, 躺平指数: 65, 阴阳怪气: 30, 社牛度: 15, 自恋度: 45, 打工魂: 20 }
+  },
+  {
+    id: "Joker", name: "段子手", motto: "笑着把悲伤讲完",
+    icon: "🃏",
+    desc: "你是<b>Joker（段子手）</b>。你是朋友圈的气氛组，永远在开玩笑，永远在自嘲。但你有没有认真想过：你那么努力让别人笑，是不是因为你自己很少真正开心？算了，不想这个了，来，再讲个段子。",
+    dims: { 摆烂度: 45, 反骨度: 50, 社恐度: 30, 内耗度: 70, 打工人指数: 45, 穷鬼度: 55, 搞笑度: 98, 内卷度: 15, 情绪化: 55, 治愈力: 30, 躺平指数: 35, 阴阳怪气: 65, 社牛度: 70, 自恋度: 25, 打工魂: 40 }
+  },
+  {
+    id: "Edge", name: "边缘人", motto: "在圈子边上，进退两难",
+    icon: "⚡",
+    desc: "你是<b>Edge（边缘人）</b>。你永远在圈子的边缘，挤进去太累，退出来不甘心。你是朋友圈里那个「可有可无」的存在，不是因为你不重要，是因为你永远在犹豫要不要更进一步。",
+    dims: { 摆烂度: 55, 反骨度: 40, 社恐度: 70, 内耗度: 50, 打工人指数: 40, 穷鬼度: 45, 搞笑度: 30, 内卷度: 20, 情绪化: 35, 治愈力: 25, 躺平指数: 50, 阴阳怪气: 35, 社牛度: 15, 自恋度: 20, 打工魂: 38 }
+  },
+  {
+    id: "Faker", name: "伪人", motto: "这个面具戴久了，我以为是我的脸",
+    icon: "🎪",
+    desc: "你是<b>Faker（伪人）</b>。你在不同场合扮演不同的人，在老板面前是奋斗逼，在朋友面前是搞笑担当，在家里是乖乖牌。你演得太入戏了，以至于你忘了真正的自己是什么样子。",
+    dims: { 摆烂度: 35, 反骨度: 30, 社恐度: 50, 内耗度: 65, 打工人指数: 65, 穷鬼度: 40, 搞笑度: 55, 内卷度: 40, 情绪化: 45, 治愈力: 20, 躺平指数: 25, 阴阳怪气: 45, 社牛度: 65, 自恋度: 55, 打工魂: 60 }
+  },
+  {
+    id: "Clown", name: "小丑", motto: "只要你们开心，我在哭也没关系",
+    icon: "🤡",
+    desc: "你是<b>Clown（小丑）</b>。你是团队里的开心果，永远在活跃气氛。但你有没有发现，每次冷场，大家都会看向你？不是因为需要你，是因为没有你气氛会尴尬。你在笑，但你的笑，有几分是真的？",
+    dims: { 摆烂度: 50, 反骨度: 35, 社恐度: 40, 内耗度: 80, 打工人指数: 50, 穷鬼度: 50, 搞笑度: 95, 内卷度: 20, 情绪化: 65, 治愈力: 20, 躺平指数: 40, 阴阳怪气: 55, 社牛度: 75, 自恋度: 15, 打工魂: 48 }
+  },
+  {
+    id: "God", name: "大能者", motto: "你以为我无所不能，但我只是撑着",
+    icon: "🦸",
+    desc: "你是<b>God（大能者）</b>。在所有人眼里你都很强，能扛事，能兜底，能解决问题。但没人知道，你只是硬撑。你不允许自己崩溃，因为大家都指望着你。你好累，但你不说。",
+    dims: { 摆烂度: 15, 反骨度: 25, 社恐度: 30, 内耗度: 85, 打工人指数: 90, 穷鬼度: 30, 搞笑度: 20, 内卷度: 70, 情绪化: 40, 治愈力: 10, 躺平指数: 10, 阴阳怪气: 20, 社牛度: 50, 自恋度: 75, 打工魂: 88 }
+  }
+];
+
+// ========================================================
+// 15道题目（每道题对多个人格维度打分）
+// ========================================================
+const QUESTIONS = [
+  {
+    text: "周一早上8点，闹钟响了，你的状态是？",
+    options: [
+      { text: "身体坐起来了，灵魂还在床上", scores: { Zombie: 3, Dead: 1, Broken: 1 } },
+      { text: "关掉闹钟继续睡，迟到再说", scores: { Malo: 3, Solo: 1, Phantom: 1 } },
+      { text: "秒醒，满血复活迎接新的一周", scores: { Boss: 3, Healer: 1, God: 1 } },
+      { text: "醒了，但在想今天请假的理由", scores: { Broken: 3, Fuck: 1, Zombie: 1 } }
+    ]
+  },
+  {
+    text: "同事把锅甩到你身上，你会？",
+    options: [
+      { text: "当场反驳，证据甩脸", scores: { Fuck: 3, Witch: 1, Joker: 1 } },
+      { text: "算了，多一事不如少一事", scores: { Dead: 3, Survivor: 1, Ghost: 1 } },
+      { text: "默默接受，然后内心疯狂骂人", scores: { Shit: 3, Broken: 1, Clown: 1 } },
+      { text: "心里难受，觉得都是自己的错", scores: { IMSB: 3, Ghost: 1, Survivor: 1 } }
+    ]
+  },
+  {
+    text: "周末，你最可能的状态是？",
+    options: [
+      { text: "在床上躺到下午2点，不想动", scores: { Dead: 3, Zombie: 2, Malo: 1 } },
+      { text: "出门社交，见朋友、逛街、吃饭", scores: { Vampire: 3, Joker: 1, ATM: 1 } },
+      { text: "一个人待着，看书、打游戏、发呆", scores: { Solo: 3, Phantom: 1, Observer: 1 } },
+      { text: "加班，趁别人休息弯道超车", scores: { Boss: 3, God: 2, Faker: 1 } }
+    ]
+  },
+  {
+    text: "朋友发微信问你在干嘛，你最可能回？",
+    options: [
+      { text: "「在」", scores: { Ghost: 3, Robot: 1, NPC: 1 } },
+      { text: "「刚下班，咋了」", scores: { Zombie: 3, Malo: 1, Survivor: 1 } },
+      { text: "直接回拨电话过去", scores: { Vampire: 3, ATM: 1, Baby: 1 } },
+      { text: "「刚在想要不要回你」", scores: { Witch: 3, Joker: 1, Faker: 1 } }
+    ]
+  },
+  {
+    text: "看到朋友圈里大家都在晒旅游/升职/恋爱，你会？",
+    options: [
+      { text: "点个赞，默默滑走", scores: { Ghost: 3, Observer: 1, Solo: 1 } },
+      { text: "焦虑了，也想发点什么证明自己", scores: { Boss: 3, Faker: 1, Baby: 1 } },
+      { text: "完全没有感觉，与我无关", scores: { Alien: 3, Dead: 1, Robot: 1 } },
+      { text: "评论区阴阳怪气一下", scores: { Witch: 3, Shit: 1, Joker: 1 } }
+    ]
+  },
+  {
+    text: "你买东西的时候，第一反应是？",
+    options: [
+      { text: "先看价格，超出预算就算了", scores: { Survivor: 3, Broken: 1, Malo: 1 } },
+      { text: "喜欢就买，钱是赚出来的不是省出来的", scores: { ATM: 3, Vampire: 1, Fuck: 1 } },
+      { text: "反复对比，列出Excel分析", scores: { Robot: 3, Boss: 1, Faker: 1 } },
+      { text: "等打折，等双十一，等清仓", scores: { Malo: 3, Zombie: 1, Survivor: 1 } }
+    ]
+  },
+  {
+    text: "深夜睡不着，你在？",
+    options: [
+      { text: "刷手机，刷到天亮", scores: { Zombie: 3, Dead: 1, Joker: 1 } },
+      { text: "复盘白天说过的每一句话", scores: { IMSB: 3, Broken: 1, Clown: 1 } },
+      { text: "发呆，脑子里一片空白", scores: { Dead: 3, Phantom: 1, Solo: 1 } },
+      { text: "规划明天/未来/理想人生", scores: { Phantom: 3, Boss: 1, God: 1 } }
+    ]
+  },
+  {
+    text: "如果要你形容你的工作状态，你会说？",
+    options: [
+      { text: "拿多少钱干多少事，绝不多干", scores: { Malo: 3, Fuck: 1, Dead: 1 } },
+      { text: "卷死他们，我要当第一", scores: { Boss: 3, God: 1, Faker: 1 } },
+      { text: "混着，不知道在干什么", scores: { NPC: 3, Zombie: 1, Ghost: 1 } },
+      { text: "还能怎样，熬着呗", scores: { Survivor: 3, Dead: 1, Malo: 1 } }
+    ]
+  },
+  {
+    text: "有人夸你「你真棒」，你的第一反应是？",
+    options: [
+      { text: "谢谢！但TA是在客套吧？", scores: { IMSB: 3, Observer: 1, Ghost: 1 } },
+      { text: "当然，我很优秀", scores: { God: 3, Boss: 1, Joker: 1 } },
+      { text: "？？？TA想干嘛", scores: { Alien: 3, Witch: 1, Edge: 1 } },
+      { text: "回夸TA：你也超棒！", scores: { Healer: 3, Vampire: 1, Joker: 1 } }
+    ]
+  },
+  {
+    text: "你和朋友聚会，席间冷场了，你会？",
+    options: [
+      { text: "掏出手机假装看消息", scores: { Ghost: 3, Edge: 1, Solo: 1 } },
+      { text: "主动找个话题打破尴尬", scores: { Joker: 3, Healer: 1, Vampire: 1 } },
+      { text: "无所谓，冷场就冷场", scores: { Solo: 3, Alien: 1, Robot: 1 } },
+      { text: "说个冷笑话，结果更冷了", scores: { Clown: 3, Joker: 1, Witch: 1 } }
+    ]
+  },
+  {
+    text: "你的微信朋友圈，一般发的是？",
+    options: [
+      { text: "很少发，偶尔转发文章", scores: { Ghost: 3, Solo: 1, Observer: 1 } },
+      { text: "全是自拍和美食，记录生活", scores: { Vampire: 3, Joker: 1, Baby: 1 } },
+      { text: "深夜感慨，秒删", scores: { Broken: 3, Phantom: 1, Clown: 1 } },
+      { text: "从来不发，当观众", scores: { Observer: 3, Zombie: 1, Ghost: 1 } }
+    ]
+  },
+  {
+    text: "如果给你一天完全自由的时间，你最想？",
+    options: [
+      { text: "睡觉，睡到自然醒", scores: { Zombie: 3, Dead: 2, Malo: 1 } },
+      { text: "一个人去咖啡馆发呆", scores: { Solo: 3, Phantom: 1, Observer: 1 } },
+      { text: "约朋友出去玩，嗨起来", scores: { Vampire: 3, Joker: 1, ATM: 1 } },
+      { text: "待不住，一定要找点事做", scores: { Boss: 3, Chaos: 1, God: 1 } }
+    ]
+  },
+  {
+    text: "你被拉进一个全是陌生人的微信群，你会？",
+    options: [
+      { text: "把聊天记录翻一遍，从头吃瓜", scores: { Observer: 3, Ghost: 1, Joker: 1 } },
+      { text: "打个招呼，自我介绍一下", scores: { Vampire: 3, Faker: 1, Joker: 1 } },
+      { text: "设为免打扰，继续潜水", scores: { Ghost: 3, Solo: 1, Zombie: 1 } },
+      { text: "发个大红包，混个脸熟", scores: { ATM: 3, Joker: 1, Vampire: 1 } }
+    ]
+  },
+  {
+    text: "别人问「你有什么缺点」，你最可能说？",
+    options: [
+      { text: "太追求完美（骄傲地）", scores: { God: 3, Boss: 1, Faker: 1 } },
+      { text: "拖延症晚期，懒癌晚期", scores: { Malo: 3, Joker: 1, Zombie: 1 } },
+      { text: "善良，容易心软", scores: { Healer: 3, Baby: 1, Survivor: 1 } },
+      { text: "我没什么缺点（说完就后悔）", scores: { Faker: 3, Broken: 1, Alien: 1 } }
+    ]
+  },
+  {
+    text: "最后一道灵魂拷问：你现在对自己的状态满意吗？",
+    options: [
+      { text: "满意？我早就不想这些了", scores: { Dead: 3, Zombie: 1, Chaos: 1 } },
+      { text: "不满意，但也不知道怎么改", scores: { Broken: 3, Edge: 1, Survivor: 1 } },
+      { text: "还行，比下有余", scores: { Survivor: 3, Malo: 1, Joker: 1 } },
+      { text: "不满意，我还要更努力", scores: { Boss: 3, God: 2, Faker: 1 } }
+    ]
+  }
+];
+
+// ========================================================
+// 十五维度定义
+// ========================================================
+const DIM_LABELS = [
+  "摆烂度", "反骨度", "社恐度", "内耗度", "打工人指数",
+  "穷鬼度", "搞笑度", "内卷度", "情绪化", "治愈力",
+  "躺平指数", "阴阳怪气", "社牛度", "自恋度", "打工魂"
+];
+
+// ========================================================
+// 核心逻辑
+// ========================================================
+let currentQ = 0;
+let scores = {};
+let dimScores = {};
+let isTransitioning = false; // 防止 iOS 幽灵点击（ghost tap）
+
+function initScores() {
+  scores = {};
+  dimScores = {};
+  TYPES.forEach(t => scores[t.id] = 0);
+  DIM_LABELS.forEach(d => dimScores[d] = 0);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('progressWrap').style.display = 'block';
+  initScores();
+  currentQ = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  // 进入过渡保护：防止 iOS 幽灵点击在新题目选项上触发
+  isTransitioning = true;
+
+  const q = QUESTIONS[currentQ];
+  const pct = Math.round((currentQ / QUESTIONS.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = (currentQ + 1) + ' / ' + QUESTIONS.length;
+  document.getElementById('qNum').textContent = '第 ' + (currentQ + 1) + ' 题';
+  document.getElementById('qText').textContent = q.text;
+
+  const optsEl = document.getElementById('options');
+  const letters = ['A', 'B', 'C', 'D'];
+  const shuffledOptions = shuffle(q.options.slice()); // Copy and shuffle
+
+  // Assign letters A, B, C, D AFTER shuffling, so the first displayed option is always A
+  shuffledOptions.forEach((opt, idx) => {
+    opt.letter = letters[idx];
+  });
+
+  optsEl.innerHTML = '';
+  // 新选项先设置 pointer-events:none，防止 iOS 残余触摸事件立即触发
+  optsEl.style.pointerEvents = 'none';
+  shuffledOptions.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = '<div class="option-letter">' + opt.letter + '</div><div>' + opt.text + '</div>';
+    div.onclick = () => selectOption(div, opt.scores);
+    optsEl.appendChild(div);
+  });
+
+  // 400ms 后解除保护（覆盖 iOS 的 300ms 点击延迟）
+  setTimeout(() => {
+    optsEl.style.pointerEvents = '';
+    isTransitioning = false;
+  }, 400);
+}
+
+function selectOption(el, addScores) {
+  // 过渡期间忽略点击，防止 iOS 幽灵点击或重复触发
+  if (isTransitioning) return;
+  isTransitioning = true;
+
+  document.querySelectorAll('.option').forEach(o => {
+    o.style.pointerEvents = 'none';
+    o.classList.remove('selected');
+  });
+  el.classList.add('selected');
+
+  // 累加人格分数
+  Object.entries(addScores).forEach(([type, val]) => {
+    scores[type] = (scores[type] || 0) + val;
+  });
+
+  // 延迟 400ms：让选中动画播放，同时等 iOS 点击事件完全消散
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ < QUESTIONS.length) {
+      showQuestion();
+    } else {
+      isTransitioning = false;
+      showResult();
+    }
+  }, 400);
+}
+
+function showResult() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+
+  // 找主类型 + 次级类型
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topId = sorted[0][0];
+  const secondId = sorted[1][0];
+  const thirdId = sorted[2][0];
+
+  const topType = TYPES.find(t => t.id === topId);
+  const secondType = TYPES.find(t => t.id === secondId);
+  const thirdType = TYPES.find(t => t.id === thirdId);
+  const topScore = sorted[0][1];
+  const secondScore = sorted[1][1];
+
+  // 匹配度计算：主类型占主导
+  const totalScore = sorted.reduce((sum, [, v]) => sum + v, 0);
+  const leadScore = topScore - secondScore;
+  const matchPct = Math.round(60 + (leadScore / topScore) * 35);
+
+  // 头像
+  document.getElementById('rAvatar').innerHTML = AVATARS[topId] || AVATARS[topId];
+  document.getElementById('rType').textContent = topId;
+  document.getElementById('rName').textContent = topType.name + ' ' + topType.icon;
+  document.getElementById('rMotto').textContent = '「' + topType.motto + '」';
+  document.getElementById('rDesc').innerHTML = topType.desc;
+
+  // 次级人格
+  document.getElementById('subTypes').innerHTML = `
+    <div class="sub-type">
+      <div class="sub-icon">${AVATARS[secondId] ? AVATARS[secondId].replace('viewBox','style="width:20px;height:20px" viewBox') : ''}</div>
+      <span class="sub-name">次级：${secondType.name}</span>
+    </div>
+    <div class="sub-type">
+      <div class="sub-icon">${AVATARS[thirdId] ? AVATARS[thirdId].replace('viewBox','style="width:20px;height:20px" viewBox') : ''}</div>
+      <span class="sub-name">潜在：${thirdType.name}</span>
+    </div>
+  `;
+
+  // 匹配度动画
+  setTimeout(() => {
+    document.getElementById('rMatchBar').style.width = matchPct + '%';
+    animateNumber(document.getElementById('rMatchPct'), 0, matchPct, 1200);
+  }, 300);
+
+  // 十五维度
+  const dimsGrid = document.getElementById('dimensionsGrid');
+  dimsGrid.innerHTML = '';
+  DIM_LABELS.forEach(dim => {
+    const val = topType.dims[dim] || Math.round(Math.random() * 40 + 20);
+    const item = document.createElement('div');
+    item.className = 'dim-item';
+    item.innerHTML = `
+      <div class="dim-label">
+        <span>${dim}</span>
+        <span class="dim-val" id="dimval_${dim}">0</span>
+      </div>
+      <div class="dim-bar-bg">
+        <div class="dim-bar-fill" id="dimbar_${dim}" style="width:0%"></div>
+      </div>
+    `;
+    dimsGrid.appendChild(item);
+  });
+
+  // 维度动画延迟触发
+  setTimeout(() => {
+    DIM_LABELS.forEach((dim, i) => {
+      const val = topType.dims[dim] || 50;
+      setTimeout(() => {
+        document.getElementById('dimbar_' + dim).style.width = val + '%';
+        animateNumber(document.getElementById('dimval_' + dim), 0, val, 600);
+      }, i * 60);
+    });
+  }, 400);
+
+  // 分享文本
+  window.shareText = '我的SBTI人格是【' + topType.name + ' ' + topType.icon + '】，匹配度' + matchPct + '%。' + topType.motto + ' — 测测你是哪种？';
+
+  // 保存结果数据供图片导出使用
+  const dimsArray = DIM_LABELS.map(dim => ({
+    name: dim,
+    val: topType.dims[dim] || Math.round(Math.random() * 40 + 20)
+  }));
+  currentResultData = {
+    avatar: AVATARS[topId],
+    typeLabel: topId,
+    name: topType.name + ' ' + topType.icon,
+    motto: topType.motto,
+    desc: topType.desc,
+    matchPct: matchPct,
+    dims: dimsArray,
+    subTypes: [
+      { label: '次级：', name: secondType.name, icon: AVATARS[secondId] },
+      { label: '潜在：', name: thirdType.name, icon: AVATARS[thirdId] }
+    ]
+  };
+}
+
+function animateNumber(el, from, to, duration) {
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(from + (to - from) * progress);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = to;
+  };
+  requestAnimationFrame(step);
+}
+
+function copyResult() {
+  const text = window.shareText || '我的SBTI人格测试结果出炉！';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.share-btn.primary');
+      btn.textContent = '✅ 已复制！';
+      setTimeout(() => { btn.textContent = '📋 复制结果'; }, 2000);
+    });
+  }
+}
+
+function retest() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('home').style.display = 'block';
+  document.getElementById('rMatchBar').style.width = '0%';
+}
+
+// ===== 保存图片功能（原生Canvas）=====
+let currentResultData = null;
+
+// 二维码完整base64（页面加载时预加载）
+const QR_DATA_URL = "data:image/jpeg;base64,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r+l//JNH/Drj9p3/AKJl/wCV/S//AJJr9/qKAP5gfil8LfE/wW8d6n4N8ZaZ/Y3iTTfK+12X2iKfy/MiSVPniZkOUkQ8McZweQRXV/Av9lz4n/tKf23/AMK48M/8JH/Yvkfb/wDT7W18nzvM8r/Xypuz5Un3c4284yM+q/8ABUf/AJPs+Jv/AHDP/TXaV9Vf8EMf+a2f9wT/ANv6AOU/YK/YK+O3wW/ax8DeMvGXgb+xvDem/bvtd7/a9hP5fmWFxEnyRTs5y8iDhTjOTwCa/X+iigD8Af8Ah1x+07/0TL/yv6X/APJNfr9+wV8LfE/wW/ZO8DeDfGWmf2N4k037d9rsvtEU/l+Zf3EqfPEzIcpIh4Y4zg8givoCigDyr46ftR/DD9mv+xP+Fj+Jv+Ec/trz/sH+gXV153k+X5v+oifbjzY/vYzu4zg4+Kv29f29fgT8af2TvHPg3wb45/tnxJqX2H7JZf2RfweZ5d/byv8APLAqDCRueWGcYHJArlf+C53/ADRP/uN/+2FflXQAUUUUAfv9/wAEuP8AkxP4Zf8AcT/9Ol3XlX/BVv8AZc+J/wC0p/wq7/hXHhn/AISP+xf7U+3/AOn2tr5PnfZPK/18qbs+VJ93ONvOMjPqv/BLj/kxP4Zf9xP/ANOl3X1VQB/Ot8Uv2Cvjt8FvAmp+MvGXgb+xvDem+V9rvf7XsJ/L8yVIk+SKdnOXkQcKcZyeATXgFfv9/wAFR/8AkxP4m/8AcM/9OlpX4A0Afv8Af8PR/wBmL/opv/lA1T/5Gr8gP29fil4Y+NP7WPjnxl4N1P8Atnw3qX2H7Je/Z5YPM8uwt4n+SVVcYeNxyozjI4INeAUUAff/APwSk/aj+GH7Nf8AwtH/AIWP4m/4Rz+2v7L+wf6BdXXneT9r83/URPtx5sf3sZ3cZwcfpT8Lf29fgT8afHemeDfBvjn+2fEmpeb9ksv7Iv4PM8uJ5X+eWBUGEjc8sM4wOSBX869fVX/BLj/k+z4Zf9xP/wBNd3QB+/1FFFABX5V/8Fzv+aJ/9xv/ANsK/VSvyr/4Lnf80T/7jf8A7YUAfFX7BXxS8MfBb9rHwN4y8Zan/Y3hvTft32u9+zyz+X5lhcRJ8kSs5y8iDhTjOTwCa/X/AP4ej/sxf9FN/wDKBqn/AMjV+ANFAH9VFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB//9k=";
+
+let _qrCachedImg = null;
+function getQRImage() {
+  if (!_qrCachedImg) { _qrCachedImg = new Image(); _qrCachedImg.src = QR_DATA_URL; }
+  return _qrCachedImg;
+}
+(function(){ getQRImage(); })();
+
+function isWeChat() {
+  return navigator.userAgent.toLowerCase().indexOf('micromessenger') !== -1;
+}
+
+async function saveAsImage() {
+  const btn = document.querySelector('.share-btn.save-img');
+  btn.textContent = '⏳ 生成中...';
+  btn.style.pointerEvents = 'none';
+
+  if (!currentResultData) {
+    btn.textContent = '📸 保存图片';
+    btn.style.pointerEvents = '';
+    return;
+  }
+
+  const r = currentResultData;
+  // 取所有15个维度
+  const dims = r.dims || [];
+
+  // ====== 在屏幕外创建专用导出卡片 ======
+  const card = document.createElement('div');
+  card.style.cssText = [
+    'position:fixed', 'left:-9999px', 'top:0',
+    'width:375px',
+    'background:linear-gradient(160deg,#10102a 0%,#1a0a30 50%,#0a0f20 100%)',
+    'padding:28px 22px 24px',
+    'font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',
+    'color:#fff', 'text-align:center', 'box-sizing:border-box'
+  ].join(';');
+
+  const dimsHtml = dims.map(d => `
+    <div style="margin-bottom:2px;">
+      <div style="font-size:11px;color:#aaa;display:flex;justify-content:space-between;margin-bottom:3px;">
+        <span>${d.name}</span>
+        <span style="color:#a78bfa;font-weight:700;">${d.val}%</span>
+      </div>
+      <div style="height:4px;background:#1e1a3a;border-radius:2px;overflow:hidden;">
+        <div style="height:100%;width:${d.val}%;background:linear-gradient(90deg,#667eea,#a78bfa);border-radius:2px;"></div>
+      </div>
+    </div>`).join('');
+
+  const plainDesc = (r.desc || '').replace(/<[^>]+>/g, '');
+  const subNames = (r.subTypes || []).map(s => s.name).join(' · ');
+
+  card.innerHTML = `
+    <div style="font-size:11px;color:#a78bfa;letter-spacing:3px;margin-bottom:18px;">SBTI 人格测试结果</div>
+
+    <div style="width:88px;height:88px;border-radius:50%;overflow:hidden;margin:0 auto 14px;border:2px solid #667eea;background:#13132a;display:flex;align-items:center;justify-content:center;">
+      ${r.avatar || `<span style="font-size:36px;">${(r.name||'').slice(-1)}</span>`}
+    </div>
+
+
+
+    <div style="font-size:12px;color:#888;letter-spacing:3px;margin-bottom:4px;">${r.typeLabel || ''}</div>
+    <div style="font-size:30px;font-weight:900;color:#fff;margin:4px 0 8px;">${r.name || ''}</div>
+    <div style="font-size:13px;color:#888;font-style:italic;margin-bottom:${subNames ? '10px' : '16px'};">"${r.motto || ''}"</div>
+
+    ${subNames ? `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+      ${(r.subTypes||[]).map(s=>`<div style="display:flex;align-items:center;gap:4px;background:#1e1a3a;border:1px solid #2a2a5a;border-radius:20px;padding:4px 12px;font-size:12px;color:#aaa;">
+        <div style="width:16px;height:16px;display:flex;align-items:center;justify-content:center;">${(s.icon||'').replace('viewBox', 'style="width:100%;height:100%;" viewBox')}</div>
+        <span>${s.label||''}${s.name||''}</span>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div style="background:#13132a;border:1px solid #2a2a5a;border-radius:14px;padding:16px;font-size:13px;color:#ccc;line-height:1.9;text-align:left;margin-bottom:16px;">
+      ${plainDesc}
+    </div>
+
+    ${dims.length > 0 ? `
+    <div style="font-size:12px;color:#667eea;font-weight:700;letter-spacing:2px;text-align:left;margin-bottom:10px;">十五维度评分</div>
+    <div style="background:#13132a;border:1px solid #2a2a5a;border-radius:14px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;text-align:left;margin-bottom:16px;">
+      ${dimsHtml}
+    </div>` : ''}
+
+    <div style="border-top:1px solid #2a2a5a;padding-top:16px;display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;">
+      <img src="${QR_DATA_URL}" style="width:72px;height:72px;border-radius:8px;flex-shrink:0;background:#fff;" />
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">扫码关注公众号，回复SBTI</div>
+        <div style="font-size:12px;color:#a78bfa;line-height:1.6;">测测你的朋友是什么人格？<br>转发给TA，看看结果吧 👀</div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(card);
+
+  try {
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#10102a',
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+
+    document.body.removeChild(card);
+
+    const imgData = canvas.toDataURL('image/png');
+
+    if (isWeChat()) {
+      showSaveOverlay(imgData, 'wechat');
+    } else {
+      showSaveOverlay(imgData, 'browser');
+    }
+  } catch(e) {
+    console.error('生成失败:', e);
+    if (document.body.contains(card)) document.body.removeChild(card);
+    btn.textContent = '❌ 失败,请截图';
+    setTimeout(() => { btn.textContent = '📸 保存图片'; }, 2500);
+  }
+  btn.style.pointerEvents = '';
+}
+
+function drawResultCard(r) {
+  return new Promise((resolve, reject) => {
+    const SCALE = 2;
+    const CW = 640 * SCALE;  // 增加宽度以容纳两列布局
+    const PAD = 20 * SCALE;
+    const INNER = CW - 2*PAD;
+    const c = document.createElement('canvas');
+    c.width = CW;
+    c.height = 1600 * SCALE;
+    const ctx = c.getContext('2d');
+    ctx.scale(SCALE, SCALE);
+    ctx.fillStyle = '#0a0a0f';
+    roundRect(ctx, 0, 0, CW/SCALE, 1400*SCALE/SCALE, 16); ctx.fill();
+
+    // Load avatar SVG only
+    const tmpDiv = document.createElement('div');
+    // 修复：如果 r.avatar 已经包含 <svg>，直接使用；否则包一层
+    const svgContent = (r.avatar || '').trim();
+    const isWrapped = svgContent.startsWith('<svg');
+    tmpDiv.innerHTML = isWrapped ? svgContent : '<svg width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' + svgContent + '</svg>';
+    const svgEl = tmpDiv.querySelector('svg');
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svgEl)], {type:'image/svg+xml'});
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    const avatarImg = new Image();
+    let resolved = false;
+
+    function doRender(avImg) {
+      if (resolved) return; resolved = true;
+      try { URL.revokeObjectURL(svgUrl); } catch(e){}
+      let y = 40;
+
+      // === 1. Avatar ===
+      const avSize=120, avX=CW/SCALE/2, avY=y+avSize/2;
+      ctx.beginPath(); ctx.arc(avX,avY,avSize/2+2,0,Math.PI*2);
+      ctx.fillStyle='#13132a'; ctx.fill(); ctx.strokeStyle='#1e1e3f'; ctx.lineWidth=3; ctx.stroke();
+      if (avImg) {
+        ctx.save(); ctx.beginPath(); ctx.arc(avX,avY,avSize/2-1,0,Math.PI*2); ctx.clip();
+        ctx.drawImage(avImg, avX-avSize/2+1, y+1, avSize-2, avSize-2);
+        ctx.restore();
+      }
+      y += avSize + 28;
+
+      // === 2. Match text ===
+      ctx.fillStyle='#667eea'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+      ctx.fillText('系统判定匹配度', CW/SCALE/2, y); y += 18;
+
+      // === 3. Progress bar ===
+      const barX=PAD, barW=INNER, barH=8;
+      roundRect(ctx,barX,y,barW,barH,4); ctx.fillStyle='#1a1e2e'; ctx.fill();
+      const fillW=barW*(parseInt(r.matchPct)||0)/100;
+      if(fillW>4){roundRect(ctx,barX,y,fillW,barH,4); ctx.fillStyle='#667eea'; ctx.fill();}
+      y += barH + 16;
+
+      // === 4. Percentage ===
+      ctx.fillStyle='#667eea'; ctx.font='900 32px sans-serif';
+      ctx.fillText((r.matchPct||'?')+'%',CW/SCALE/2,y+26); y += 36;
+
+      // === 5. Type label ===
+      ctx.fillStyle='#555'; ctx.font='14px sans-serif';
+      ctx.fillText(r.typeLabel||'',CW/SCALE/2,y); y += 28;
+
+      // === 6. Name ===
+      ctx.fillStyle='#fff'; ctx.font='900 40px sans-serif';
+      ctx.fillText(r.name||'',CW/SCALE/2,y+34); y += 48;
+
+      // === 7. Motto ===
+      ctx.fillStyle='#999'; ctx.font='italic 14px sans-serif';
+      ctx.fillText('“'+(r.motto||'')+'”',CW/SCALE/2,y); y += 32;
+
+      // === 8. Sub types ===
+      if(r.subTypes && r.subTypes.length>0){
+        const pills=r.subTypes.map(s=>s.name).join(' · ');
+        ctx.fillStyle='#1a1e2e';
+        const pw=ctx.measureText(pills).width+44;
+        roundRect(ctx,CW/SCALE/2-pw/2,y-16,pw,32,16);ctx.fill();
+        ctx.fillStyle='#aaa'; ctx.font='13px sans-serif';
+        ctx.fillText('次级匹配：'+pills,CW/SCALE/2,y+5);
+        y+=48;
+      }
+
+      // === 8.5. Description Box (人格解读) ===
+      if(r.desc){
+        const descX=PAD/SCALE+16, descW=CWcss-2*PADcss-32;
+        const descPadding=20;
+        // 解析 desc 中的 HTML，提取文字和 strong 标签位置
+        const plainText = r.desc.replace(/<[^>]+>/g, '');
+        ctx.font='13px sans-serif';
+        ctx.fillStyle='#888';
+        ctx.textAlign='left';
+        // 简单处理：先绘制普通文字，strong 标签用特殊颜色
+        const lineH=26, maxW=descW-2*descPadding;
+        const lines=wrapText(ctx,plainText,maxW);
+        const descH=lines.length*lineH+2*descPadding;
+        // 背景
+        roundRect(ctx,descX,y,descW,descH,16);ctx.fillStyle='#13132a';ctx.fill();
+        ctx.strokeStyle='#1e1e3f';ctx.lineWidth=1;ctx.stroke();
+        // 绘制文字
+        let ly=y+descPadding+13;
+        lines.forEach(line=>{ctx.fillText(line,descX+descPadding,ly);ly+=lineH;});
+        y+=descH+20;
+      }
+
+      // === 9. Dimensions ===
+      y += 20;
+      ctx.fillStyle='#667eea'; ctx.font='bold 14px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('卍五维度评分',PAD/SCALE+16,y+15); y += 35;
+      if(r.dims&&r.dims.length>0){
+        console.log('[DEBUG] r.dims.length =', r.dims.length);
+        // 使用 CSS 像素计算列宽（在 ctx.scale 后会被放大）
+        const CWcss = CW/SCALE, PADcss = PAD/SCALE;
+        const colWcss = (CWcss - 2*PADcss - 20) / 2; // 20 = gap, 使用 CSS 像素
+        const gap=20,rowH=42,rows=Math.ceil(r.dims.length/2);
+        console.log('[DEBUG] rows =', rows, 'colWcss =', colWcss);
+        r.dims.forEach((d,i)=>{
+          const col=i%2,row=Math.floor(i/2),isOddLast=(r.dims.length%2===1&&i===r.dims.length-1);
+          const dx=isOddLast?CWcss/2-colWcss/2:PADcss+16+col*(colWcss+gap),dcw=colWcss,dy=y+row*rowH;
+          ctx.fillStyle='#777';ctx.font='12px sans-serif';ctx.textAlign='left';
+          ctx.fillText(d.name,dx,dy+10);
+          ctx.textAlign='right';ctx.fillStyle='#667eea';ctx.font='bold 12px sans-serif';
+          ctx.fillText(d.val+'%',dx+dcw,dy+10);
+          const bY=dy+15,bH=5;
+          ctx.fillStyle='#1a1e2e';roundRect(ctx,dx,bY,dcw,bH,3);ctx.fill();
+          const fw=Math.max(bH,dcw*d.val/100);
+          ctx.fillStyle='#667eea';roundRect(ctx,dx,bY,fw,bH,3);ctx.fill();
+        });
+        y+=rows*rowH+44;
+      }
+
+      y += 28;
+
+      // === 10. Divider ===
+      ctx.strokeStyle='#2a2a4a'; ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(PAD/SCALE+40,y);ctx.lineTo(CW/SCALE-PAD/SCALE-40,y);ctx.stroke(); y += 32;
+
+      // === 11. QR Code (preloaded global image) ===
+      const qS=140, qX=CW/SCALE/2-qS/2;
+      roundRect(ctx,qX-8,y-8,qS+16,qS+16,12); ctx.fillStyle='#fff'; ctx.fill();
+      const qrImg = getQRImage();
+      if (qrImg.complete) {
+        ctx.drawImage(qrImg,qX,y,qS,qS);
+        finishDraw();
+      } else {
+        qrImg.onload = function() { ctx.drawImage(qrImg,qX,y,qS,qS); finishDraw(); };
+        qrImg.onerror = function() { finishDraw(); };
+      }
+
+      function finishDraw() {
+        y += qS + 28;
+        ctx.fillStyle='#667eea';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+        ctx.fillText('\uD83D\DC47 \u626B\u7801\u6D4B\u6D4B\u4F60\u7684\u683C\u7C7B\u578B',CW/SCALE/2,y); y+=22;
+        ctx.fillStyle='#555';ctx.font='11px sans-serif';
+        ctx.fillText('\u957F\u6309\u56FE\u7247\u4FDD\u5B58 \u00B7 \u5206\u4EAB\u5230\u670B\u53CB\u5708',CW/SCALE/2,y); y+=20;
+        const finalCanvas=document.createElement('canvas');
+        finalCanvas.width=CW; finalCanvas.height=Math.round(y*SCALE);
+        const fCtx=finalCanvas.getContext('2d');
+        fCtx.drawImage(c,0,0,CW,Math.round(y*SCALE),0,0,CW,Math.round(y*SCALE));
+        resolve(finalCanvas.toDataURL('image/png'));
+      }
+    }
+
+    avatarImg.onload = () => doRender(avatarImg);
+    avatarImg.onerror = () => doRender(null);
+    setTimeout(() => { if (!resolved) { resolved=true; doRender(null); } }, 3000);
+    avatarImg.src = svgUrl;
+  });
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  if(w<0){w=-w;x-=w;}if(h<0){h=-h;y-=h;}
+  r=Math.min(r,Math.min(w,h)/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// 文字换行辅助函数
+function wrapText(ctx, text, maxWidth) {
+  const lines = [];
+  const paragraphs = text.split('\n');
+  paragraphs.forEach(para => {
+    if (para.trim() === '') {
+      lines.push('');
+      return;
+    }
+    const words = para.split('');
+    let currentLine = '';
+    for (let char of words) {
+      const testLine = currentLine + char;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine !== '') {
+        lines.push(currentLine);
+        currentLine = char;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+  });
+  return lines;
+}
+
+// mode: 'wechat' | 'browser'
+function showSaveOverlay(imgData, mode) {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.add('show');
+  document.getElementById('saveCard').style.display = 'none';
+
+  const tip = document.getElementById('saveTip');
+
+  const tipText = mode === 'wechat'
+    ? '👆 长按上方图片<br>保存后分享到朋友圈'
+    : '👆 长按图片保存 · 或点击下方按钮下载';
+
+  const downloadBtn = mode === 'browser'
+    ? `<button onclick="downloadImage('${imgData.replace(/'/g, "&#39;")}'.slice());this.textContent='✅已下载';this.disabled=true;"
+         style="margin-top:14px;padding:10px 28px;border-radius:24px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">⬇️ 点击下载图片</button>`
+    : '';
+
+  tip.innerHTML = `
+    <img src="${imgData}" id="saveResultImg"
+         style="max-width:94vw;max-height:75vh;border-radius:16px;border:2px solid #3a3a5a;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:block;margin:0 auto;" />
+    <div style="margin-top:16px;color:#f093fb;font-size:15px;line-height:1.8;">${tipText}</div>
+    ${downloadBtn}
+  `;
+
+  const closeBtn = overlay.querySelector('.close-save-btn');
+  closeBtn.style.display = 'inline-block';
+  closeBtn.onclick = () => {
+    closeSaveOverlay();
+    const btn = document.querySelector('.share-btn.save-img');
+    btn.textContent = '📸 保存图片';
+  };
+}
+
+// 保留旧函数名兼容
+function showWeChatSave(imgData) { showSaveOverlay(imgData, 'wechat'); }
+
+function downloadImage(imgData) {
+  const link = document.createElement('a');
+  link.href = imgData;
+  link.download = 'SBTI-测试结果.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function closeSaveOverlay() {
+  const overlay = document.getElementById('saveOverlay');
+  overlay.classList.remove('show');
+  document.getElementById('saveCard').style.display = '';
+
+  document.getElementById('saveTip').innerHTML =
+    `📸 长按上方卡片保存图片<br>或点击下方按钮下载`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// 背景粒子
+(function initParticles() {
+  const container = document.getElementById('particles');
+  const colors = ['#667eea', '#764ba2', '#f093fb', '#ff6b81', '#667eea'];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.cssText = `width:${size}px;height:${size}px;background:${color};left:${Math.random()*100}%;animation-duration:${Math.random()*10+8}s;animation-delay:${Math.random()*5}s;`;
+    container.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
