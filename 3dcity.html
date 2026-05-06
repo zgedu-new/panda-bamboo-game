@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧城市运营监控中心</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#0a0e27;--bg-mid:#1a1f3a;--bg-card:rgba(16,21,48,0.85);
+  --accent-cyan:#00e5ff;--accent-teal:#00bfa5;--accent-orange:#ff6d00;
+  --accent-rose:#ff1744;--accent-purple:#7c4dff;--accent-gold:#ffd600;
+  --text-primary:#e8eaf6;--text-secondary:#7986cb;--text-dim:#3f51b5;
+  --border:rgba(100,120,255,0.12);
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif;
+  --gauge-circumference:408.407;/* 2*PI*65 */
+}
+html{font-size:14px;scrollbar-width:thin;scrollbar-color:var(--text-dim) transparent}
+body{
+  font-family:var(--font);background:linear-gradient(160deg,var(--bg-deep) 0%,#0d1137 40%,var(--bg-mid) 100%);
+  color:var(--text-primary);min-height:100vh;overflow-x:hidden;
+  background-attachment:fixed;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 20% 50%,rgba(0,229,255,0.03),transparent),
+    radial-gradient(ellipse 600px 400px at 80% 30%,rgba(124,77,255,0.03),transparent),
+    linear-gradient(rgba(100,120,255,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,120,255,0.03) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,40px 40px,40px 40px;
+}
+
+/* ===== HEADER ===== */
+.header{
+  position:relative;z-index:1;padding:1.2rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,14,39,0.6);backdrop-filter:blur(10px);
+}
+.header-title{display:flex;align-items:center;gap:1rem}
+.header-logo{
+  width:40px;height:40px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 20px rgba(0,229,255,0.4);position:relative;
+}
+.header-logo::after{
+  content:'';width:18px;height:18px;border:2px solid #fff;border-radius:50%;
+  box-shadow:inset 0 0 4px rgba(255,255,255,0.5);
+}
+.header h1{font-size:1.4rem;font-weight:600;letter-spacing:0.15em;color:var(--text-primary)}
+.header-sub{font-size:0.75rem;color:var(--text-secondary);letter-spacing:0.05em;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:1.5rem}
+.header-status{display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-secondary)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent-teal);animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 4px var(--accent-teal)}50%{opacity:0.5;box-shadow:0 0 12px var(--accent-teal)}}
+.header-time{font-size:0.85rem;color:var(--accent-cyan);font-variant-numeric:tabular-nums;letter-spacing:0.05em}
+
+/* ===== DASHBOARD ===== */
+.dashboard{
+  position:relative;z-index:1;max-width:1600px;margin:0 auto;
+  padding:1.5rem;perspective:1200px;
+}
+
+/* ===== 3D KPI PANEL ===== */
+.kpi-panel{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;
+  margin-bottom:1.5rem;
+  transform:perspective(1200px) rotateX(2deg);transform-style:preserve-3d;
+}
+.kpi-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:12px;padding:1.2rem 1.4rem;
+  position:relative;overflow:hidden;
+  transform:translateZ(20px);transform-style:preserve-3d;
+  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s ease;
+}
+.kpi-card:hover{transform:translateZ(40px) translateY(-4px)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0}
+.kpi-card:nth-child(1)::before{background:linear-gradient(90deg,var(--accent-cyan),transparent)}
+.kpi-card:nth-child(1):hover{box-shadow:0 0 20px rgba(0,229,255,0.4)}
+.kpi-card:nth-child(2)::before{background:linear-gradient(90deg,var(--accent-orange),transparent)}
+.kpi-card:nth-child(2):hover{box-shadow:0 0 20px rgba(255,109,0,0.4)}
+.kpi-card:nth-child(3)::before{background:linear-gradient(90deg,var(--accent-purple),transparent)}
+.kpi-card:nth-child(3):hover{box-shadow:0 0 20px rgba(124,77,255,0.4)}
+.kpi-card:nth-child(4)::before{background:linear-gradient(90deg,var(--accent-teal),transparent)}
+.kpi-card:nth-child(4):hover{box-shadow:0 0 20px rgba(0,191,165,0.4)}
+.kpi-label{font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.6rem;letter-spacing:0.05em}
+.kpi-value-row{display:flex;align-items:baseline;gap:0.5rem}
+.kpi-value{
+  font-size:2.2rem;font-weight:700;font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,#fff,var(--accent-cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.kpi-card:nth-child(2) .kpi-value{background:linear-gradient(135deg,#fff,var(--accent-orange));-webkit-background-clip:text;background-clip:text}
+.kpi-card:nth-child(3) .kpi-value{background:linear-gradient(135deg,#fff,var(--accent-purple));-webkit-background-clip:text;background-clip:text}
+.kpi-card:nth-child(4) .kpi-value{background:linear-gradient(135deg,#fff,var(--accent-teal));-webkit-background-clip:text;background-clip:text}
+.kpi-unit{font-size:0.85rem;color:var(--text-dim)}
+.kpi-change{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.75rem;margin-top:0.5rem;padding:2px 8px;border-radius:20px}
+.kpi-change.up{color:var(--accent-teal);background:rgba(0,191,165,0.1)}
+.kpi-change.down{color:var(--accent-rose);background:rgba(255,23,68,0.1)}
+.kpi-sparkline{position:absolute;bottom:0;left:0;right:0;height:40px;opacity:0.3;pointer-events:none}
+
+/* ===== MIDDLE SECTION ===== */
+.middle-section{display:grid;grid-template-columns:1.2fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+
+/* ===== 3D BAR CHART ===== */
+.chart-panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:1.5rem;position:relative;overflow:hidden;
+}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.panel-title{font-size:1rem;font-weight:600;letter-spacing:0.05em}
+.panel-badge{font-size:0.7rem;padding:3px 10px;border-radius:20px;background:rgba(0,229,255,0.1);color:var(--accent-cyan);border:1px solid rgba(0,229,255,0.2);letter-spacing:0.1em}
+.chart-3d-container{
+  perspective:800px;height:280px;display:flex;
+  align-items:flex-end;justify-content:center;gap:1.5rem;padding:0 1rem 1rem;
+}
+.bar-group{
+  display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+  transform-style:preserve-3d;
+  animation:bar-enter 0.8s cubic-bezier(0.16,1,0.3,1) both;
+}
+.bar-group:nth-child(1){animation-delay:0.1s}
+.bar-group:nth-child(2){animation-delay:0.2s}
+.bar-group:nth-child(3){animation-delay:0.3s}
+.bar-group:nth-child(4){animation-delay:0.4s}
+.bar-group:nth-child(5){animation-delay:0.5s}
+.bar-group:nth-child(6){animation-delay:0.6s}
+.bar-group:nth-child(7){animation-delay:0.7s}
+@keyframes bar-enter{0%{opacity:0;transform:translateY(40px) rotateX(-10deg)}100%{opacity:1;transform:translateY(0) rotateX(0)}}
+
+.bar-3d{width:48px;position:relative;transform-style:preserve-3d;transform:rotateX(-15deg) rotateY(-20deg);transition:transform 0.4s ease}
+.bar-3d:hover{transform:rotateX(-15deg) rotateY(-20deg) translateZ(10px)}
+.bar-front,.bar-side,.bar-top{position:absolute;border-radius:3px}
+.bar-front{
+  width:48px;bottom:0;left:0;
+  background:linear-gradient(180deg,var(--accent-cyan),rgba(0,229,255,0.3));
+  border:1px solid rgba(0,229,255,0.3);
+  transition:height 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+.bar-side{
+  width:20px;bottom:0;left:48px;
+  background:linear-gradient(180deg,rgba(0,229,255,0.4),rgba(0,229,255,0.1));
+  border:1px solid rgba(0,229,255,0.15);
+  transform-origin:left center;transform:skewY(-30deg);
+  transition:height 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+.bar-top{
+  width:48px;height:20px;left:0;
+  background:linear-gradient(135deg,rgba(0,229,255,0.7),rgba(0,229,255,0.3));
+  border:1px solid rgba(0,229,255,0.2);
+  transform-origin:bottom center;transform:skewX(-30deg);
+}
+.bar-group:nth-child(2) .bar-front{background:linear-gradient(180deg,var(--accent-teal),rgba(0,191,165,0.3))}
+.bar-group:nth-child(2) .bar-side{background:linear-gradient(180deg,rgba(0,191,165,0.4),rgba(0,191,165,0.1))}
+.bar-group:nth-child(2) .bar-top{background:linear-gradient(135deg,rgba(0,191,165,0.7),rgba(0,191,165,0.3))}
+.bar-group:nth-child(3) .bar-front{background:linear-gradient(180deg,var(--accent-purple),rgba(124,77,255,0.3))}
+.bar-group:nth-child(3) .bar-side{background:linear-gradient(180deg,rgba(124,77,255,0.4),rgba(124,77,255,0.1))}
+.bar-group:nth-child(3) .bar-top{background:linear-gradient(135deg,rgba(124,77,255,0.7),rgba(124,77,255,0.3))}
+.bar-group:nth-child(4) .bar-front{background:linear-gradient(180deg,var(--accent-orange),rgba(255,109,0,0.3))}
+.bar-group:nth-child(4) .bar-side{background:linear-gradient(180deg,rgba(255,109,0,0.4),rgba(255,109,0,0.1))}
+.bar-group:nth-child(4) .bar-top{background:linear-gradient(135deg,rgba(255,109,0,0.7),rgba(255,109,0,0.3))}
+.bar-group:nth-child(5) .bar-front{background:linear-gradient(180deg,var(--accent-gold),rgba(255,214,0,0.3))}
+.bar-group:nth-child(5) .bar-side{background:linear-gradient(180deg,rgba(255,214,0,0.4),rgba(255,214,0,0.1))}
+.bar-group:nth-child(5) .bar-top{background:linear-gradient(135deg,rgba(255,214,0,0.7),rgba(255,214,0,0.3))}
+.bar-group:nth-child(6) .bar-front{background:linear-gradient(180deg,#448aff,rgba(68,138,255,0.3))}
+.bar-group:nth-child(6) .bar-side{background:linear-gradient(180deg,rgba(68,138,255,0.4),rgba(68,138,255,0.1))}
+.bar-group:nth-child(6) .bar-top{background:linear-gradient(135deg,rgba(68,138,255,0.7),rgba(68,138,255,0.3))}
+.bar-group:nth-child(7) .bar-front{background:linear-gradient(180deg,#e040fb,rgba(224,64,251,0.3))}
+.bar-group:nth-child(7) .bar-side{background:linear-gradient(180deg,rgba(224,64,251,0.4),rgba(224,64,251,0.1))}
+.bar-group:nth-child(7) .bar-top{background:linear-gradient(135deg,rgba(224,64,251,0.7),rgba(224,64,251,0.3))}
+.bar-label{font-size:0.7rem;color:var(--text-dim);text-align:center;white-space:nowrap}
+.bar-value-text{font-size:0.75rem;font-weight:600;color:var(--text-primary);opacity:0;animation:fade-up 0.5s ease 1s forwards}
+@keyframes fade-up{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+
+/* ===== GAUGE RINGS ===== */
+.gauge-panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:1.5rem;display:flex;flex-direction:column;
+}
+.gauge-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex:1;align-items:center;justify-items:center}
+.gauge-item{
+  position:relative;width:160px;height:160px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.gauge-svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.gauge-track{fill:none;stroke:rgba(100,120,255,0.08);stroke-width:8}
+.gauge-fill{
+  fill:none;stroke-width:8;stroke-linecap:round;
+  stroke-dasharray:408.407;stroke-dashoffset:408.407;
+  transition:stroke-dashoffset 2s cubic-bezier(0.16,1,0.3,1);
+}
+/* 每个 gauge-fill 的描边颜色由内联 style 设置，渐变在各自 SVG 内部定义 */
+.gauge-center{text-align:center;position:relative;z-index:1}
+.gauge-value{font-size:1.8rem;font-weight:700;font-variant-numeric:tabular-nums}
+.gauge-item:nth-child(1) .gauge-value{color:var(--accent-cyan)}
+.gauge-item:nth-child(2) .gauge-value{color:var(--accent-orange)}
+.gauge-item:nth-child(3) .gauge-value{color:var(--accent-purple)}
+.gauge-item:nth-child(4) .gauge-value{color:var(--accent-teal)}
+.gauge-label{font-size:0.7rem;color:var(--text-secondary);margin-top:2px}
+
+/* Rotating outer ring */
+.gauge-ring-outer{
+  position:absolute;inset:-8px;border-radius:50%;
+  border:1px dashed rgba(100,120,255,0.1);
+  animation:ring-spin 30s linear infinite;
+}
+.gauge-item:nth-child(1) .gauge-ring-outer{border-color:rgba(0,229,255,0.15)}
+.gauge-item:nth-child(2) .gauge-ring-outer{border-color:rgba(255,109,0,0.15)}
+.gauge-item:nth-child(3) .gauge-ring-outer{border-color:rgba(124,77,255,0.15)}
+.gauge-item:nth-child(4) .gauge-ring-outer{border-color:rgba(0,191,165,0.15)}
+@keyframes ring-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+/* ===== SVG NETWORK PANEL ===== */
+.network-panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:1.5rem;position:relative;overflow:hidden;height:300px;
+}
+.network-svg{width:100%;height:100%}
+.network-line{fill:none;stroke:rgba(0,229,255,0.2);stroke-width:1;stroke-dasharray:6 4;animation:dash-flow 2s linear infinite}
+.network-line.alt{stroke:rgba(124,77,255,0.2);animation-duration:3s;animation-direction:reverse}
+@keyframes dash-flow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-20}}
+.network-node{cursor:pointer}
+.network-node circle.node-bg{fill:var(--bg-deep);stroke-width:2;transition:r 0.3s ease,stroke-width 0.3s ease}
+.network-node:hover circle.node-bg{r:18;stroke-width:3}
+.network-node circle.node-dot{transition:r 0.3s ease}
+.network-node:hover circle.node-dot{r:5}
+.network-node text{fill:var(--text-secondary);font-size:10px;transition:fill 0.3s ease}
+.network-node:hover text{fill:var(--text-primary)}
+.node-pulse{fill:none;stroke-width:1;opacity:0;animation:node-ping 3s ease-out infinite}
+@keyframes node-ping{0%{r:10;opacity:0.6;stroke-width:2}100%{r:30;opacity:0;stroke-width:0}}
+
+/* ===== BOTTOM SECTION ===== */
+.bottom-section{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.trend-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.trend-chart{height:180px;position:relative}
+.trend-svg{width:100%;height:100%;overflow:visible}
+.trend-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2000;stroke-dashoffset:2000;animation:draw-line 2s ease forwards}
+@keyframes draw-line{to{stroke-dashoffset:0}}
+.trend-dot{r:2.5;transition:r 0.3s ease;cursor:pointer}
+.trend-dot:hover{r:6}
+.trend-legend{display:flex;gap:1.2rem;margin-top:0.8rem;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;color:var(--text-secondary)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* Status feed */
+.status-feed{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.feed-list{display:flex;flex-direction:column;gap:0.8rem;max-height:220px;overflow-y:auto}
+.feed-item{
+  display:flex;align-items:flex-start;gap:0.8rem;
+  padding:0.7rem 0.8rem;border-radius:8px;
+  background:rgba(255,255,255,0.02);border:1px solid transparent;
+  transition:border-color 0.3s ease,background 0.3s ease;
+  animation:feed-in 0.5s ease both;
+}
+.feed-item:hover{border-color:var(--border);background:rgba(255,255,255,0.04)}
+@keyframes feed-in{0%{opacity:0;transform:translateX(-12px)}100%{opacity:1;transform:translateX(0)}}
+.feed-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0}
+.feed-icon.info{background:rgba(0,229,255,0.1);color:var(--accent-cyan)}
+.feed-icon.warn{background:rgba(255,109,0,0.1);color:var(--accent-orange)}
+.feed-icon.success{background:rgba(0,191,165,0.1);color:var(--accent-teal)}
+.feed-icon.danger{background:rgba(255,23,68,0.1);color:var(--accent-rose)}
+.feed-content{flex:1;min-width:0}
+.feed-title{font-size:0.8rem;color:var(--text-primary);margin-bottom:2px}
+.feed-desc{font-size:0.7rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-time{font-size:0.65rem;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
+
+/* Glow pulse */
+.glow-pulse{animation:glow-breathe 3s ease-in-out infinite}
+@keyframes glow-breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){
+  .kpi-panel{grid-template-columns:repeat(2,1fr);transform:none}
+  .kpi-card{transform:none!important}
+  .middle-section{grid-template-columns:1fr}
+  .bottom-section{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .header{flex-direction:column;gap:0.8rem;text-align:center}
+  .header-right{justify-content:center}
+  .kpi-panel{grid-template-columns:1fr}
+  .gauge-grid{grid-template-columns:1fr}
+  .dashboard{padding:0.8rem}
+  .kpi-value{font-size:1.8rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-title">
+    <div class="header-logo"></div>
+    <div>
+      <h1>SMART CITY OPS CENTER</h1>
+      <div class="header-sub">智慧城市运营监控中心</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-status"><span class="status-dot"></span><span>系统运行正常</span></div>
+    <div class="header-time" id="headerTime"></div>
+  </div>
+</header>
+
+<main class="dashboard">
+
+  <!-- KPI Panel -->
+  <section class="kpi-panel" aria-label="关键指标概览">
+    <div class="kpi-card">
+      <div class="kpi-label">人口流量</div>
+      <div class="kpi-value-row">
+        <span class="kpi-value" data-target="2847562" data-decimals="0">0</span>
+        <span class="kpi-unit">人次</span>
+      </div>
+      <span class="kpi-change up">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,1 9,6 6,6 6,9 4,9 4,6 1,6" fill="currentColor"/></svg>
+        +12.6%
+      </span>
+      <canvas class="kpi-sparkline" data-values="30,45,35,50,42,60,55,70,65,80" data-color="0,229,255"></canvas>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">能耗指数</div>
+      <div class="kpi-value-row">
+        <span class="kpi-value" data-target="3847" data-decimals="0">0</span>
+        <span class="kpi-unit">MW</span>
+      </div>
+      <span class="kpi-change down">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,9 1,4 4,4 4,1 6,1 6,4 9,4" fill="currentColor"/></svg>
+        -3.2%
+      </span>
+      <canvas class="kpi-sparkline" data-values="60,55,58,50,52,45,48,40,42,38" data-color="255,109,0"></canvas>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">交通密度</div>
+      <div class="kpi-value-row">
+        <span class="kpi-value" data-target="76.8" data-decimals="1">0</span>
+        <span class="kpi-unit">%</span>
+      </div>
+      <span class="kpi-change up">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,1 9,6 6,6 6,9 4,9 4,6 1,6" fill="currentColor"/></svg>
+        +5.4%
+      </span>
+      <canvas class="kpi-sparkline" data-values="20,35,30,45,50,55,60,65,70,77" data-color="124,77,255"></canvas>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">空气质量 AQI</div>
+      <div class="kpi-value-row">
+        <span class="kpi-value" data-target="42" data-decimals="0">0</span>
+        <span class="kpi-unit">优</span>
+      </div>
+      <span class="kpi-change up">
+        <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,1 9,6 6,6 6,9 4,9 4,6 1,6" fill="currentColor"/></svg>
+        -18.1%
+      </span>
+      <canvas class="kpi-sparkline" data-values="80,70,65,60,55,52,48,45,44,42" data-color="0,191,165"></canvas>
+    </div>
+  </section>
+
+  <!-- Middle: 3D Chart + Gauges -->
+  <section class="middle-section">
+    <div class="chart-panel">
+      <div class="panel-header">
+        <span class="panel-title">各区域能耗分布 (3D)</span>
+        <span class="panel-badge">LIVE</span>
+      </div>
+      <div class="chart-3d-container" id="barChart3D"></div>
+    </div>
+    <div class="gauge-panel">
+      <div class="panel-header">
+        <span class="panel-title">核心指标环形盘</span>
+        <span class="panel-badge">REAL-TIME</span>
+      </div>
+      <div class="gauge-grid">
+        <!-- Gauge 1: 路网通畅率 82% -->
+        <div class="gauge-item">
+          <div class="gauge-ring-outer"></div>
+          <svg class="gauge-svg" viewBox="0 0 140 140">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#00e5ff"/>
+                <stop offset="100%" stop-color="#00bfa5"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="70" cy="70" r="65"/>
+            <circle class="gauge-fill" cx="70" cy="70" r="65" stroke="url(#g1)"
+              data-percent="82" data-animated="false"/>
+            <!-- 发光效果层 -->
+            <circle class="gauge-glow" cx="70" cy="70" r="65" fill="none" stroke="url(#g1)" stroke-width="2" opacity="0.3"
+              data-percent="82" data-animated="false" style="filter:blur(3px)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-value" data-target="82" data-suffix="%">0%</div>
+            <div class="gauge-label">路网通畅率</div>
+          </div>
+        </div>
+        <!-- Gauge 2: 能源利用率 67% -->
+        <div class="gauge-item">
+          <div class="gauge-ring-outer"></div>
+          <svg class="gauge-svg" viewBox="0 0 140 140">
+            <defs>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff6d00"/>
+                <stop offset="100%" stop-color="#ffd600"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="70" cy="70" r="65"/>
+            <circle class="gauge-fill" cx="70" cy="70" r="65" stroke="url(#g2)"
+              data-percent="67" data-animated="false"/>
+            <circle class="gauge-glow" cx="70" cy="70" r="65" fill="none" stroke="url(#g2)" stroke-width="2" opacity="0.3"
+              data-percent="67" data-animated="false" style="filter:blur(3px)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-value" data-target="67" data-suffix="%">0%</div>
+            <div class="gauge-label">能源利用率</div>
+          </div>
+        </div>
+        <!-- Gauge 3: 公共安全指数 94% -->
+        <div class="gauge-item">
+          <div class="gauge-ring-outer"></div>
+          <svg class="gauge-svg" viewBox="0 0 140 140">
+            <defs>
+              <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#7c4dff"/>
+                <stop offset="100%" stop-color="#448aff"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="70" cy="70" r="65"/>
+            <circle class="gauge-fill" cx="70" cy="70" r="65" stroke="url(#g3)"
+              data-percent="94" data-animated="false"/>
+            <circle class="gauge-glow" cx="70" cy="70" r="65" fill="none" stroke="url(#g3)" stroke-width="2" opacity="0.3"
+              data-percent="94" data-animated="false" style="filter:blur(3px)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-value" data-target="94" data-suffix="%">0%</div>
+            <div class="gauge-label">公共安全指数</div>
+          </div>
+        </div>
+        <!-- Gauge 4: 绿化覆盖率 58% -->
+        <div class="gauge-item">
+          <div class="gauge-ring-outer"></div>
+          <svg class="gauge-svg" viewBox="0 0 140 140">
+            <defs>
+              <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#00bfa5"/>
+                <stop offset="100%" stop-color="#00e5ff"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="70" cy="70" r="65"/>
+            <circle class="gauge-fill" cx="70" cy="70" r="65" stroke="url(#g4)"
+              data-percent="58" data-animated="false"/>
+            <circle class="gauge-glow" cx="70" cy="70" r="65" fill="none" stroke="url(#g4)" stroke-width="2" opacity="0.3"
+              data-percent="58" data-animated="false" style="filter:blur(3px)"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-value" data-target="58" data-suffix="%">0%</div>
+            <div class="gauge-label">绿化覆盖率</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SVG Network + Trend -->
+  <section class="bottom-section" style="margin-bottom:1.5rem">
+    <div class="network-panel">
+      <div class="panel-header">
+        <span class="panel-title">城市节点网络拓扑</span>
+        <span class="panel-badge">TOPOLOGY</span>
+      </div>
+      <svg class="network-svg" viewBox="0 0 560 200" preserveAspectRatio="xMidYMid meet">
+        <line class="network-line" x1="80" y1="100" x2="200" y2="50"/>
+        <line class="network-line alt" x1="80" y1="100" x2="200" y2="150"/>
+        <line class="network-line" x1="200" y1="50" x2="320" y2="80"/>
+        <line class="network-line alt" x1="200" y1="150" x2="320" y2="120"/>
+        <line class="network-line" x1="200" y1="50" x2="320" y2="120"/>
+        <line class="network-line alt" x1="200" y1="150" x2="320" y2="80"/>
+        <line class="network-line" x1="320" y1="80" x2="450" y2="60"/>
+        <line class="network-line alt" x1="320" y1="120" x2="450" y2="100"/>
+        <line class="network-line" x1="320" y1="80" x2="450" y2="140"/>
+        <line class="network-line alt" x1="320" y1="120" x2="450" y2="60"/>
+        <line class="network-line" x1="450" y1="60" x2="520" y2="100"/>
+        <line class="network-line alt" x1="450" y1="100" x2="520" y2="100"/>
+        <line class="network-line" x1="450" y1="140" x2="520" y2="100"/>
+        <g class="network-node">
+          <circle class="node-pulse" cx="80" cy="100" r="10" stroke="#00e5ff"/>
+          <circle class="node-bg" cx="80" cy="100" r="14" stroke="#00e5ff"/>
+          <circle class="node-dot" cx="80" cy="100" r="4" fill="#00e5ff"/>
+          <text x="80" y="78" text-anchor="middle" fill="var(--text-secondary)" font-size="10">数据中心</text>
+        </g>
+        <g class="network-node" style="animation-delay:0.2s">
+          <circle class="node-pulse" cx="200" cy="50" r="10" stroke="#00bfa5" style="animation-delay:0.5s"/>
+          <circle class="node-bg" cx="200" cy="50" r="14" stroke="#00bfa5"/>
+          <circle class="node-dot" cx="200" cy="50" r="4" fill="#00bfa5"/>
+          <text x="200" y="32" text-anchor="middle" fill="var(--text-secondary)" font-size="10">交通枢纽</text>
+        </g>
+        <g class="network-node" style="animation-delay:0.4s">
+          <circle class="node-pulse" cx="200" cy="150" r="10" stroke="#7c4dff" style="animation-delay:1s"/>
+          <circle class="node-bg" cx="200" cy="150" r="14" stroke="#7c4dff"/>
+          <circle class="node-dot" cx="200" cy="150" r="4" fill="#7c4dff"/>
+          <text x="200" y="175" text-anchor="middle" fill="var(--text-secondary)" font-size="10">能源站</text>
+        </g>
+        <g class="network-node" style="animation-delay:0.6s">
+          <circle class="node-pulse" cx="320" cy="80" r="10" stroke="#ff6d00" style="animation-delay:1.5s"/>
+          <circle class="node-bg" cx="320" cy="80" r="14" stroke="#ff6d00"/>
+          <circle class="node-dot" cx="320" cy="80" r="4" fill="#ff6d00"/>
+          <text x="320" y="62" text-anchor="middle" fill="var(--text-secondary)" font-size="10">医疗中心</text>
+        </g>
+        <g class="network-node" style="animation-delay:0.8s">
+          <circle class="node-pulse" cx="320" cy="120" r="10" stroke="#ffd600" style="animation-delay:2s"/>
+          <circle class="node-bg" cx="320" cy="120" r="14" stroke="#ffd600"/>
+          <circle class="node-dot" cx="320" cy="120" r="4" fill="#ffd600"/>
+          <text x="320" y="145" text-anchor="middle" fill="var(--text-secondary)" font-size="10">教育园区</text>
+        </g>
+        <g class="network-node" style="animation-delay:1s">
+          <circle class="node-pulse" cx="450" cy="60" r="10" stroke="#448aff" style="animation-delay:2.5s"/>
+          <circle class="node-bg" cx="450" cy="60" r="14" stroke="#448aff"/>
+          <circle class="node-dot" cx="450" cy="60" r="4" fill="#448aff"/>
+          <text x="450" y="42" text-anchor="middle" fill="var(--text-secondary)" font-size="10">商业区</text>
+        </g>
+        <g class="network-node" style="animation-delay:1.2s">
+          <circle class="node-pulse" cx="450" cy="100" r="10" stroke="#e040fb" style="animation-delay:0.8s"/>
+          <circle class="node-bg" cx="450" cy="100" r="14" stroke="#e040fb"/>
+          <circle class="node-dot" cx="450" cy="100" r="4" fill="#e040fb"/>
+          <text x="450" y="125" text-anchor="middle" fill="var(--text-secondary)" font-size="10">住宅区</text>
+        </g>
+        <g class="network-node" style="animation-delay:1.4s">
+          <circle class="node-pulse" cx="450" cy="140" r="10" stroke="#00e5ff" style="animation-delay:1.2s"/>
+          <circle class="node-bg" cx="450" cy="140" r="14" stroke="#00e5ff"/>
+          <circle class="node-dot" cx="450" cy="140" r="4" fill="#00e5ff"/>
+          <text x="450" y="165" text-anchor="middle" fill="var(--text-secondary)" font-size="10">工业区</text>
+        </g>
+        <g class="network-node" style="animation-delay:1.6s">
+          <circle class="node-pulse" cx="520" cy="100" r="10" stroke="#ff1744" style="animation-delay:0.3s"/>
+          <circle class="node-bg" cx="520" cy="100" r="14" stroke="#ff1744"/>
+          <circle class="node-dot" cx="520" cy="100" r="4" fill="#ff1744"/>
+          <text x="520" y="82" text-anchor="middle" fill="var(--text-secondary)" font-size="10">应急中心</text>
+        </g>
+      </svg>
+    </div>
+    <div class="trend-panel">
+      <div class="panel-header">
+        <span class="panel-title">24 小时趋势</span>
+        <span class="panel-badge">TREND</span>
+      </div>
+      <div class="trend-chart">
+        <svg class="trend-svg" viewBox="0 0 500 170" preserveAspectRatio="none" id="trendChart"></svg>
+      </div>
+      <div class="trend-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--accent-cyan)"></span>人口流量</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--accent-orange)"></span>能耗指数</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--accent-purple)"></span>交通密度</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Status Feed + Heatmap -->
+  <section class="bottom-section">
+    <div class="status-feed">
+      <div class="panel-header">
+        <span class="panel-title">实时预警信息</span>
+        <span class="panel-badge">ALERTS</span>
+      </div>
+      <div class="feed-list" id="feedList"></div>
+    </div>
+    <div class="network-panel" style="height:auto">
+      <div class="panel-header">
+        <span class="panel-title">区域热力分布</span>
+        <span class="panel-badge">HEATMAP</span>
+      </div>
+      <svg viewBox="0 0 560 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:200px">
+        <defs>
+          <radialGradient id="heat-1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,23,68,0.6)"/>
+            <stop offset="100%" stop-color="rgba(255,23,68,0)"/>
+          </radialGradient>
+          <radialGradient id="heat-2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,109,0,0.5)"/>
+            <stop offset="100%" stop-color="rgba(255,109,0,0)"/>
+          </radialGradient>
+          <radialGradient id="heat-3" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(255,214,0,0.4)"/>
+            <stop offset="100%" stop-color="rgba(255,214,0,0)"/>
+          </radialGradient>
+          <radialGradient id="heat-4" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(0,229,255,0.4)"/>
+            <stop offset="100%" stop-color="rgba(0,229,255,0)"/>
+          </radialGradient>
+        </defs>
+        <rect x="20" y="20" width="120" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="150" y="20" width="120" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="280" y="20" width="120" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="420" y="20" width="120" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="20" y="110" width="180" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="210" y="110" width="160" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <rect x="380" y="110" width="160" height="70" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <circle cx="80" cy="55" r="45" fill="url(#heat-1)" class="glow-pulse" style="animation-delay:0s"/>
+        <circle cx="210" cy="55" r="40" fill="url(#heat-2)" class="glow-pulse" style="animation-delay:0.5s"/>
+        <circle cx="340" cy="55" r="35" fill="url(#heat-4)" class="glow-pulse" style="animation-delay:1s"/>
+        <circle cx="480" cy="55" r="38" fill="url(#heat-3)" class="glow-pulse" style="animation-delay:1.5s"/>
+        <circle cx="110" cy="145" r="50" fill="url(#heat-2)" class="glow-pulse" style="animation-delay:0.8s"/>
+        <circle cx="290" cy="145" r="42" fill="url(#heat-3)" class="glow-pulse" style="animation-delay:1.2s"/>
+        <circle cx="460" cy="145" r="45" fill="url(#heat-1)" class="glow-pulse" style="animation-delay:0.3s"/>
+        <text x="80" y="60" text-anchor="middle" fill="var(--text-secondary)" font-size="10">CBD</text>
+        <text x="210" y="60" text-anchor="middle" fill="var(--text-secondary)" font-size="10">高新区</text>
+        <text x="340" y="60" text-anchor="middle" fill="var(--text-secondary)" font-size="10">文教区</text>
+        <text x="480" y="60" text-anchor="middle" fill="var(--text-secondary)" font-size="10">开发区</text>
+        <text x="110" y="150" text-anchor="middle" fill="var(--text-secondary)" font-size="10">老城区</text>
+        <text x="290" y="150" text-anchor="middle" fill="var(--text-secondary)" font-size="10">新城区</text>
+        <text x="460" y="150" text-anchor="middle" fill="var(--text-secondary)" font-size="10">工业园</text>
+      </svg>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ===== CLOCK ===== */
+  function updateClock(){
+    var now = new Date();
+    var y = now.getFullYear();
+    var m = String(now.getMonth()+1).padStart(2,'0');
+    var d = String(now.getDate()).padStart(2,'0');
+    var h = String(now.getHours()).padStart(2,'0');
+    var mi = String(now.getMinutes()).padStart(2,'0');
+    var s = String(now.getSeconds()).padStart(2,'0');
+    var el = document.getElementById('headerTime');
+    if(el) el.textContent = y+'-'+m+'-'+d+'  '+h+':'+mi+':'+s;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ===== COUNTER ANIMATION ===== */
+  function animateCounter(el, target, decimals, duration){
+    duration = duration || 2000;
+    var start = performance.now();
+    (function tick(now){
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var current = target * eased;
+      el.textContent = decimals === 0
+        ? Math.round(current).toLocaleString()
+        : current.toFixed(decimals);
+      if(progress < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
+  document.querySelectorAll('.kpi-value[data-target]').forEach(function(el){
+    animateCounter(el, parseFloat(el.getAttribute('data-target')), parseInt(el.getAttribute('data-decimals')||'0',10));
+  });
+
+  /* ===== GAUGE RING ANIMATION =====
+     Each gauge has its own <defs> inside its SVG, so url(#g1)...#g4 work reliably.
+     We animate stroke-dashoffset from full (408.407) to the target offset.
+  */
+  var C = 2 * Math.PI * 65; // ~408.407
+
+  function animateGauge(el, percent, duration){
+    var offsetStart = C;
+    var offsetEnd = C - (C * percent / 100);
+    var start = performance.now();
+    (function tick(now){
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.style.strokeDashoffset = offsetStart - (offsetStart - offsetEnd) * eased;
+      if(progress < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
+  function initGauges(){
+    document.querySelectorAll('.gauge-fill[data-percent]').forEach(function(el){
+      if(el.getAttribute('data-animated') === 'true') return;
+      el.setAttribute('data-animated','true');
+      var pct = parseInt(el.getAttribute('data-percent'), 10);
+      /* force initial state */
+      el.style.strokeDasharray = C;
+      el.style.strokeDashoffset = C;
+      /* trigger reflow, then animate */
+      el.getBoundingClientRect();
+      animateGauge(el, pct, 2000);
+    });
+    /* also animate the glow layer */
+    document.querySelectorAll('.gauge-glow[data-percent]').forEach(function(el){
+      if(el.getAttribute('data-animated') === 'true') return;
+      el.setAttribute('data-animated','true');
+      var pct = parseInt(el.getAttribute('data-percent'), 10);
+      el.style.strokeDasharray = C;
+      el.style.strokeDashoffset = C;
+      el.getBoundingClientRect();
+      animateGauge(el, pct, 2000);
+    });
+  }
+
+  /* kick off gauge animation after a brief delay so the page has rendered */
+  if(document.readyState === 'complete') setTimeout(initGauges, 200);
+  else window.addEventListener('load', function(){ setTimeout(initGauges, 200); });
+
+  /* gauge value counters */
+  document.querySelectorAll('.gauge-value[data-target]').forEach(function(el){
+    var target = parseInt(el.getAttribute('data-target'), 10);
+    var suffix = el.getAttribute('data-suffix') || '';
+    var start = performance.now();
+    (function tick(now){
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / 2000, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased) + suffix;
+      if(progress < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  });
+
+  /* ===== 3D BAR CHART ===== */
+  var barData = [
+    {label:'朝阳区', value:520},
+    {label:'海淀区', value:680},
+    {label:'丰台区', value:410},
+    {label:'通州区', value:320},
+    {label:'大兴区', value:480},
+    {label:'昌平区', value:290},
+    {label:'顺义区', value:360}
+  ];
+  var maxVal = Math.max.apply(null, barData.map(function(d){return d.value}));
+  var barContainer = document.getElementById('barChart3D');
+
+  barData.forEach(function(d, i){
+    var heightPx = Math.round((d.value / maxVal) * 220) + 30;
+    var group = document.createElement('div');
+    group.className = 'bar-group';
+    group.innerHTML =
+      '<div class="bar-value-text">' + d.value + '</div>' +
+      '<div class="bar-3d" style="height:' + heightPx + 'px">' +
+        '<div class="bar-front" style="height:' + heightPx + 'px"></div>' +
+        '<div class="bar-side" style="height:' + heightPx + 'px"></div>' +
+        '<div class="bar-top"></div>' +
+      '</div>' +
+      '<div class="bar-label">' + d.label + '</div>';
+    barContainer.appendChild(group);
+  });
+
+  /* ===== SPARKLINES ===== */
+  document.querySelectorAll('.kpi-sparkline').forEach(function(canvas){
+    var parent = canvas.parentElement;
+    canvas.width = parent.offsetWidth;
+    canvas.height = 40;
+    var ctx = canvas.getContext('2d');
+    var values = canvas.getAttribute('data-values').split(',').map(Number);
+    var color = canvas.getAttribute('data-color').split(',');
+    var w = canvas.width, h = canvas.height;
+    var min = Math.min.apply(null, values);
+    var max = Math.max.apply(null, values);
+    var range = max - min || 1;
+    var step = w / (values.length - 1);
+
+    /* area */
+    ctx.beginPath();
+    values.forEach(function(v, i){
+      var x = i * step;
+      var y = h - ((v - min) / range) * h * 0.8 - h * 0.1;
+      if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+    var grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, 'rgba(' + color.join(',') + ',0.3)');
+    grad.addColorStop(1, 'rgba(' + color.join(',') + ',0)');
+    ctx.fillStyle = grad; ctx.fill();
+
+    /* line */
+    ctx.beginPath();
+    values.forEach(function(v, i){
+      var x = i * step;
+      var y = h - ((v - min) / range) * h * 0.8 - h * 0.1;
+      if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = 'rgba(' + color.join(',') + ',0.6)';
+    ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  /* ===== TREND CHART ===== */
+  var trendSvg = document.getElementById('trendChart');
+  var trendData = {
+    population: [30,35,28,22,18,15,20,40,65,78,85,90,88,82,80,75,70,68,72,78,82,80,72,55],
+    energy:     [40,38,35,32,30,28,30,35,45,55,62,65,68,70,72,70,65,60,58,55,52,50,48,45],
+    traffic:    [20,15,12,10,8,10,25,55,75,85,90,88,80,78,82,88,90,85,78,65,50,35,25,20]
+  };
+  var padT=10, padB=25, padL=5, padR=5;
+  var chartW = 500 - padL - padR, chartH = 170 - padT - padB;
+  var xStep = chartW / 23;
+
+  function makePath(data, color, delay){
+    var max = 100;
+    var pts = data.map(function(v, i){
+      return {x: padL + i * xStep, y: padT + chartH - (v/max)*chartH};
+    });
+    var pathD = 'M'+pts[0].x+','+pts[0].y;
+    for(var i=1;i<pts.length;i++){
+      var cpx = (pts[i-1].x + pts[i].x)/2;
+      pathD += ' C'+cpx+','+pts[i-1].y+' '+cpx+','+pts[i].y+' '+pts[i].x+','+pts[i].y;
+    }
+    /* area */
+    var area = document.createElementNS('http://www.w3.org/2000/svg','path');
+    area.setAttribute('d', pathD+' L'+pts[pts.length-1].x+','+(padT+chartH)+' L'+pts[0].x+','+(padT+chartH)+' Z');
+    area.setAttribute('fill', color);
+    area.setAttribute('opacity','0.1');
+    trendSvg.appendChild(area);
+    /* line */
+    var line = document.createElementNS('http://www.w3.org/2000/svg','path');
+    line.setAttribute('d', pathD);
+    line.setAttribute('fill','none');
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-linecap','round');
+    line.setAttribute('stroke-linejoin','round');
+    line.style.strokeDasharray = '2000';
+    line.style.strokeDashoffset = '2000';
+    line.style.animation = 'draw-line 2s ease ' + delay + ' forwards';
+    trendSvg.appendChild(line);
+    /* dots */
+    pts.forEach(function(p){
+      var dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',p.x); dot.setAttribute('cy',p.y);
+      dot.setAttribute('r','2.5'); dot.setAttribute('fill',color);
+      dot.setAttribute('opacity','0.6'); dot.style.cursor='pointer';
+      trendSvg.appendChild(dot);
+    });
+  }
+  makePath(trendData.population, '#00e5ff', '0s');
+  makePath(trendData.energy,     '#ff6d00', '0.3s');
+  makePath(trendData.traffic,    '#7c4dff', '0.6s');
+
+  /* X axis labels */
+  for(var i=0;i<24;i+=3){
+    var txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x', padL + i*xStep);
+    txt.setAttribute('y', 165);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill','var(--text-dim)');
+    txt.setAttribute('font-size','9');
+    txt.textContent = String(i).padStart(2,'0')+':00';
+    trendSvg.appendChild(txt);
+  }
+
+  /* ===== STATUS FEED ===== */
+  var feedData = [
+    {type:'danger', title:'交通拥堵预警', desc:'南三环主路拥堵指数达到 9.2，建议绕行', time:'刚刚'},
+    {type:'warn',   title:'能耗峰值提醒', desc:'海淀区电力负载达到 92%，接近安全阈值', time:'2 分钟前'},
+    {type:'success', title:'空气质量优良', desc:'全市 AQI 平均值 42，空气质量等级: 优', time:'5 分钟前'},
+    {type:'info',    title:'人口流动监测', desc:'朝阳区地铁换乘站客流量较昨日增长 15%', time:'8 分钟前'},
+    {type:'warn',   title:'设备维护通知', desc:'通州区 3 号监测站将于 22:00 进行例行维护', time:'15 分钟前'},
+    {type:'success', title:'公共安全正常', desc:'全市监控系统运行稳定，无异常事件', time:'20 分钟前'},
+    {type:'info',    title:'数据同步完成', desc:'各区域传感器数据已同步至云端平台', time:'30 分钟前'}
+  ];
+  var iconMap = {
+    info:   '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="4" r="1.5" fill="currentColor"/><rect x="6.5" y="7" width="3" height="6" rx="1" fill="currentColor"/></svg>',
+    warn:   '<svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1 L15 14 H1 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="6" x2="8" y2="9" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="11.5" r="0.8" fill="currentColor"/></svg>',
+    success:'<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="5,8 7,10.5 11,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    danger: '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="6" x2="10" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="6" x2="6" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+  };
+  var feedList = document.getElementById('feedList');
+  feedData.forEach(function(item, i){
+    var div = document.createElement('div');
+    div.className = 'feed-item';
+    div.style.animationDelay = (i*0.1)+'s';
+    div.innerHTML =
+      '<div class="feed-icon '+item.type+'">'+iconMap[item.type]+'</div>' +
+      '<div class="feed-content"><div class="feed-title">'+item.title+'</div><div class="feed-desc">'+item.desc+'</div></div>' +
+      '<div class="feed-time">'+item.time+'</div>';
+    feedList.appendChild(div);
+  });
+
+})();
+</script>
+</body>
+</html>
