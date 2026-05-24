@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🌟 数独小冒险 - 儿童益智游戏</title>
+<style>
+/* =========================================
+   CSS VARIABLES & BASE
+   ========================================= */
+:root {
+  --sky: #87CEEB;
+  --sky-light: #E8F4FD;
+  --cloud: #FFFFFF;
+  --sun: #FFD700;
+  --orange: #FF8C42;
+  --coral: #FF6B6B;
+  --mint: #6BCB77;
+  --mint-dark: #4DA85A;
+  --lavender: #B8A9F5;
+  --pink: #FFB3C6;
+  --yellow: #FFE66D;
+  --brown: #8B5E3C;
+  --text-dark: #3D2C1E;
+  --text-mid: #6B4F3A;
+  --white: #FFFFFF;
+  --shadow: rgba(0,0,0,0.12);
+  --shadow-deep: rgba(0,0,0,0.25);
+  --board-bg: rgba(255,255,255,0.92);
+  --cell-empty: #FAFFF8;
+  --cell-prefilled: #F0F8FF;
+  --cell-selected: #FFF9C4;
+  --cell-error: #FFEBEE;
+  --cell-correct: #F1F8E9;
+  --border-cell: #D4E8C4;
+  --border-box: #6BB57A;
+  --font-title: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  --font-body: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font-body);
+  background: linear-gradient(160deg, #87CEEB 0%, #B8E4F9 30%, #D4F1C0 70%, #A8E6CF 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* =========================================
+   ANIMATED BACKGROUND
+   ========================================= */
+.bg-deco {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; overflow: hidden; z-index: 0;
+}
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50px;
+  animation: floatCloud linear infinite;
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+}
+.cloud-1 { width:120px; height:40px; top:8%; left:-140px; animation-duration:22s; animation-delay:0s; }
+.cloud-1::before { width:60px; height:50px; top:-20px; left:15px; }
+.cloud-1::after { width:45px; height:40px; top:-15px; left:55px; }
+.cloud-2 { width:90px; height:30px; top:18%; left:-110px; animation-duration:28s; animation-delay:8s; }
+.cloud-2::before { width:45px; height:38px; top:-15px; left:10px; }
+.cloud-2::after { width:35px; height:30px; top:-12px; left:40px; }
+.cloud-3 { width:150px; height:50px; top:5%; left:-170px; animation-duration:35s; animation-delay:15s; }
+.cloud-3::before { width:75px; height:62px; top:-25px; left:20px; }
+.cloud-3::after { width:55px; height:50px; top:-20px; left:70px; }
+
+@keyframes floatCloud {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 200px)); }
+}
+
+.star-bg {
+  position: absolute;
+  width: 8px; height: 8px;
+  background: var(--yellow);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity:0.3; transform:scale(0.8); }
+  50% { opacity:1; transform:scale(1.2); }
+}
+
+/* =========================================
+   SCREENS
+   ========================================= */
+.screen {
+  display: none;
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.screen.active { display: flex; }
+
+/* =========================================
+   SCREEN: HOME
+   ========================================= */
+#screen-home {
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+}
+
+.game-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounceIn 0.8s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes bounceIn {
+  from { transform: scale(0.3); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.logo-icon {
+  font-size: clamp(60px, 12vw, 100px);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  animation: floatY 3s ease-in-out infinite;
+}
+@keyframes floatY {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.logo-title {
+  font-size: clamp(28px, 7vw, 52px);
+  font-family: var(--font-title);
+  color: var(--white);
+  text-shadow: 3px 3px 0 var(--orange), 5px 5px 12px rgba(0,0,0,0.25);
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+.logo-sub {
+  font-size: clamp(14px, 3vw, 20px);
+  color: var(--white);
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+  opacity: 0.95;
+}
+
+.home-characters {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: clamp(36px, 8vw, 64px);
+  animation: slideUp 0.6s ease-out 0.3s both;
+}
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity:0; }
+  to { transform: translateY(0); opacity:1; }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(12px, 3vw, 18px) clamp(24px, 6vw, 48px);
+  border: none;
+  border-radius: var(--radius-xl);
+  font-family: var(--font-title);
+  font-size: clamp(16px, 3.5vw, 24px);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.15);
+  position: relative;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn:active {
+  transform: translateY(3px) scale(0.97);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.15);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--orange) 0%, #FF6030 100%);
+  color: var(--white);
+  text-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+  min-width: 180px;
+}
+.btn-primary:hover { transform: translateY(-2px) scale(1.03); }
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--mint-dark) 100%);
+  color: var(--white);
+  text-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+  min-width: 140px;
+}
+.btn-secondary:hover { transform: translateY(-2px) scale(1.03); }
+
+.btn-info {
+  background: linear-gradient(135deg, var(--lavender) 0%, #9B85F0 100%);
+  color: var(--white);
+  text-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+}
+.btn-info:hover { transform: translateY(-2px) scale(1.03); }
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--yellow) 0%, #FFD000 100%);
+  color: var(--brown);
+  text-shadow: 1px 1px 2px rgba(255,255,255,0.4);
+}
+.btn-warning:hover { transform: translateY(-2px) scale(1.03); }
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--coral) 0%, #E85555 100%);
+  color: var(--white);
+  text-shadow: 1px 2px 3px rgba(0,0,0,0.2);
+}
+
+.btn-sm {
+  padding: 8px 20px;
+  font-size: clamp(13px, 2.5vw, 18px);
+  min-width: auto;
+  border-radius: var(--radius-lg);
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  animation: slideUp 0.6s ease-out 0.5s both;
+}
+
+.progress-summary {
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius-lg);
+  padding: 16px 28px;
+  box-shadow: 0 4px 16px var(--shadow);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  animation: slideUp 0.6s ease-out 0.4s both;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.stat-val {
+  font-size: clamp(20px, 4vw, 30px);
+  font-weight: bold;
+  color: var(--orange);
+  line-height: 1;
+}
+.stat-label {
+  font-size: clamp(11px, 2vw, 14px);
+  color: var(--text-mid);
+}
+
+/* =========================================
+   SCREEN: LEVEL SELECT
+   ========================================= */
+#screen-levels {
+  gap: 16px;
+  padding-bottom: 32px;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+  gap: 12px;
+}
+.screen-title {
+  font-size: clamp(22px, 5vw, 36px);
+  font-family: var(--font-title);
+  color: var(--white);
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.25);
+  flex: 1;
+  text-align: center;
+}
+
+.tier-section {
+  width: 100%;
+  max-width: 600px;
+}
+.tier-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  margin-bottom: 10px;
+}
+.tier-icon { font-size: 28px; }
+.tier-name {
+  font-family: var(--font-title);
+  font-size: clamp(16px, 3.5vw, 22px);
+  color: var(--text-dark);
+  font-weight: bold;
+  flex: 1;
+}
+.tier-desc {
+  font-size: clamp(11px, 2vw, 14px);
+  color: var(--text-mid);
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 4px;
+}
+@media(max-width: 400px) {
+  .level-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.level-btn {
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  border: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  font-family: var(--font-title);
+  font-weight: bold;
+  box-shadow: 0 3px 8px var(--shadow);
+  min-height: 60px;
+}
+.level-btn.locked {
+  background: rgba(200,200,200,0.5);
+  cursor: default;
+  filter: grayscale(0.6);
+}
+.level-btn.unlocked {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFFDE7 100%);
+  border-color: var(--yellow);
+}
+.level-btn.unlocked:hover { transform: scale(1.1); box-shadow: 0 6px 16px var(--shadow-deep); }
+.level-btn.completed {
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  border-color: var(--mint);
+}
+.level-btn.completed:hover { transform: scale(1.1); box-shadow: 0 6px 16px var(--shadow-deep); }
+.level-num {
+  font-size: clamp(14px, 3vw, 20px);
+  color: var(--text-dark);
+  line-height: 1;
+}
+.level-stars {
+  font-size: clamp(9px, 1.8vw, 12px);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.lock-icon { font-size: clamp(16px, 3.5vw, 24px); opacity: 0.5; }
+
+/* =========================================
+   SCREEN: GAME
+   ========================================= */
+#screen-game {
+  gap: 10px;
+  padding: 12px;
+  padding-bottom: 20px;
+  align-items: center;
+}
+
+.game-topbar {
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.game-info-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.level-badge {
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  font-family: var(--font-title);
+  font-size: clamp(13px, 2.5vw, 17px);
+  font-weight: bold;
+  color: var(--text-dark);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.timer-box {
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-title);
+  font-size: clamp(14px, 2.8vw, 18px);
+  font-weight: bold;
+  color: var(--text-dark);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.timer-icon { font-size: 18px; }
+
+.game-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Error counter */
+.error-counter {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+  font-size: clamp(14px, 3vw, 20px);
+}
+
+/* BOARD */
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.sudoku-board {
+  display: grid;
+  gap: 2px;
+  background: var(--border-box);
+  border: 3px solid var(--border-box);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  box-shadow: 0 6px 24px var(--shadow-deep), inset 0 1px 0 rgba(255,255,255,0.5);
+  animation: boardIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes boardIn {
+  from { transform: scale(0.8) rotateX(10deg); opacity: 0; }
+  to { transform: scale(1) rotateX(0); opacity: 1; }
+}
+
+/* 4x4 */
+.board-4 { grid-template-columns: repeat(4, 1fr); }
+/* 6x6 */
+.board-6 { grid-template-columns: repeat(6, 1fr); }
+/* 9x9 */
+.board-9 { grid-template-columns: repeat(9, 1fr); }
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-title);
+  font-weight: bold;
+  transition: all 0.12s ease;
+  position: relative;
+  user-select: none;
+  border: 2px solid var(--border-cell);
+  background: var(--cell-empty);
+  color: var(--text-dark);
+}
+.cell:hover:not(.prefilled) {
+  background: var(--cell-selected);
+  transform: scale(1.05);
+  z-index: 2;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+}
+.cell.selected {
+  background: var(--cell-selected) !important;
+  border-color: var(--orange) !important;
+  box-shadow: 0 0 0 3px rgba(255,140,66,0.35), 0 3px 10px rgba(0,0,0,0.2);
+  z-index: 3;
+  transform: scale(1.08);
+}
+.cell.prefilled {
+  background: var(--cell-prefilled);
+  cursor: default;
+  color: #2C7BE5;
+}
+.cell.error {
+  background: var(--cell-error) !important;
+  border-color: var(--coral) !important;
+  animation: shakeCell 0.4s ease;
+  color: var(--coral);
+}
+.cell.correct-hint {
+  background: var(--cell-correct) !important;
+  border-color: var(--mint) !important;
+  color: var(--mint-dark);
+}
+.cell.highlight-same { background: rgba(255,230,109,0.4); }
+.cell.highlight-area { background: rgba(230,245,255,0.6); }
+
+@keyframes shakeCell {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-5px) rotate(-2deg); }
+  40% { transform: translateX(5px) rotate(2deg); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.cell-text {
+  font-size: clamp(14px, 4vw, 32px);
+  line-height: 1;
+}
+
+/* Box border lines */
+.cell.box-right { border-right: 3px solid var(--border-box) !important; }
+.cell.box-bottom { border-bottom: 3px solid var(--border-box) !important; }
+
+/* NUMBER PAD */
+.numpad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+.num-btn {
+  width: clamp(44px, 11vw, 72px);
+  height: clamp(44px, 11vw, 72px);
+  border-radius: 50%;
+  border: none;
+  font-family: var(--font-title);
+  font-size: clamp(18px, 4.5vw, 32px);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4px 0 rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.12);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.num-btn:hover { transform: translateY(-3px) scale(1.12); }
+.num-btn:active { transform: translateY(2px) scale(0.96); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+.num-btn.n1 { background: linear-gradient(135deg, #FF8A80,#FF5252); color:#fff; }
+.num-btn.n2 { background: linear-gradient(135deg, #FFD180,#FFAB40); color:#fff; }
+.num-btn.n3 { background: linear-gradient(135deg, #FFFF8D,#FFD740); color:#9E6800; }
+.num-btn.n4 { background: linear-gradient(135deg, #B9F6CA,#69F0AE); color:#1B5E20; }
+.num-btn.n5 { background: linear-gradient(135deg, #80D8FF,#40C4FF); color:#01579B; }
+.num-btn.n6 { background: linear-gradient(135deg, #B388FF,#7C4DFF); color:#fff; }
+.num-btn.n7 { background: linear-gradient(135deg, #FF80AB,#FF4081); color:#fff; }
+.num-btn.n8 { background: linear-gradient(135deg, #A7FFEB,#1DE9B6); color:#004D40; }
+.num-btn.n9 { background: linear-gradient(135deg, #CFD8DC,#90A4AE); color:#263238; }
+.num-btn.erase { background: linear-gradient(135deg, #ECEFF1,#B0BEC5); color:#455A64; font-size: clamp(16px,4vw,26px); }
+
+.num-btn.used-up { opacity: 0.3; cursor: default; transform: none !important; }
+
+/* BOTTOM ACTIONS */
+.game-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+/* =========================================
+   MODALS
+   ========================================= */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: linear-gradient(160deg, #FFFEF0 0%, #F0FFF4 100%);
+  border-radius: var(--radius-xl);
+  padding: clamp(24px, 5vw, 40px);
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  text-align: center;
+  border: 3px solid rgba(255,255,255,0.8);
+}
+@keyframes modalIn {
+  from { transform: scale(0.5) translateY(40px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-emoji { font-size: clamp(52px, 12vw, 80px); line-height: 1; margin-bottom: 8px; animation: bounceIcon 0.6s ease 0.3s both; }
+@keyframes bounceIcon {
+  from { transform: scale(0); }
+  to { transform: scale(1); animation: wiggle 0.5s ease; }
+}
+@keyframes wiggle {
+  0%,100% { transform: rotate(0); }
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+}
+
+.modal-title {
+  font-family: var(--font-title);
+  font-size: clamp(22px, 5vw, 32px);
+  color: var(--orange);
+  margin-bottom: 6px;
+  text-shadow: 2px 2px 0 rgba(255,140,66,0.2);
+}
+.modal-subtitle {
+  font-size: clamp(14px, 3vw, 18px);
+  color: var(--text-mid);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.modal-stars {
+  font-size: clamp(32px, 7vw, 48px);
+  margin: 12px 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.modal-stats {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.modal-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.modal-stat-val {
+  font-size: clamp(18px, 4vw, 26px);
+  font-weight: bold;
+  color: var(--orange);
+}
+.modal-stat-label {
+  font-size: clamp(11px, 2vw, 13px);
+  color: var(--text-mid);
+}
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+/* Tutorial styles */
+.tutorial-steps {
+  text-align: left;
+  margin: 12px 0;
+}
+.tutorial-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+.step-num {
+  width: 28px; height: 28px;
+  background: var(--orange);
+  color: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.step-text {
+  font-size: clamp(13px, 2.5vw, 16px);
+  color: var(--text-dark);
+  line-height: 1.5;
+  padding-top: 2px;
+}
+.mini-demo {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  background: var(--border-box);
+  border: 2px solid var(--border-box);
+  border-radius: 8px;
+  padding: 3px;
+  width: 120px;
+  margin: 8px auto;
+}
+.demo-cell {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cell-empty);
+  border-radius: 4px;
+  font-family: var(--font-title);
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--text-dark);
+}
+.demo-cell.pre { background: var(--cell-prefilled); color: #2C7BE5; }
+.demo-cell.empty { background: var(--cell-selected); color: var(--orange); }
+
+/* =========================================
+   TOAST
+   ========================================= */
+.toast {
+  position: fixed;
+  top: 80px; left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(30,30,30,0.88);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 10px 24px;
+  font-size: clamp(14px, 3vw, 18px);
+  font-family: var(--font-title);
+  z-index: 200;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================
+   FLOATING PARTICLES
+   ========================================= */
+.particle {
+  position: fixed;
+  font-size: clamp(18px, 5vw, 36px);
+  pointer-events: none;
+  z-index: 150;
+  animation: particleFly 1.2s ease-out forwards;
+}
+@keyframes particleFly {
+  0% { opacity: 1; transform: scale(0.5) translateY(0); }
+  50% { opacity: 1; transform: scale(1.3) translateY(-60px); }
+  100% { opacity: 0; transform: scale(0.8) translateY(-120px) rotate(30deg); }
+}
+
+/* AUDIO BUTTONS */
+.audio-controls {
+  position: fixed;
+  top: 12px; right: 12px;
+  z-index: 50;
+  display: flex;
+  gap: 6px;
+}
+.audio-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.15s ease;
+}
+.audio-btn:hover { transform: scale(1.15); }
+.audio-btn.muted { opacity: 0.5; }
+
+/* Skin themes */
+.skin-forest .sudoku-board { background: #4DA85A; border-color: #4DA85A; }
+.skin-forest .cell { background: #F1F8E9; border-color: #A5D6A7; }
+.skin-forest .cell.prefilled { background: #DCEDC8; }
+.skin-ocean .sudoku-board { background: #1976D2; border-color: #1976D2; }
+.skin-ocean .cell { background: #E3F2FD; border-color: #90CAF9; }
+.skin-ocean .cell.prefilled { background: #BBDEFB; }
+.skin-sunset .sudoku-board { background: #E64A19; border-color: #E64A19; }
+.skin-sunset .cell { background: #FBE9E7; border-color: #FFCCBC; }
+.skin-sunset .cell.prefilled { background: #FFCCBC; }
+
+/* Shop */
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 12px 0;
+}
+.skin-item {
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  border: 3px solid transparent;
+  font-family: var(--font-title);
+  font-size: clamp(13px, 2.5vw, 16px);
+  color: var(--text-dark);
+}
+.skin-item.locked-skin { opacity: 0.5; cursor: default; }
+.skin-item.active-skin { border-color: var(--orange) !important; }
+.skin-item:hover:not(.locked-skin) { transform: scale(1.05); }
+.skin-preview { font-size: 28px; margin-bottom: 4px; }
+.skin-item.s-default { background: linear-gradient(135deg, #E8F5E9, #F1F8E9); border-color: #A5D6A7; }
+.skin-item.s-forest { background: linear-gradient(135deg, #C8E6C9, #A5D6A7); border-color: #81C784; }
+.skin-item.s-ocean { background: linear-gradient(135deg, #BBDEFB, #90CAF9); border-color: #64B5F6; }
+.skin-item.s-sunset { background: linear-gradient(135deg, #FFCCBC, #FFAB91); border-color: #FF8A65; }
+.skin-cost { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 500px) {
+  .cell-text { font-size: clamp(12px, 5vw, 24px); }
+  .board-4 .cell-text { font-size: clamp(18px, 7vw, 30px); }
+}
+@media (min-width: 768px) {
+  .cell-text { font-size: clamp(16px, 2.5vw, 28px); }
+  .board-4 .cell-text { font-size: clamp(22px, 3.5vw, 40px); }
+}
+
+/* Prevent text select on game */
+.sudoku-board, .numpad, .game-actions { user-select: none; }
+</style>
+</head>
+<body>
+
+<!-- DECORATIONS -->
+<div class="bg-deco">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+  <!-- Stars generated by JS -->
+</div>
+
+<!-- AUDIO CONTROLS -->
+<div class="audio-controls">
+  <button class="audio-btn" id="btn-music" title="背景音乐">🎵</button>
+  <button class="audio-btn" id="btn-sfx" title="音效">🔔</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- =====================
+     SCREEN: HOME
+     ===================== -->
+<div class="screen active" id="screen-home">
+  <div class="game-logo">
+    <div class="logo-icon">🧩</div>
+    <div class="logo-title">数独小冒险</div>
+    <div class="logo-sub">✨ 边玩边学，越玩越聪明！✨</div>
+  </div>
+
+  <div class="home-characters">
+    <span style="animation-delay:0s" class="logo-icon" style="font-size:48px">🐨</span>
+    <span style="animation-delay:0.2s;font-size:clamp(32px,7vw,56px)">🦁</span>
+    <span style="animation-delay:0.4s;font-size:clamp(32px,7vw,56px)">🐸</span>
+    <span style="animation-delay:0.6s;font-size:clamp(32px,7vw,56px)">🦊</span>
+  </div>
+
+  <div class="progress-summary" id="home-stats">
+    <div class="stat-item">
+      <div class="stat-val" id="stat-stars">0</div>
+      <div class="stat-label">⭐ 星星</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-levels">0</div>
+      <div class="stat-label">🏆 通关</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="stat-streak">0</div>
+      <div class="stat-label">🔥 连击</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goLevels()">🚀 开始冒险</button>
+    <button class="btn btn-secondary" onclick="openShop()">🛒 皮肤商店</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-info btn-sm" onclick="openTutorial()">📖 怎么玩？</button>
+  </div>
+</div>
+
+<!-- =====================
+     SCREEN: LEVEL SELECT
+     ===================== -->
+<div class="screen" id="screen-levels">
+  <div class="screen-header">
+    <button class="btn btn-secondary btn-sm" onclick="goHome()">🏠 返回</button>
+    <div class="screen-title">选择关卡 🗺️</div>
+    <div style="width:60px"></div>
+  </div>
+
+  <!-- Tier 1: Beginner -->
+  <div class="tier-section">
+    <div class="tier-header">
+      <div class="tier-icon">🐣</div>
+      <div>
+        <div class="tier-name">入门 · 4宫格</div>
+        <div class="tier-desc">数字 1-4，适合新手</div>
+      </div>
+      <div id="tier1-stars" style="font-size:16px; color:var(--orange)"></div>
+    </div>
+    <div class="level-grid" id="grid-tier1"></div>
+  </div>
+
+  <!-- Tier 2: Intermediate -->
+  <div class="tier-section">
+    <div class="tier-header">
+      <div class="tier-icon">🐬</div>
+      <div>
+        <div class="tier-name">进阶 · 6宫格</div>
+        <div class="tier-desc">数字 1-6，挑战进阶</div>
+      </div>
+      <div id="tier2-stars" style="font-size:16px; color:var(--orange)"></div>
+    </div>
+    <div class="level-grid" id="grid-tier2"></div>
+  </div>
+
+  <!-- Tier 3: Expert -->
+  <div class="tier-section">
+    <div class="tier-header">
+      <div class="tier-icon">🦅</div>
+      <div>
+        <div class="tier-name">高阶 · 9宫格</div>
+        <div class="tier-desc">数字 1-9，强者之路</div>
+      </div>
+      <div id="tier3-stars" style="font-size:16px; color:var(--orange)"></div>
+    </div>
+    <div class="level-grid" id="grid-tier3"></div>
+  </div>
+</div>
+
+<!-- =====================
+     SCREEN: GAME
+     ===================== -->
+<div class="screen" id="screen-game">
+  <div class="game-topbar">
+    <div class="game-info-left">
+      <button class="btn btn-secondary btn-sm" onclick="confirmQuit()">← 返回</button>
+      <div class="level-badge" id="level-badge">关卡 1-1</div>
+    </div>
+    <div class="game-toolbar">
+      <div class="error-counter" id="error-counter" title="错误次数">❤️❤️❤️</div>
+      <div class="timer-box" id="timer-box">
+        <span class="timer-icon">⏰</span>
+        <span id="timer-display">00:00</span>
+        <button id="timer-toggle" style="background:none;border:none;cursor:pointer;font-size:14px;padding:0 2px;" title="开关计时">⏸</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="board-wrapper" id="board-wrapper">
+    <div class="sudoku-board" id="sudoku-board"></div>
+  </div>
+
+  <div class="numpad" id="numpad"></div>
+
+  <div class="game-actions">
+    <button class="btn btn-warning btn-sm" onclick="useHint()" id="hint-btn">💡 提示 (3)</button>
+    <button class="btn btn-secondary btn-sm" onclick="resetLevel()">🔄 重置</button>
+  </div>
+</div>
+
+<!-- =====================
+     MODALS
+     ===================== -->
+
+<!-- Tutorial -->
+<div class="modal-overlay" id="modal-tutorial">
+  <div class="modal-box">
+    <div class="modal-emoji">🎓</div>
+    <div class="modal-title">怎么玩数独？</div>
+    <div class="tutorial-steps">
+      <div class="tutorial-step">
+        <div class="step-num">1</div>
+        <div class="step-text">棋盘分成小格子，每行数字不能重复！</div>
+      </div>
+      <div class="tutorial-step">
+        <div class="step-num">2</div>
+        <div class="step-text">每列（竖排）的数字也不能重复！</div>
+      </div>
+      <div class="tutorial-step">
+        <div class="step-num">3</div>
+        <div class="step-text">每个小方块里的数字同样不能重复！</div>
+      </div>
+      <div class="mini-demo">
+        <div class="demo-cell pre">1</div><div class="demo-cell pre">2</div><div class="demo-cell pre">3</div><div class="demo-cell empty">?</div>
+        <div class="demo-cell pre">3</div><div class="demo-cell pre">4</div><div class="demo-cell pre">1</div><div class="demo-cell pre">2</div>
+        <div class="demo-cell pre">4</div><div class="demo-cell pre">1</div><div class="demo-cell pre">2</div><div class="demo-cell pre">3</div>
+        <div class="demo-cell pre">2</div><div class="demo-cell pre">3</div><div class="demo-cell pre">4</div><div class="demo-cell pre">1</div>
+      </div>
+      <div class="tutorial-step">
+        <div class="step-num">4</div>
+        <div class="step-text">点击空白格子，再点下方数字填入，答案是 <b>4</b>！💡</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="closeModal('modal-tutorial')">🚀 我明白了！</button>
+    </div>
+  </div>
+</div>
+
+<!-- Level Complete -->
+<div class="modal-overlay" id="modal-complete">
+  <div class="modal-box">
+    <div class="modal-emoji" id="complete-emoji">🎉</div>
+    <div class="modal-title" id="complete-title">太棒啦！</div>
+    <div class="modal-subtitle" id="complete-msg">你真的太聪明了！</div>
+    <div class="modal-stars" id="complete-stars"></div>
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-val" id="stat-time">00:00</div>
+        <div class="modal-stat-label">⏱️ 用时</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" id="stat-errors">0</div>
+        <div class="modal-stat-label">❌ 错误</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" id="stat-hints">0</div>
+        <div class="modal-stat-label">💡 提示</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" id="stat-earned">+0⭐</div>
+        <div class="modal-stat-label">获得</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary btn-sm" onclick="backToLevels()">🗺️ 关卡</button>
+      <button class="btn btn-primary" id="btn-next-level" onclick="nextLevel()">下一关 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game Over -->
+<div class="modal-overlay" id="modal-gameover">
+  <div class="modal-box">
+    <div class="modal-emoji">😅</div>
+    <div class="modal-title">别灰心！</div>
+    <div class="modal-subtitle">错误太多了，<br>但你很勇敢！再试一次吧 💪</div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary btn-sm" onclick="backToLevels()">🗺️ 关卡</button>
+      <button class="btn btn-primary" onclick="restartLevel()">🔄 再来一次</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Quit -->
+<div class="modal-overlay" id="modal-quit">
+  <div class="modal-box">
+    <div class="modal-emoji">🚪</div>
+    <div class="modal-title">要离开吗？</div>
+    <div class="modal-subtitle">进度不会保存哦，<br>确定要返回吗？</div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-quit')">继续玩 🎮</button>
+      <button class="btn btn-danger btn-sm" onclick="backToLevels()">返回 🏠</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shop -->
+<div class="modal-overlay" id="modal-shop">
+  <div class="modal-box">
+    <div class="modal-emoji">🛒</div>
+    <div class="modal-title">皮肤商店</div>
+    <div class="modal-subtitle">用星星解锁棋盘皮肤 ⭐</div>
+    <div class="skin-grid" id="skin-grid"></div>
+    <div class="modal-btns">
+      <button class="btn btn-primary btn-sm" onclick="closeModal('modal-shop')">好的！</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================
+// AUDIO ENGINE (Web Audio API - no external files needed)
+// =========================================
+const AudioEngine = (() => {
+  let ctx = null;
+  let musicNode = null;
+  let musicGain = null;
+  let musicEnabled = true;
+  let sfxEnabled = true;
+  const initCtx = () => {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      musicGain = ctx.createGain();
+      musicGain.gain.value = 0.18;
+      musicGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  };
+
+  // Generate cute background music
+  const playMusic = () => {
+    if (!musicEnabled) return;
+    initCtx();
+    if (musicNode) { try { musicNode.stop(); } catch(e){} }
+
+    const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+    const melody = [0,2,4,5,7,5,4,2, 0,2,4,7,5,4,2,0, 4,5,7,9,7,5,4,2, 0,2,4,5,7,5,2,0];
+    const tempo = 0.35;
+    const loopDuration = melody.length * tempo;
+
+    const playLoop = (startTime) => {
+      melody.forEach((noteIdx, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(musicGain);
+        osc.type = 'triangle';
+        osc.frequency.value = notes[noteIdx] * 0.5;
+        const t = startTime + i * tempo;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.6, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + tempo * 0.8);
+        osc.start(t); osc.stop(t + tempo);
+      });
+      // Add harmony
+      const harmony = [0,4,7,4, 0,4,7,4, 2,5,9,5, 0,4,7,4];
+      harmony.forEach((noteIdx, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(musicGain);
+        osc.type = 'sine';
+        osc.frequency.value = notes[noteIdx % notes.length];
+        const t = startTime + i * tempo * 2;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.3, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t + tempo * 1.6);
+        osc.start(t); osc.stop(t + tempo * 2);
+      });
+    };
+
+    let loopStart = ctx.currentTime;
+    playLoop(loopStart);
+    // Schedule repeated loops
+    const scheduleNext = () => {
+      loopStart += loopDuration;
+      playLoop(loopStart);
+    };
+    const interval = setInterval(() => {
+      if (!musicEnabled) { clearInterval(interval); return; }
+      scheduleNext();
+    }, loopDuration * 1000 - 100);
+    return interval;
+  };
+
+  let musicInterval = null;
+
+  const sfx = {
+    click: () => {
+      if (!sfxEnabled || !ctx) return;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.start(); osc.stop(ctx.currentTime + 0.1);
+    },
+    fill: () => {
+      if (!sfxEnabled || !ctx) return;
+      [880, 1100].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.05;
+        g.gain.setValueAtTime(0.2, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.start(t); osc.stop(t + 0.13);
+      });
+    },
+    error: () => {
+      if (!sfxEnabled || !ctx) return;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
+      g.gain.setValueAtTime(0.25, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(); osc.stop(ctx.currentTime + 0.26);
+    },
+    win: () => {
+      if (!sfxEnabled || !ctx) return;
+      const winNotes = [523.25, 659.25, 783.99, 1046.5];
+      winNotes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0.3, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.start(t); osc.stop(t + 0.36);
+      });
+    },
+    hint: () => {
+      if (!sfxEnabled || !ctx) return;
+      [659, 784, 988].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.connect(g); g.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.08;
+        g.gain.setValueAtTime(0.22, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.start(t); osc.stop(t + 0.19);
+      });
+    }
+  };
+
+  return {
+    start: () => {
+      initCtx();
+      if (musicEnabled) musicInterval = playMusic();
+    },
+    toggleMusic: () => {
+      musicEnabled = !musicEnabled;
+      if (musicEnabled) { initCtx(); musicInterval = playMusic(); }
+      else if (musicInterval) { clearInterval(musicInterval); }
+      return musicEnabled;
+    },
+    toggleSfx: () => { sfxEnabled = !sfxEnabled; return sfxEnabled; },
+    sfx,
+    isMusicOn: () => musicEnabled,
+    isSfxOn: () => sfxEnabled,
+    initCtx
+  };
+})();
+
+// =========================================
+// PUZZLE GENERATOR
+// =========================================
+const PuzzleGen = (() => {
+  // Shuffle array
+  const shuffle = arr => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  // Solve using backtracking
+  const solve = (board, size) => {
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (board[i][j] === 0) {
+          const nums = shuffle([...Array(size).keys()].map(x => x + 1));
+          for (const n of nums) {
+            if (isValid(board, i, j, n, size)) {
+              board[i][j] = n;
+              if (solve(board, size)) return true;
+              board[i][j] = 0;
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const isValid = (board, row, col, num, size) => {
+    // Row check
+    if (board[row].includes(num)) return false;
+    // Column check
+    for (let i = 0; i < size; i++) if (board[i][col] === num) return false;
+    // Box check
+    const { boxRows, boxCols } = getBoxSize(size);
+    const startR = Math.floor(row / boxRows) * boxRows;
+    const startC = Math.floor(col / boxCols) * boxCols;
+    for (let r = startR; r < startR + boxRows; r++)
+      for (let c = startC; c < startC + boxCols; c++)
+        if (board[r][c] === num) return false;
+    return true;
+  };
+
+  const getBoxSize = (size) => {
+    if (size === 4) return { boxRows: 2, boxCols: 2 };
+    if (size === 6) return { boxRows: 2, boxCols: 3 };
+    return { boxRows: 3, boxCols: 3 };
+  };
+
+  // Generate a complete valid board
+  const generateFull = (size) => {
+    const board = Array.from({ length: size }, () => Array(size).fill(0));
+    solve(board, size);
+    return board;
+  };
+
+  // Remove cells to create puzzle - difficulty controls how many to remove
+  const createPuzzle = (size, difficulty) => {
+    const solution = generateFull(size);
+    const puzzle = solution.map(row => [...row]);
+
+    let removeCount;
+    if (size === 4) removeCount = [4, 5, 7, 8][Math.min(difficulty, 3)];
+    else if (size === 6) removeCount = [8, 12, 16, 20][Math.min(difficulty, 3)];
+    else removeCount = [30, 38, 45, 51][Math.min(difficulty, 3)];
+
+    const cells = shuffle([...Array(size * size).keys()]);
+    let removed = 0;
+    for (const idx of cells) {
+      if (removed >= removeCount) break;
+      const r = Math.floor(idx / size), c = idx % size;
+      puzzle[r][c] = 0;
+      removed++;
+    }
+    return { puzzle, solution };
+  };
+
+  return { createPuzzle, isValid, getBoxSize };
+})();
+
+// =========================================
+// GAME STATE
+// =========================================
+const TIER_CONFIG = [
+  { id: 1, name: '入门', size: 4, levels: 10, icon: '🐣' },
+  { id: 2, name: '进阶', size: 6, levels: 15, icon: '🐬' },
+  { id: 3, name: '高阶', size: 9, levels: 10, icon: '🦅' }
+];
+
+const PRAISE = ['太棒啦！🎉', '你真厉害！🌟', '超级聪明！🧠', '完美通关！✨', '小小天才！🏆'];
+const ENCOURAGE = ['再试试哦 😊', '加油！你能行 💪', '快一点点啦 🌈', '别怕，试试看 🐣'];
+
+let state = {
+  // Persistent (localStorage)
+  progress: {},       // { "1-1": { stars:3, time:120 }, ... }
+  totalStars: 0,
+  streak: 0,
+  unlockedSkins: ['default'],
+  activeSkin: 'default',
+
+  // Session
+  currentTier: 1,
+  currentLevel: 1,
+  puzzle: null,
+  solution: null,
+  userBoard: null,
+  selectedCell: null,
+  errors: 0,
+  maxErrors: 3,
+  hintsLeft: 3,
+  hintsUsed: 0,
+  errorsCount: 0,
+  timerSeconds: 0,
+  timerRunning: false,
+  timerInterval: null,
+  timerPaused: false
+};
+
+// Load from localStorage
+const loadState = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('sudoku-kids-v1') || '{}');
+    state.progress = saved.progress || {};
+    state.totalStars = saved.totalStars || 0;
+    state.streak = saved.streak || 0;
+    state.unlockedSkins = saved.unlockedSkins || ['default'];
+    state.activeSkin = saved.activeSkin || 'default';
+  } catch(e) {}
+};
+const saveState = () => {
+  localStorage.setItem('sudoku-kids-v1', JSON.stringify({
+    progress: state.progress,
+    totalStars: state.totalStars,
+    streak: state.streak,
+    unlockedSkins: state.unlockedSkins,
+    activeSkin: state.activeSkin
+  }));
+};
+
+// =========================================
+// SCREEN NAVIGATION
+// =========================================
+const showScreen = (id) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+const goHome = () => {
+  stopTimer();
+  updateHomeStats();
+  showScreen('screen-home');
+};
+
+const goLevels = () => {
+  buildLevelGrids();
+  showScreen('screen-levels');
+};
+
+const backToLevels = () => {
+  closeModal('modal-complete');
+  closeModal('modal-gameover');
+  closeModal('modal-quit');
+  stopTimer();
+  buildLevelGrids();
+  showScreen('screen-levels');
+};
+
+// =========================================
+// HOME STATS
+// =========================================
+const updateHomeStats = () => {
+  document.getElementById('stat-stars').textContent = state.totalStars;
+  const completed = Object.keys(state.progress).length;
+  document.getElementById('stat-levels').textContent = completed;
+  document.getElementById('stat-streak').textContent = state.streak;
+};
+
+// =========================================
+// LEVEL GRID BUILD
+// =========================================
+const getLevelKey = (tier, level) => `${tier}-${level}`;
+const isLevelUnlocked = (tier, level) => {
+  if (tier === 1 && level === 1) return true;
+  // Previous level completed?
+  if (level > 1) return !!state.progress[getLevelKey(tier, level - 1)];
+  // First level of tier 2/3: need last of previous tier
+  const prev = TIER_CONFIG[tier - 2];
+  if (!prev) return false;
+  return !!state.progress[getLevelKey(tier - 1, prev.levels)];
+};
+
+const buildLevelGrids = () => {
+  TIER_CONFIG.forEach((tier, idx) => {
+    const grid = document.getElementById(`grid-tier${tier.id}`);
+    grid.innerHTML = '';
+    let tierStars = 0;
+    for (let l = 1; l <= tier.levels; l++) {
+      const key = getLevelKey(tier.id, l);
+      const prog = state.progress[key];
+      const unlocked = isLevelUnlocked(tier.id, l);
+      const btn = document.createElement('div');
+      btn.className = 'level-btn' + (prog ? ' completed' : unlocked ? ' unlocked' : ' locked');
+      if (prog) {
+        const starsStr = '⭐'.repeat(prog.stars) + '☆'.repeat(3 - prog.stars);
+        btn.innerHTML = `<div class="level-num">${l}</div><div class="level-stars">${starsStr}</div>`;
+        tierStars += prog.stars;
+      } else if (unlocked) {
+        btn.innerHTML = `<div class="level-num">${l}</div><div class="level-stars">☆☆☆</div>`;
+      } else {
+        btn.innerHTML = `<div class="lock-icon">🔒</div>`;
+      }
+      if (unlocked || prog) {
+        btn.addEventListener('click', () => {
+          AudioEngine.sfx.click();
+          startLevel(tier.id, l);
+        });
+      }
+      grid.appendChild(btn);
+    }
+    document.getElementById(`tier${tier.id}-stars`).textContent = tierStars ? `⭐${tierStars}` : '';
+  });
+};
+
+// =========================================
+// GAME START
+// =========================================
+const startLevel = (tierId, levelNum) => {
+  state.currentTier = tierId;
+  state.currentLevel = levelNum;
+  state.errors = 0;
+  state.hintsLeft = 3;
+  state.hintsUsed = 0;
+  state.errorsCount = 0;
+  state.selectedCell = null;
+
+  const tier = TIER_CONFIG[tierId - 1];
+  const difficultyMap = [0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+  const diff = difficultyMap[Math.min(levelNum - 1, difficultyMap.length - 1)];
+  const { puzzle, solution } = PuzzleGen.createPuzzle(tier.size, diff);
+
+  state.puzzle = puzzle.map(r => [...r]);
+  state.solution = solution;
+  state.userBoard = puzzle.map(r => [...r]);
+
+  // Start timer
+  stopTimer();
+  state.timerSeconds = 0;
+  state.timerPaused = false;
+  updateTimerDisplay();
+  startTimer();
+
+  // Update UI
+  document.getElementById('level-badge').textContent = `${tier.icon} ${tier.name} ${levelNum}`;
+  updateErrorDisplay();
+  updateHintBtn();
+  applyBoardSkin();
+  renderBoard();
+  renderNumpad();
+  showScreen('screen-game');
+};
+
+// =========================================
+// BOARD RENDER
+// =========================================
+const renderBoard = () => {
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const { boxRows, boxCols } = PuzzleGen.getBoxSize(size);
+  const board = document.getElementById('sudoku-board');
+  board.innerHTML = '';
+  board.className = `sudoku-board board-${size}`;
+
+  // Calculate cell size
+  const wrapper = document.getElementById('board-wrapper');
+  const maxW = Math.min(wrapper.clientWidth - 16, 480);
+  const cellSize = Math.floor((maxW - 3 * 2 - (size - 1) * 2) / size);
+  board.style.width = `${maxW}px`;
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      cell.style.width = cell.style.height = `${cellSize}px`;
+
+      // Box borders
+      if ((c + 1) % boxCols === 0 && c < size - 1) cell.classList.add('box-right');
+      if ((r + 1) % boxRows === 0 && r < size - 1) cell.classList.add('box-bottom');
+
+      const val = state.userBoard[r][c];
+      if (val !== 0) {
+        const span = document.createElement('span');
+        span.className = 'cell-text';
+        span.textContent = val;
+        cell.appendChild(span);
+        if (state.puzzle[r][c] !== 0) cell.classList.add('prefilled');
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      board.appendChild(cell);
+    }
+  }
+  updateCellHighlights();
+};
+
+// Update just the cell visual
+const updateCellVisual = (r, c) => {
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const board = document.getElementById('sudoku-board');
+  const cell = board.children[r * size + c];
+  if (!cell) return;
+
+  cell.innerHTML = '';
+  const val = state.userBoard[r][c];
+  if (val !== 0) {
+    const span = document.createElement('span');
+    span.className = 'cell-text';
+    span.textContent = val;
+    cell.appendChild(span);
+  }
+};
+
+// =========================================
+// CELL INTERACTION
+// =========================================
+const onCellClick = (r, c) => {
+  AudioEngine.sfx.click();
+  AudioEngine.initCtx();
+
+  if (state.puzzle[r][c] !== 0) {
+    // Prefilled - just highlight
+    state.selectedCell = { r, c };
+    updateCellHighlights();
+    return;
+  }
+  state.selectedCell = { r, c };
+  updateCellHighlights();
+};
+
+const onNumInput = (num) => {
+  if (!state.selectedCell) { showToast('先点击一个空格哦 😊'); return; }
+  const { r, c } = state.selectedCell;
+  if (state.puzzle[r][c] !== 0) { showToast('这个数字是固定的哦 🔒'); return; }
+  if (state.errors >= state.maxErrors) return;
+
+  AudioEngine.initCtx();
+
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const board = document.getElementById('sudoku-board');
+  const cell = board.children[r * size + c];
+
+  if (num === 0) {
+    // Erase
+    state.userBoard[r][c] = 0;
+    cell.classList.remove('error', 'correct-hint');
+    updateCellVisual(r, c);
+    AudioEngine.sfx.click();
+    updateNumpadUsed();
+    return;
+  }
+
+  state.userBoard[r][c] = num;
+  updateCellVisual(r, c);
+
+  if (num !== state.solution[r][c]) {
+    // Wrong
+    cell.classList.add('error');
+    cell.classList.remove('correct-hint');
+    state.errorsCount++;
+    updateErrorDisplay();
+    AudioEngine.sfx.error();
+    showToast(ENCOURAGE[Math.floor(Math.random() * ENCOURAGE.length)]);
+    // Remove error class after animation
+    setTimeout(() => cell.classList.remove('error'), 600);
+    state.userBoard[r][c] = 0;
+    updateCellVisual(r, c);
+
+    if (state.errorsCount >= state.maxErrors) {
+      setTimeout(() => openModal('modal-gameover'), 800);
+    }
+  } else {
+    // Correct
+    cell.classList.remove('error');
+    cell.classList.add('correct-hint');
+    AudioEngine.sfx.fill();
+    spawnParticle(cell, '✨');
+    updateNumpadUsed();
+    updateCellHighlights();
+
+    // Check win
+    if (checkWin()) {
+      setTimeout(onWin, 500);
+    }
+  }
+};
+
+const updateCellHighlights = () => {
+  if (!state.selectedCell) return;
+  const { r, c } = state.selectedCell;
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const { boxRows, boxCols } = PuzzleGen.getBoxSize(size);
+  const board = document.getElementById('sudoku-board');
+  const selectedVal = state.userBoard[r][c];
+
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
+      const cell = board.children[i * size + j];
+      if (!cell) continue;
+      cell.classList.remove('selected', 'highlight-same', 'highlight-area');
+      if (i === r && j === c) {
+        cell.classList.add('selected');
+      } else if (i === r || j === c) {
+        cell.classList.add('highlight-area');
+      } else {
+        const sameBoxR = Math.floor(i / boxRows) === Math.floor(r / boxRows);
+        const sameBoxC = Math.floor(j / boxCols) === Math.floor(c / boxCols);
+        if (sameBoxR && sameBoxC) cell.classList.add('highlight-area');
+      }
+      // Highlight same number
+      if (selectedVal > 0 && state.userBoard[i][j] === selectedVal) {
+        cell.classList.add('highlight-same');
+      }
+    }
+  }
+};
+
+const checkWin = () => {
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++)
+      if (state.userBoard[r][c] !== state.solution[r][c]) return false;
+  return true;
+};
+
+// =========================================
+// NUM PAD
+// =========================================
+const renderNumpad = () => {
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const numpad = document.getElementById('numpad');
+  numpad.innerHTML = '';
+
+  for (let n = 1; n <= size; n++) {
+    const btn = document.createElement('button');
+    btn.className = `num-btn n${n}`;
+    btn.textContent = n;
+    btn.addEventListener('click', () => { AudioEngine.sfx.click(); onNumInput(n); });
+    numpad.appendChild(btn);
+  }
+  // Erase button
+  const erase = document.createElement('button');
+  erase.className = 'num-btn erase';
+  erase.textContent = '⌫';
+  erase.addEventListener('click', () => { AudioEngine.sfx.click(); onNumInput(0); });
+  numpad.appendChild(erase);
+  updateNumpadUsed();
+};
+
+const updateNumpadUsed = () => {
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+  const numpad = document.getElementById('numpad');
+  for (let n = 1; n <= size; n++) {
+    const btn = numpad.querySelector(`.n${n}`);
+    if (!btn) continue;
+    // Count how many cells are correctly filled with this number
+    let correctCount = 0;
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        if (state.userBoard[r][c] === n && state.solution[r][c] === n) correctCount++;
+    btn.classList.toggle('used-up', correctCount >= size);
+  }
+};
+
+// =========================================
+// ERROR DISPLAY
+// =========================================
+const updateErrorDisplay = () => {
+  const hearts = [];
+  for (let i = 0; i < state.maxErrors; i++) {
+    hearts.push(i < state.errorsCount ? '💔' : '❤️');
+  }
+  document.getElementById('error-counter').textContent = hearts.join('');
+};
+
+// =========================================
+// HINT SYSTEM
+// =========================================
+const useHint = () => {
+  if (state.hintsLeft <= 0) { showToast('没有提示次数啦 😅'); return; }
+
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  const size = tier.size;
+
+  // Find an empty or wrong cell
+  const empties = [];
+  for (let r = 0; r < size; r++)
+    for (let c = 0; c < size; c++)
+      if (state.puzzle[r][c] === 0 && state.userBoard[r][c] !== state.solution[r][c])
+        empties.push({ r, c });
+
+  if (empties.length === 0) { showToast('都填对了哦！🎉'); return; }
+
+  // Pick a random empty cell (prefer selected)
+  let target = state.selectedCell && state.puzzle[state.selectedCell.r]?.[state.selectedCell.c] === 0 &&
+    state.userBoard[state.selectedCell.r]?.[state.selectedCell.c] !== state.solution[state.selectedCell.r]?.[state.selectedCell.c]
+    ? state.selectedCell
+    : empties[Math.floor(Math.random() * empties.length)];
+
+  state.userBoard[target.r][target.c] = state.solution[target.r][target.c];
+  state.hintsLeft--;
+  state.hintsUsed++;
+  updateHintBtn();
+  updateCellVisual(target.r, target.c);
+
+  const board = document.getElementById('sudoku-board');
+  const cell = board.children[target.r * size + target.c];
+  cell.classList.add('correct-hint');
+  spawnParticle(cell, '💡');
+  AudioEngine.sfx.hint();
+  showToast(`💡 提示：第${target.r+1}行第${target.c+1}列填 ${state.solution[target.r][target.c]}`);
+  updateNumpadUsed();
+
+  if (checkWin()) setTimeout(onWin, 600);
+};
+
+const updateHintBtn = () => {
+  document.getElementById('hint-btn').textContent = `💡 提示 (${state.hintsLeft})`;
+  document.getElementById('hint-btn').disabled = state.hintsLeft <= 0;
+};
+
+// =========================================
+// TIMER
+// =========================================
+const startTimer = () => {
+  state.timerRunning = true;
+  state.timerInterval = setInterval(() => {
+    if (!state.timerPaused) {
+      state.timerSeconds++;
+      updateTimerDisplay();
+    }
+  }, 1000);
+};
+
+const stopTimer = () => {
+  state.timerRunning = false;
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+};
+
+const updateTimerDisplay = () => {
+  const m = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+  const s = (state.timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('timer-display').textContent = `${m}:${s}`;
+};
+
+document.getElementById('timer-toggle').addEventListener('click', () => {
+  state.timerPaused = !state.timerPaused;
+  document.getElementById('timer-toggle').textContent = state.timerPaused ? '▶' : '⏸';
+});
+
+// =========================================
+// WIN / COMPLETE
+// =========================================
+const onWin = () => {
+  stopTimer();
+  AudioEngine.sfx.win();
+
+  const time = state.timerSeconds;
+  const tier = TIER_CONFIG[state.currentTier - 1];
+
+  // Stars calculation
+  let stars = 3;
+  if (state.errorsCount > 0) stars--;
+  if (state.hintsUsed > 1) stars--;
+  const timePenalty = { 4: 180, 6: 300, 9: 600 }[tier.size];
+  if (time > timePenalty) stars = Math.max(1, stars - 1);
+  stars = Math.max(1, stars);
+
+  // Save progress
+  const key = getLevelKey(state.currentTier, state.currentLevel);
+  const prev = state.progress[key];
+  const prevStars = prev ? prev.stars : 0;
+  const newStars = Math.max(prevStars, stars);
+  const earnedExtra = newStars - prevStars;
+
+  state.progress[key] = { stars: newStars, time };
+  state.totalStars += earnedExtra;
+  state.streak++;
+  saveState();
+
+  // Unlock next skin milestone
+  if (state.totalStars >= 10 && !state.unlockedSkins.includes('forest')) {
+    state.unlockedSkins.push('forest');
+    saveState();
+    showToast('🎉 解锁新皮肤：森林！');
+  }
+  if (state.totalStars >= 25 && !state.unlockedSkins.includes('ocean')) {
+    state.unlockedSkins.push('ocean');
+    saveState();
+    showToast('🌊 解锁新皮肤：海洋！');
+  }
+  if (state.totalStars >= 50 && !state.unlockedSkins.includes('sunset')) {
+    state.unlockedSkins.push('sunset');
+    saveState();
+    showToast('🌅 解锁新皮肤：夕阳！');
+  }
+
+  // Celebration particles
+  for (let i = 0; i < 10; i++) {
+    setTimeout(() => spawnRandomParticle(), i * 80);
+  }
+
+  // Fill modal
+  const titles = ['太棒啦！', '你真厉害！', '超级聪明！', '完美通关！', '小小天才！'];
+  document.getElementById('complete-emoji').textContent = ['🎉','🌟','🏆','✨','🎊'][Math.floor(Math.random() * 5)];
+  document.getElementById('complete-title').textContent = titles[Math.floor(Math.random() * titles.length)];
+  document.getElementById('complete-msg').textContent = [`恭喜你完成了 ${tier.name} 第 ${state.currentLevel} 关！`, '继续加油，你是最棒的！', `用了 ${state.errorsCount} 次错误，${state.hintsUsed} 次提示！`][Math.min(stars - 1, 2)];
+
+  let starHtml = '';
+  for (let i = 1; i <= 3; i++) {
+    starHtml += `<span style="animation-delay:${i * 0.1}s; animation: bounceIn 0.5s ease ${i * 0.2}s both; display:inline-block">${i <= stars ? '⭐' : '☆'}</span>`;
+  }
+  document.getElementById('complete-stars').innerHTML = starHtml;
+
+  const mm = Math.floor(time / 60).toString().padStart(2,'0');
+  const ss = (time % 60).toString().padStart(2,'0');
+  document.getElementById('stat-time').textContent = `${mm}:${ss}`;
+  document.getElementById('stat-errors').textContent = state.errorsCount;
+  document.getElementById('stat-hints').textContent = state.hintsUsed;
+  document.getElementById('stat-earned').textContent = `+${earnedExtra}⭐`;
+
+  // Show next level button if exists
+  const hasNext = state.currentLevel < tier.levels ||
+    state.currentTier < TIER_CONFIG.length;
+  document.getElementById('btn-next-level').style.display = hasNext ? '' : 'none';
+
+  setTimeout(() => openModal('modal-complete'), 600);
+};
+
+const nextLevel = () => {
+  closeModal('modal-complete');
+  const tier = TIER_CONFIG[state.currentTier - 1];
+  if (state.currentLevel < tier.levels) {
+    startLevel(state.currentTier, state.currentLevel + 1);
+  } else if (state.currentTier < TIER_CONFIG.length) {
+    startLevel(state.currentTier + 1, 1);
+  } else {
+    backToLevels();
+  }
+};
+
+const restartLevel = () => {
+  closeModal('modal-gameover');
+  startLevel(state.currentTier, state.currentLevel);
+};
+
+// =========================================
+// RESET & QUIT
+// =========================================
+const resetLevel = () => {
+  state.userBoard = state.puzzle.map(r => [...r]);
+  state.errorsCount = 0;
+  state.hintsLeft = 3;
+  state.hintsUsed = 0;
+  state.selectedCell = null;
+  stopTimer();
+  state.timerSeconds = 0;
+  state.timerPaused = false;
+  document.getElementById('timer-toggle').textContent = '⏸';
+  updateTimerDisplay();
+  startTimer();
+  updateErrorDisplay();
+  updateHintBtn();
+  renderBoard();
+  renderNumpad();
+  showToast('🔄 关卡已重置！');
+};
+
+const confirmQuit = () => { openModal('modal-quit'); };
+
+// =========================================
+// MODALS
+// =========================================
+const openModal = (id) => { document.getElementById(id).classList.add('open'); };
+const closeModal = (id) => { document.getElementById(id).classList.remove('open'); };
+
+const openTutorial = () => { AudioEngine.sfx.click(); openModal('modal-tutorial'); };
+
+// =========================================
+// SHOP / SKINS
+// =========================================
+const SKINS = [
+  { id: 'default', name: '清新绿', icon: '🌿', cost: 0, class: 's-default' },
+  { id: 'forest', name: '森林', icon: '🌲', cost: 10, class: 's-forest' },
+  { id: 'ocean', name: '海洋', icon: '🌊', cost: 25, class: 's-ocean' },
+  { id: 'sunset', name: '夕阳', icon: '🌅', cost: 50, class: 's-sunset' }
+];
+
+const openShop = () => {
+  AudioEngine.sfx.click();
+  const grid = document.getElementById('skin-grid');
+  grid.innerHTML = '';
+  SKINS.forEach(skin => {
+    const item = document.createElement('div');
+    const unlocked = state.unlockedSkins.includes(skin.id);
+    item.className = `skin-item ${skin.class}${!unlocked ? ' locked-skin' : ''}${state.activeSkin === skin.id ? ' active-skin' : ''}`;
+    item.innerHTML = `<div class="skin-preview">${skin.icon}</div><div>${skin.name}</div><div class="skin-cost">${unlocked ? (state.activeSkin === skin.id ? '✅ 使用中' : '点击使用') : `🔒 需要${skin.cost}⭐`}</div>`;
+    if (unlocked) {
+      item.addEventListener('click', () => {
+        state.activeSkin = skin.id;
+        saveState();
+        applyBoardSkin();
+        openShop();
+        AudioEngine.sfx.click();
+        showToast(`已换成${skin.name}皮肤！`);
+      });
+    } else {
+      item.addEventListener('click', () => {
+        if (state.totalStars >= skin.cost) {
+          state.unlockedSkins.push(skin.id);
+          state.totalStars -= skin.cost;
+          state.activeSkin = skin.id;
+          saveState();
+          applyBoardSkin();
+          openShop();
+          AudioEngine.sfx.win();
+          showToast(`🎉 解锁 ${skin.name} 皮肤！`);
+        } else {
+          showToast(`还需要 ${skin.cost - state.totalStars} 颗星星哦 ⭐`);
+        }
+      });
+    }
+    grid.appendChild(item);
+  });
+  openModal('modal-shop');
+};
+
+const applyBoardSkin = () => {
+  const board = document.getElementById('sudoku-board');
+  if (board) {
+    board.className = board.className.replace(/\bskin-\w+\b/g, '').trim();
+    if (state.activeSkin !== 'default') {
+      board.classList.add(`skin-${state.activeSkin}`);
+    }
+  }
+};
+
+// =========================================
+// TOAST
+// =========================================
+let toastTimeout = null;
+const showToast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+};
+
+// =========================================
+// PARTICLES
+// =========================================
+const spawnParticle = (el, emoji) => {
+  const rect = el.getBoundingClientRect();
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = emoji;
+  p.style.left = (rect.left + rect.width / 2 - 16) + 'px';
+  p.style.top = (rect.top + rect.height / 2 - 16) + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 1300);
+};
+
+const spawnRandomParticle = () => {
+  const emojis = ['🌟','✨','⭐','🎉','🎊','💫','🌈','🎈'];
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+  p.style.left = (Math.random() * (window.innerWidth - 50)) + 'px';
+  p.style.top = (Math.random() * (window.innerHeight - 50) + 50) + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 1300);
+};
+
+// =========================================
+// AUDIO CONTROLS
+// =========================================
+document.getElementById('btn-music').addEventListener('click', () => {
+  const on = AudioEngine.toggleMusic();
+  document.getElementById('btn-music').textContent = on ? '🎵' : '🔇';
+  document.getElementById('btn-music').classList.toggle('muted', !on);
+});
+document.getElementById('btn-sfx').addEventListener('click', () => {
+  const on = AudioEngine.toggleSfx();
+  document.getElementById('btn-sfx').textContent = on ? '🔔' : '🔕';
+  document.getElementById('btn-sfx').classList.toggle('muted', !on);
+});
+
+// =========================================
+// BG STARS
+// =========================================
+const generateStars = () => {
+  const deco = document.querySelector('.bg-deco');
+  for (let i = 0; i < 15; i++) {
+    const star = document.createElement('div');
+    star.className = 'star-bg';
+    star.style.left = Math.random() * 95 + '%';
+    star.style.top = Math.random() * 95 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+    star.style.transform = `scale(${0.5 + Math.random()})`;
+    deco.appendChild(star);
+  }
+};
+
+// =========================================
+// KEYBOARD SUPPORT (PC)
+// =========================================
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('screen-game').classList.contains('active')) {
+    const num = parseInt(e.key);
+    if (num >= 1 && num <= 9) onNumInput(num);
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') onNumInput(0);
+    // Arrow keys
+    if (state.selectedCell) {
+      const { r, c } = state.selectedCell;
+      const tier = TIER_CONFIG[state.currentTier - 1];
+      const size = tier.size;
+      let nr = r, nc = c;
+      if (e.key === 'ArrowUp') nr = Math.max(0, r - 1);
+      if (e.key === 'ArrowDown') nr = Math.min(size - 1, r + 1);
+      if (e.key === 'ArrowLeft') nc = Math.max(0, c - 1);
+      if (e.key === 'ArrowRight') nc = Math.min(size - 1, c + 1);
+      if (nr !== r || nc !== c) { state.selectedCell = { r: nr, c: nc }; updateCellHighlights(); }
+    }
+  }
+});
+
+// =========================================
+// RESPONSIVE BOARD RESIZE
+// =========================================
+window.addEventListener('resize', () => {
+  if (document.getElementById('screen-game').classList.contains('active')) {
+    renderBoard();
+  }
+});
+
+// =========================================
+// INIT
+// =========================================
+const init = () => {
+  loadState();
+  updateHomeStats();
+  generateStars();
+
+  // First-time tutorial
+  if (!localStorage.getItem('sudoku-kids-tutorialSeen')) {
+    setTimeout(() => {
+      openModal('modal-tutorial');
+      localStorage.setItem('sudoku-kids-tutorialSeen', '1');
+    }, 800);
+  }
+
+  // Start music on first interaction
+  const startMusic = () => {
+    AudioEngine.start();
+    document.removeEventListener('click', startMusic);
+    document.removeEventListener('touchstart', startMusic);
+  };
+  document.addEventListener('click', startMusic);
+  document.addEventListener('touchstart', startMusic);
+};
+
+init();
+</script>
+</body>
+</html>
